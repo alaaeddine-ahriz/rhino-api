@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Rhino API</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .api-links {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .feature {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .token-box {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+            font-family: monospace;
+            font-size: 14px;
+            word-break: break-all;
+        }
+        .role-student { border-left: 4px solid #28a745; }
+        .role-teacher { border-left: 4px solid #fd7e14; }
+        .role-admin { border-left: 4px solid #dc3545; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🦏 Le Rhino API</h1>
+        <p>Bienvenue dans l'API de gestion de cours et génération de questions via RAG.</p>
+        
+        <div class="api-links">
+            <a href="/api/docs" class="btn">📚 Documentation Swagger</a>
+            <a href="/api/redoc" class="btn">📖 Documentation ReDoc</a>
+            <a href="/api" class="btn">🔍 Status API</a>
+        </div>
+
+        <div class="feature">
+            <h3>✨ Fonctionnalités</h3>
+            <ul>
+                <li>Gestion des matières et documents</li>
+                <li>Questions et réponses via RAG</li>
+                <li>Évaluation automatique des réponses</li>
+                <li>Système de challenges</li>
+                <li>Classements et leaderboards</li>
+            </ul>
+        </div>
+
+        <div class="feature">
+            <h3>🔐 Authentification par Token</h3>
+            <p>Utilisez ces tokens pour vous authentifier dans l'API :</p>
+            
+            <h4>👨‍🎓 Tokens Étudiants</h4>
+            <div class="token-box role-student">
+                <strong>student1:</strong> student_token_123
+            </div>
+            <div class="token-box role-student">
+                <strong>student2:</strong> student_token_456
+            </div>
+            
+            <h4>👨‍🏫 Tokens Enseignants</h4>
+            <div class="token-box role-teacher">
+                <strong>teacher1:</strong> teacher_token_789
+            </div>
+            <div class="token-box role-teacher">
+                <strong>teacher2:</strong> teacher_token_101
+            </div>
+            
+            <h4>👨‍💼 Tokens Administrateurs</h4>
+            <div class="token-box role-admin">
+                <strong>admin1:</strong> admin_token_999
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>📋 Comment utiliser l'authentification</h3>
+            <ol>
+                <li>Allez sur <a href="/api/docs" target="_blank">/api/docs</a></li>
+                <li>Utilisez l'endpoint <code>POST /api/auth/token</code></li>
+                <li>Entrez un token dans le champ "token"</li>
+                <li>Copiez le JWT retourné</li>
+                <li>Cliquez sur "Authorize" en haut à droite</li>
+                <li>Entrez le JWT dans le format: <code>Bearer YOUR_JWT_TOKEN</code></li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html> 
