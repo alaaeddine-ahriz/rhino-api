@@ -43,4 +43,4 @@ async def evaluate_student_response(
             "matiere": request.matiere,
             "logs": "Évaluation effectuée avec succès"
         }
-    } 
+    }
