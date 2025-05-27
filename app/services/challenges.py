@@ -7,11 +7,19 @@ def generer_challenge_quotidien():
     """Génère le challenge du jour."""
     return {"success": True, "data": {"challenge_id": "chall_1", "question": "Décrivez TCP/IP"}}
 
-def lister_challenges(matiere=None):
-    """Liste les challenges."""
-    return {"success": True, "data": [
-        {"challenge_id": "chall_1", "matiere": "TCP"}
-    ]}
+def lister_challenges(matiere=None, session=None):
+    """Liste les challenges depuis la base de données, avec option de filtrage par matière."""
+    if session is None:
+        from app.db.session import engine
+        from sqlmodel import Session
+        with Session(engine) as session:
+            return lister_challenges(matiere=matiere, session=session)
+    query = select(Challenge)
+    if matiere:
+        query = query.where(Challenge.matiere == matiere)
+    results = session.exec(query).all()
+    challenges = [challenge.dict() for challenge in results]
+    return {"success": True, "data": {"challenges": challenges}}
 
 def creer_challenge(challenge_data, session=None):
     """Crée un challenge et l'ajoute à la base de données."""
@@ -39,3 +47,4 @@ if __name__ == "__main__":
         "date": "2025-05-27"
     }
     creer_challenge(challenge_data)
+    lister_challenges(matiere="SYD")

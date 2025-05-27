@@ -8,7 +8,7 @@ from app.models.auth import UserInDB
 from app.models.challenge import ChallengeCreate, ChallengeResponse, ChallengeUserResponse, LeaderboardEntry
 from app.api.deps import get_current_user, get_teacher_user
 from app.core.exceptions import NotFoundError
-from app.services.challenges import creer_challenge
+from app.services.challenges import creer_challenge, lister_challenges
 from app.db.session import get_session
 
 router = APIRouter(tags=["Challenges"])
@@ -37,37 +37,15 @@ async def get_today_challenge(current_user: UserInDB = Depends(get_current_user)
 @router.get("/challenges", response_model=ApiResponse)
 async def get_challenges(
     matiere: Optional[str] = Query(None, description="Filter by subject"),
-    current_user: UserInDB = Depends(get_current_user)
+    current_user: UserInDB = Depends(get_current_user),
+    session=Depends(get_session)
 ):
     """
     List all challenges, optionally filtered by subject or date range.
     """
-    # This will be implemented with the actual functionality
-    # For now, return a placeholder
-    challenges = [
-        {
-            "challenge_id": "chall_1",
-            "date": "2023-05-01",
-            "question": "Expliquez les principes fondamentaux de TCP/IP.",
-            "matieres": ["TCP"]
-        },
-        {
-            "challenge_id": "chall_2",
-            "date": "2023-05-02",
-            "question": "Comparez les architectures de systèmes distribués.",
-            "matieres": ["SYD"]
-        }
-    ]
-    
-    # Filter by matiere if provided
-    if matiere:
-        challenges = [c for c in challenges if matiere in c["matieres"]]
-    
-    return {
-        "success": True,
-        "message": "Challenges récupérés avec succès",
-        "data": {"challenges": challenges}
-    }
+    result = lister_challenges(matiere=matiere, session=session)
+    result["message"] = "Challenges récupérés avec succès"
+    return result
 
 @router.post("/challenges", response_model=ApiResponse)
 async def create_challenge(
