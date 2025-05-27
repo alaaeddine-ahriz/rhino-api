@@ -8,6 +8,8 @@ from app.models.auth import UserInDB
 from app.models.challenge import ChallengeCreate, ChallengeResponse, ChallengeUserResponse, LeaderboardEntry
 from app.api.deps import get_current_user, get_teacher_user
 from app.core.exceptions import NotFoundError
+from app.services.challenges import creer_challenge
+from app.db.session import get_session
 
 router = APIRouter(tags=["Challenges"])
 
@@ -70,25 +72,16 @@ async def get_challenges(
 @router.post("/challenges", response_model=ApiResponse)
 async def create_challenge(
     challenge: ChallengeCreate,
-    current_user: UserInDB = Depends(get_teacher_user)
+    current_user: UserInDB = Depends(get_teacher_user),
+    session=Depends(get_session)
 ):
     """
     Create a new challenge for one or more subjects (teacher or admin only).
     """
-    # This will be implemented with the actual functionality
-    # For now, return a placeholder
-    return {
-        "success": True,
-        "message": "Challenge créé avec succès",
-        "data": {
-            "challenge": {
-                "challenge_id": "new_chall",
-                "date": challenge.date,
-                "matieres": challenge.matieres,
-                "question": "Question générée automatiquement pour les matières: " + ", ".join(challenge.matieres)
-            }
-        }
-    }
+    # Utilise le service pour créer et stocker le challenge
+    result = creer_challenge(challenge.dict(), session=session)
+    result["message"] = "Challenge créé avec succès"
+    return result
 
 @router.post("/challenges/{challenge_id}/response", response_model=ApiResponse)
 async def submit_challenge_response(

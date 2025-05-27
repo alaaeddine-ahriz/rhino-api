@@ -3,14 +3,15 @@ from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
 from datetime import date as date_type
 
+
 class ChallengeBase(BaseModel):
     """Base model for a challenge."""
-    matieres: List[str] = Field(..., description="Subjects involved in the challenge")
+    matiere: str = Field(..., description="Subject involved in the challenge")
     date: str = Field(..., description="Challenge date (YYYY-MM-DD)")
 
 class ChallengeCreate(ChallengeBase):
     """Model for creating a new challenge."""
-    pass
+    question: str = Field(..., description="Challenge question")
 
 class ChallengeResponse(ChallengeBase):
     """Model for challenge response."""
