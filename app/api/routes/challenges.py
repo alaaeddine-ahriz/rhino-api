@@ -14,7 +14,7 @@ from app.db.session import get_session
 router = APIRouter(tags=["Challenges"])
 
 @router.get("/challenges/today", response_model=ApiResponse)
-async def get_today_challenge(current_user: UserInDB = Depends(get_current_user)):
+async def get_today_challenge():
     """
     Get today's challenge based on server date.
     """
