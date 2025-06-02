@@ -15,6 +15,8 @@ Cette API permet de gérer des documents de cours, générer des questions de r�
 - [🧪 Tests](#-tests)
 - [🚀 Déploiement](#-déploiement)
 - [🤝 Contribution](#-contribution)
+- [🔄 Présentation Fonctionnelle](#-présentation-fonctionnelle)
+- [🔄 Mécanisme de Tick (Distribution des Challenges)](#-mécanisme-de-tick-distribution-des-challenges)
 
 ## 🚀 Installation
 
@@ -409,3 +411,85 @@ git commit -m "docs: mise à jour du README"
 2. Implémenter la fonctionnalité
 3. Tester avec Swagger UI
 4. Créer une Pull Request
+
+## 🔄 Présentation Fonctionnelle
+
+Le Rhino API est une plateforme d'entraînement et d'évaluation pour étudiants, enseignants et administrateurs, centrée sur la gestion de challenges (questions) par matière et sur la personnalisation de l'expérience utilisateur.
+
+### Principales fonctionnalités
+
+- **Inscription utilisateur** :
+  - Endpoint : `POST /users/register`
+  - Permet à un nouvel utilisateur de s'inscrire avec un rôle (étudiant, enseignant, admin) et de s'abonner à une ou plusieurs matières.
+
+- **Gestion des abonnements** :
+  - Endpoint : `PUT /users/subscriptions`
+  - Permet de modifier ou consulter la liste des matières auxquelles un utilisateur est abonné.
+
+- **Ajout de challenges** :
+  - Endpoint : `POST /challenges`
+  - Les enseignants/admins peuvent ajouter des challenges (questions) pour une matière donnée. Chaque challenge possède un identifiant unique (`ref`) de la forme `MATIERE-XXX`.
+
+- **Définition de la granularité** :
+  - Chaque matière possède un champ `granularite` (jour, semaine, mois, 2jours, etc.) qui définit la fréquence de rotation des challenges pour cette matière.
+  - Modifiable via l'API ou en base.
+
+- **Distribution des challenges** :
+  - Endpoint : `GET /challenges/next?matiere=SYD`
+  - Sert le challenge du moment pour la matière, selon la granularité définie dans la BDD. Tous les utilisateurs reçoivent le même challenge pour une matière donnée et une granularité donnée.
+
+- **File de challenges** :
+  - Les challenges sont servis en file pour chaque matière et granularité. Un challenge n'est resservi qu'une fois que tous les challenges de la matière ont été proposés.
+
+
+## Mécanisme de Tick (Distribution des Challenges)
+
+- **Principe** :
+  - La granularité (jour, semaine, mois, etc.) définit la fréquence à laquelle un nouveau challenge est proposé pour une matière.
+  - Le tick courant est calculé dynamiquement à partir d'une date de référence (date du premier challenge de la matière).
+  - À chaque tick, le système sert le prochain challenge non encore servi pour la matière et la granularité.
+  - Quand tous les challenges ont été servis, la file est remise à zéro et le cycle recommence.
+
+- **Exemple de fonctionnement** :
+  1. La granularité de la matière SYD est "semaine".
+  2. Chaque semaine, tous les utilisateurs abonnés à SYD reçoivent le même challenge, qui change chaque semaine.
+  3. Si tous les challenges ont été servis, le cycle recommence depuis le début de la file.
+
+- **Avantages** :
+  - Pas de période de validité stockée dans chaque challenge.
+  - Facile à modifier (changer la granularité d'une matière suffit).
+  - Même expérience pour tous les utilisateurs d'une matière.
+
+## Endpoints principaux
+
+- `POST /users/register` : Inscription d'un utilisateur
+- `PUT /users/subscriptions` : Gestion des abonnements
+- `POST /challenges` : Ajout d'un challenge (enseignant/admin)
+- `GET /challenges/next?matiere=...` : Récupérer le challenge du moment pour une matière
+
+## Exemple d'appel pour récupérer le challenge du moment
+
+```http
+GET /challenges/next?matiere=SYD
+```
+
+**Réponse :**
+```json
+{
+  "success": true,
+  "message": "Challenge servi",
+  "data": {
+    "challenge": {
+      "id": 1,
+      "ref": "SYD-001",
+      "question": "Expliquez le modèle OSI.",
+      "matiere": "SYD",
+      "date": "2024-05-01"
+    }
+  }
+}
+```
+
+---
+
+Pour toute question sur l'usage ou l'extension de l'API, consulte la documentation technique ou contacte l'équipe projet.

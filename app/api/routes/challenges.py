@@ -8,7 +8,7 @@ from app.models.auth import UserInDB
 from app.models.challenge import ChallengeCreate, ChallengeResponse, ChallengeUserResponse, LeaderboardEntry
 from app.api.deps import get_current_user, get_teacher_user
 from app.core.exceptions import NotFoundError
-from app.services.challenges import creer_challenge, lister_challenges
+from app.services.challenges import creer_challenge, lister_challenges, get_next_challenge_for_matiere
 from app.db.session import get_session
 
 router = APIRouter(tags=["Challenges"])
@@ -106,4 +106,14 @@ async def get_challenge_leaderboard(
             ],
             "challenge_id": challenge_id
         }
-    } 
+    }
+
+@router.get("/challenges/next", response_model=ApiResponse)
+async def get_next_challenge(
+    matiere: str,
+    session=Depends(get_session)
+):
+    challenge = get_next_challenge_for_matiere(matiere, session)
+    if not challenge:
+        return {"success": False, "message": "Aucun challenge disponible", "data": None}
+    return {"success": True, "message": "Challenge servi", "data": {"challenge": challenge.dict()}} 
