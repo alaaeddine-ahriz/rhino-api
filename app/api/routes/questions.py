@@ -1,4 +1,5 @@
 """Routes for questions and RAG interactions."""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 
 from app.models.base import ApiResponse
@@ -6,6 +7,10 @@ from app.models.auth import UserInDB
 from app.models.question import QuestionRequest, ReflectionQuestionRequest
 from app.api.deps import get_current_user
 from app.core.exceptions import NotFoundError
+
+# Configuration du logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Questions"])
 
@@ -17,8 +22,7 @@ async def ask_question(
     """
     Ask a question about a specific subject and get an answer using RAG.
     """
-    # This will be implemented to call interroger_matiere
-    # For now, return a placeholder
+    logger.info(f"[{current_user.username}] Question posée sur '{request.matiere}': \"{request.query}\"")
     return {
         "success": True,
         "message": "Réponse générée avec succès",
@@ -50,6 +54,8 @@ async def generate_reflection_question(
     # For now, return a placeholder
     concept = request.concept_cle if request.concept_cle else "concept général"
     
+    logger.info(f"[{current_user.username}] Génération de question de réflexion sur '{concept}' pour '{request.matiere}'")
+
     return {
         "success": True,
         "message": "Question de réflexion générée avec succès",
@@ -64,4 +70,4 @@ async def generate_reflection_question(
                 "base_sur_examen": False
             }
         }
-    } 
+    }

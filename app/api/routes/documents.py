@@ -1,4 +1,5 @@
 """Routes for document management."""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Path
 from typing import List, Optional
 
@@ -7,6 +8,10 @@ from app.models.auth import UserInDB
 from app.models.document import DocumentCreate, DocumentResponse, DocumentList
 from app.api.deps import get_current_user, get_teacher_user
 from app.core.exceptions import NotFoundError
+
+# Configuration du logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["Documents"])
 
@@ -18,8 +23,7 @@ async def get_documents(
     """
     List all documents for a specific subject.
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.info(f"Utilisateur {current_user.username} consulte les documents pour la matière {matiere}")
     return {
         "success": True,
         "message": f"Documents pour la matière {matiere} récupérés avec succès",
@@ -50,8 +54,7 @@ async def upload_document(
     """
     Upload a new document for a subject (teacher or admin only).
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.info(f"Utilisateur {current_user.username} téléverse un document pour la matière {matiere} : {file.filename}, is_exam={is_exam}")
     return {
         "success": True,
         "message": f"Document {file.filename} téléchargé avec succès",
@@ -78,8 +81,7 @@ async def delete_document(
     """
     Delete a document (teacher or admin only).
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.warning(f"Utilisateur {current_user.username} supprime le document {document_id} pour la matière {matiere}")
     return {
         "success": True,
         "message": f"Document {document_id} supprimé avec succès",
@@ -87,4 +89,4 @@ async def delete_document(
             "document_id": document_id,
             "matiere": matiere
         }
-    } 
+    }

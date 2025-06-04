@@ -1,4 +1,5 @@
 """Routes for subject (matière) management."""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Body
 from typing import List, Optional
 
@@ -8,6 +9,10 @@ from app.models.matiere import MatiereCreate, MatiereResponse, UpdateRequest, Ma
 from app.api.deps import get_current_user, get_teacher_user
 from app.core.exceptions import NotFoundError
 
+# Configuration du logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 router = APIRouter(prefix="/matieres", tags=["Matières"])
 
 @router.get("/", response_model=ApiResponse)
@@ -15,8 +20,7 @@ async def get_matieres(current_user: UserInDB = Depends(get_current_user)):
     """
     List all available subjects.
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.info(f"[{current_user.username}] Requête de récupération des matières.")
     return {
         "success": True,
         "message": "Matières récupérées avec succès",
@@ -31,8 +35,7 @@ async def create_matiere(
     """
     Create a new subject (teacher or admin only).
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.info(f"[{current_user.username}] Création de la matière '{matiere.name}'.")
     return {
         "success": True,
         "message": f"Matière {matiere.name} créée avec succès",
@@ -54,8 +57,7 @@ async def delete_matiere(
     """
     Delete a subject and all its documents (teacher or admin only).
     """
-    # This will be implemented to use the actual function
-    # For now, return a placeholder
+    logger.info(f"[{current_user.username}] Suppression de la matière '{matiere_id}'.")
     return {
         "success": True,
         "message": f"Matière {matiere_id} supprimée avec succès",
@@ -70,8 +72,7 @@ async def update_matiere(
     """
     Update the Pinecone index for a subject (teacher or admin only).
     """
-    # This will be implemented to call mettre_a_jour_matiere
-    # For now, return a placeholder
+    logger.info(f"[{current_user.username}] Mise à jour de l'index pour la matière '{request.matiere}'.")
     return {
         "success": True,
         "message": f"Matière {request.matiere} mise à jour avec succès",
@@ -80,4 +81,4 @@ async def update_matiere(
             "updated": True,
             "logs": "Indexation effectuée avec succès"
         }
-    } 
+    }
