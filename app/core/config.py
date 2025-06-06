@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     
     # OpenAI
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+    OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-3.5-turbo")
     
     # Folders
     COURS_DIR: str = os.getenv("COURS_DIR", "cours")
