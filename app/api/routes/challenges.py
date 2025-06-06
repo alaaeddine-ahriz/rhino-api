@@ -1,4 +1,5 @@
 """Routes for challenges management."""
+import logging
 from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 from typing import List, Optional
 from datetime import date, datetime
@@ -11,6 +12,10 @@ from app.core.exceptions import NotFoundError
 from app.services.challenges import creer_challenge, lister_challenges, get_next_challenge_for_matiere
 from app.db.session import get_session
 
+# Config du logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 router = APIRouter(tags=["Challenges"])
 
 @router.get("/challenges/today", response_model=ApiResponse)
@@ -18,9 +23,8 @@ async def get_today_challenge():
     """
     Get today's challenge based on server date.
     """
-    # This will be implemented with the actual functionality
-    # For now, return a placeholder
     today = date.today().isoformat()
+    logger.info(f"Récupération du challenge du jour : {today}")
     return {
         "success": True,
         "message": "Challenge du jour récupéré avec succès",
@@ -43,6 +47,7 @@ async def get_challenges(
     """
     List all challenges, optionally filtered by subject or date range.
     """
+    logger.info(f"Utilisateur {current_user.username} demande la liste des challenges pour la matière: {matiere}")
     result = lister_challenges(matiere=matiere, session=session)
     result["message"] = "Challenges récupérés avec succès"
     return result
@@ -56,9 +61,10 @@ async def create_challenge(
     """
     Create a new challenge for one or more subjects (teacher or admin only).
     """
-    # Utilise le service pour créer et stocker le challenge
+    logger.info(f"Création d'un challenge par {current_user.username} pour les matières : {challenge.matieres}")
     result = creer_challenge(challenge.dict(), session=session)
     result["message"] = "Challenge créé avec succès"
+    logger.info(f"Challenge créé avec succès : {result.get('data', {}).get('challenge_id', 'N/A')}")
     return result
 
 @router.post("/challenges/{challenge_id}/response", response_model=ApiResponse)
@@ -70,8 +76,7 @@ async def submit_challenge_response(
     """
     Submit a user's response to a specific challenge.
     """
-    # This will be implemented with the actual functionality
-    # For now, return a placeholder
+    logger.info(f"Soumission de réponse pour le challenge {challenge_id} par utilisateur {response_data.user_id}")
     return {
         "success": True,
         "message": "Réponse soumise avec succès",
@@ -93,8 +98,7 @@ async def get_challenge_leaderboard(
     """
     Get the leaderboard for a specific challenge.
     """
-    # This will be implemented with the actual functionality
-    # For now, return a placeholder
+    logger.info(f"Récupération du classement pour le challenge {challenge_id} par {current_user.username}")
     return {
         "success": True,
         "message": "Classement récupéré avec succès",
@@ -113,7 +117,11 @@ async def get_next_challenge(
     matiere: str,
     session=Depends(get_session)
 ):
+    logger.info(f"Recherche du prochain challenge pour la matière : {matiere}")
     challenge = get_next_challenge_for_matiere(matiere, session)
     if not challenge:
+        logger.warning(f"Aucun challenge trouvé pour la matière {matiere}")
         return {"success": False, "message": "Aucun challenge disponible", "data": None}
-    return {"success": True, "message": "Challenge servi", "data": {"challenge": challenge.dict()}} 
+    
+    logger.info(f"Challenge trouvé pour la matière {matiere} : {challenge.id}")
+    return {"success": True, "message": "Challenge servi", "data": {"challenge": challenge.dict()}}
