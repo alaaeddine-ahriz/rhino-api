@@ -112,7 +112,7 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
     
     # Get relevant context using RAG
     response = retrieval_chain.invoke({"input": concept_cle})
-    context = response["context"] if isinstance(response, dict) else str(response)
+    context = response.get("context", []) if isinstance(response, dict) else []
     
     # Generate question using LLM
     llm = ChatOpenAI(
@@ -127,17 +127,40 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
         response = chain.invoke({
             "concept_cle": concept_cle,
             "matiere": matiere,
-            "context": context
+            "context": "\n".join([doc.page_content for doc in context])
         })
         
-        # Parse JSON response
+        # Parse JSON response from AIMessage content
         question_data = json.loads(response.content)
         
-        # Add metadata
+        # Add metadata and source documents
+        sources = []
+        for i, doc in enumerate(context):
+            source_entry = {
+                "document": i + 1,
+                "source": doc.metadata.get('source', 'Source inconnue'),
+                "is_exam": doc.metadata.get('is_exam', False)
+            }
+            
+            # Add section if it exists
+            if "Header 2" in doc.metadata:
+                source_entry["section"] = doc.metadata["Header 2"]
+            elif "Header 3" in doc.metadata:
+                source_entry["section"] = doc.metadata["Header 3"]
+            
+            # Limit content to avoid too long excerpts
+            max_content_length = 250  # Characters
+            content = doc.page_content
+            if len(content) > max_content_length:
+                content = content[:max_content_length] + "..."
+            
+            source_entry["contenu"] = content
+            sources.append(source_entry)
+        
         question_data.update({
             "matiere": matiere,
             "generated_at": datetime.now().isoformat(),
-            "source_documents": []
+            "source_documents": sources
         })
         
         return question_data
@@ -229,7 +252,7 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
     
     # Get relevant context using RAG
     response = retrieval_chain.invoke({"input": concept})
-    context = response["context"] if isinstance(response, dict) else str(response)
+    context = response.get("context", []) if isinstance(response, dict) else []
     
     # Generate question using LLM
     llm = ChatOpenAI(
@@ -244,18 +267,41 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
         response = chain.invoke({
             "concept": concept,
             "matiere": matiere,
-            "context": context,
+            "context": "\n".join([doc.page_content for doc in context]),
             "nombre_options": nombre_options
         })
         
-        # Parse JSON response
+        # Parse JSON response from AIMessage content
         question_data = json.loads(response.content)
         
-        # Add metadata
+        # Add metadata and source documents
+        sources = []
+        for i, doc in enumerate(context):
+            source_entry = {
+                "document": i + 1,
+                "source": doc.metadata.get('source', 'Source inconnue'),
+                "is_exam": doc.metadata.get('is_exam', False)
+            }
+            
+            # Add section if it exists
+            if "Header 2" in doc.metadata:
+                source_entry["section"] = doc.metadata["Header 2"]
+            elif "Header 3" in doc.metadata:
+                source_entry["section"] = doc.metadata["Header 3"]
+            
+            # Limit content to avoid too long excerpts
+            max_content_length = 250  # Characters
+            content = doc.page_content
+            if len(content) > max_content_length:
+                content = content[:max_content_length] + "..."
+            
+            source_entry["contenu"] = content
+            sources.append(source_entry)
+        
         question_data.update({
             "matiere": matiere,
             "generated_at": datetime.now().isoformat(),
-            "source_documents": []
+            "source_documents": sources
         })
         
         return question_data
@@ -389,7 +435,7 @@ def evaluer_reponse_etudiant(
         
         # Get relevant context using RAG
         response = retrieval_chain.invoke({"input": question["concept"]})
-        context = response["context"] if isinstance(response, dict) else str(response)
+        context = response.get("context", []) if isinstance(response, dict) else []
         
         prompt = PromptTemplate(
             template=prompt_template,
@@ -417,7 +463,7 @@ def evaluer_reponse_etudiant(
                 "matiere": matiere,
                 "question": question["question"],
                 "reponse": reponse,
-                "context": context
+                "context": "\n".join([doc.page_content for doc in context])
             })
         
         # Parse JSON response
