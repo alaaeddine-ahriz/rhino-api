@@ -62,25 +62,46 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
     
     # Create prompt for reflection question
     prompt_template = """
-    Based on the following context about {concept_cle} in {matiere},
-    generate a thought-provoking reflection question that:
-    1. Tests deep understanding of the concept
-    2. Encourages critical thinking
-    3. Relates to real-world applications
-    
-    Context:
+    Vous êtes un tuteur IA spécialisé dans la matière {matiere}, disposant d'un accès direct aux documents de cours via un système de recherche sémantique (RAG).
+
+    Votre tâche est de générer une question de réflexion originale sur le concept {concept_cle}, en vous basant strictement sur les extraits suivants:
+
     {context}
-    
-    Generate a JSON response with the following structure:
+
+    IMPORTANT CONCERNANT LES EXAMENS:
+    Certains des documents fournis peuvent être des fichiers d'examens (identifiés par "is_exam": true dans les métadonnées).
+    Si ces documents sont présents parmi les sources, vous devez:
+    1. Analyser le style, le niveau et le type de questions posées par les professeurs dans ces examens
+    2. Comprendre la structure et la formulation typique des questions d'examen
+    3. Créer une question ORIGINALE qui suit le même style et niveau, mais qui:
+       - N'est PAS une variation ou reformulation des questions existantes
+       - Aborde un aspect différent ou complémentaire du concept
+       - Utilise un angle d'approche nouveau
+       - Reste dans le même niveau de difficulté et de réflexion
+
+    La question doit :
+    1. Être ORIGINALE et non une reformulation des questions existantes
+    2. Solliciter l'analyse critique d'un concept ou d'une relation entre plusieurs notions
+    3. Être formulée de manière claire, concise et précise, avec un vocabulaire académique adapté
+    4. Favoriser une réponse argumentée plutôt qu'une simple définition
+    5. Suivre le style et le niveau des questions d'examen si des documents d'examen font partie des sources
+
+    Votre réponse DOIT être strictement au format JSON suivant:
+
     {{
-        "question": "The reflection question",
+        "question": "La question de réflexion originale",
         "concept": "{concept_cle}",
         "difficulty": "medium",
         "type": "reflection",
         "hints": [
-            "First hint to guide the student",
-            "Second hint if needed"
-        ]
+            "Premier élément attendu dans la réponse",
+            "Deuxième élément attendu dans la réponse",
+            "Troisième élément attendu dans la réponse"
+        ],
+        "concepts_abordés": ["concept1", "concept2", "concept3"],
+        "compétences_visées": ["analyse critique", "synthèse", "application pratique"],
+        "basé_sur_examen": true/false,
+        "originalité": "Explication de l'angle original choisi pour la question"
     }}
     """
     
@@ -155,19 +176,34 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
     
     # Create prompt for MCQ generation
     prompt_template = """
-    Based on the following context about {concept} in {matiere},
-    generate a multiple-choice question with {nombre_options} options.
-    The question should:
-    1. Test understanding of key concepts
-    2. Have one correct answer
-    3. Have plausible distractors
-    
-    Context:
+    Vous êtes un tuteur IA spécialisé dans la matière {matiere}, disposant d'un accès direct aux documents de cours via un système de recherche sémantique (RAG).
+
+    Votre tâche est de générer une question à choix multiples originale sur le concept {concept}, en vous basant strictement sur les extraits suivants:
+
     {context}
-    
-    Generate a JSON response with the following structure:
+
+    IMPORTANT CONCERNANT LES EXAMENS:
+    Certains des documents fournis peuvent être des fichiers d'examens (identifiés par "is_exam": true dans les métadonnées).
+    Si ces documents sont présents parmi les sources, vous devez:
+    1. Analyser le style, le niveau et le type de questions posées par les professeurs dans ces examens
+    2. Comprendre la structure et la formulation typique des questions d'examen
+    3. Créer une question ORIGINALE qui suit le même style et niveau, mais qui:
+       - N'est PAS une variation ou reformulation des questions existantes
+       - Aborde un aspect différent ou complémentaire du concept
+       - Utilise un angle d'approche nouveau
+       - Reste dans le même niveau de difficulté et de réflexion
+
+    La question doit :
+    1. Être ORIGINALE et non une reformulation des questions existantes
+    2. Tester la compréhension des concepts clés
+    3. Avoir une seule réponse correcte
+    4. Avoir des distracteurs plausibles
+    5. Suivre le style et le niveau des questions d'examen si des documents d'examen font partie des sources
+
+    Votre réponse DOIT être strictement au format JSON suivant:
+
     {{
-        "question": "The multiple-choice question",
+        "question": "La question à choix multiples originale",
         "options": [
             {{
                 "text": "Option text",
@@ -178,7 +214,11 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
         "concept": "{concept}",
         "difficulty": "medium",
         "type": "mcq",
-        "explanation": "Explanation of the correct answer"
+        "explanation": "Explication détaillée de la réponse correcte",
+        "concepts_abordés": ["concept1", "concept2", "concept3"],
+        "compétences_visées": ["compréhension", "application", "analyse"],
+        "basé_sur_examen": true/false,
+        "originalité": "Explication de l'angle original choisi pour la question"
     }}
     """
     
@@ -286,22 +326,65 @@ def evaluer_reponse_etudiant(
         
     else:  # reflection question
         prompt_template = """
-        Evaluate the student's response to the following reflection question:
+        Vous êtes un examinateur académique automatisé spécialisé dans la matière {matiere}. 
+        Votre rôle est d'évaluer la réponse d'un étudiant à une question de réflexion, en vous basant strictement sur le contenu du cours.
+
+        Question posée: {question}
         
-        Question: {question}
-        Student's Response: {reponse}
+        Réponse de l'étudiant: {reponse}
         
-        Consider the following context:
+        Contexte du cours (utilisez ces extraits comme référence pour évaluer la pertinence et l'exactitude des connaissances):
         {context}
         
-        Generate a JSON response with the following structure:
+        IMPORTANT CONCERNANT LES EXAMENS:
+        Certains des documents fournis peuvent être des fichiers d'examens (identifiés par "is_exam": true dans les métadonnées).
+        Si ces documents sont présents parmi les sources, vous devez:
+        1. Observer attentivement le style et les critères d'évaluation utilisés par les professeurs dans ces examens
+        2. Appliquer des standards d'évaluation similaires à ceux qu'un professeur utiliserait pour cette matière
+        3. Tenir compte du niveau de difficulté et de précision attendu dans les examens officiels
+        
+        Procédez de façon rigoureuse, pédagogique et structurée selon les étapes suivantes:
+        
+        1. Évaluez la réponse en considérant:
+           - Pertinence des idées: Les arguments répondent-ils à la question?
+           - Qualité de l'argumentation: Les idées sont-elles développées et logiques?
+           - Maîtrise des connaissances: L'étudiant utilise-t-il correctement les concepts du cours?
+           - Originalité et pensée critique: La réponse montre-t-elle une réflexion personnelle?
+           - Clarté et structure: L'expression est-elle compréhensible et organisée?
+        
+        2. Rédigez une réponse modèle concise mais complète
+        
+        3. Identifiez 3 points forts et 3 points à améliorer
+        
+        4. Attribuez une note sur 100 et justifiez-la. Elle doit avoir une granularité de 5 points
+        
+        5. Proposez un conseil personnalisé pour améliorer
+        
+        Votre évaluation DOIT être retournée strictement au format JSON suivant:
+        
         {{
-            "score": 0-100,
-            "feedback": "Detailed feedback on the response",
-            "strengths": ["List of strengths in the response"],
-            "areas_for_improvement": ["List of areas that need improvement"],
-            "suggestions": ["Suggestions for better understanding"]
+            "score": 85,
+            "feedback": "Explication détaillée de la note attribuée",
+            "strengths": [
+                "Point fort 1",
+                "Point fort 2",
+                "Point fort 3"
+            ],
+            "areas_for_improvement": [
+                "Point à améliorer 1",
+                "Point à améliorer 2",
+                "Point à améliorer 3"
+            ],
+            "suggestions": ["Un conseil spécifique pour aider l'étudiant à progresser"],
+            "model_answer": "Une réponse modèle concise mais complète",
+            "basé_sur_examen": true
         }}
+        
+        IMPORTANT:
+        - Le champ "basé_sur_examen" doit être true si des documents d'examen ont influencé l'évaluation, false sinon
+        - Ne mentionnez pas et n'ajoutez pas de sources dans votre réponse
+        - N'incluez aucun autre champ que ceux spécifiés ci-dessus
+        - Soyez rigoureux mais juste dans votre évaluation
         """
         
         # Get relevant context using RAG
@@ -319,24 +402,26 @@ def evaluer_reponse_etudiant(
         temperature=0.3  # Lower temperature for more consistent evaluations
     )
     
-    chain = LLMChain(llm=llm, prompt=prompt)
+    # Create the chain using the new pattern
+    chain = prompt | llm
     
     try:
         if question["type"] == "mcq":
-            response = chain.run(
-                question=question["question"],
-                correct_answer=correct_answer,
-                reponse=reponse
-            )
+            response = chain.invoke({
+                "question": question["question"],
+                "correct_answer": correct_answer,
+                "reponse": reponse
+            })
         else:
-            response = chain.run(
-                question=question["question"],
-                reponse=reponse,
-                context=context
-            )
+            response = chain.invoke({
+                "matiere": matiere,
+                "question": question["question"],
+                "reponse": reponse,
+                "context": context
+            })
         
         # Parse JSON response
-        evaluation = json.loads(response)
+        evaluation = json.loads(response.content)
         
         # Add metadata
         evaluation.update({
