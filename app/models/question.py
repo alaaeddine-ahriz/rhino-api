@@ -6,15 +6,13 @@ class QuestionRequest(BaseModel):
     """Model for asking a general question to the RAG system."""
     matiere: str = Field(..., description="Subject to query (e.g. 'MATH')")
     query: str = Field(..., description="The question to ask")
-    output_format: str = Field("text", description="Response format ('text' or 'json')")
-    save_output: bool = Field(True, description="Whether to save the output")
+    # output_format: str = Field("text", description="Response format ('text' or 'json')")
+    # save_output: bool = Field(True, description="Whether to save the output")
 
 class ReflectionQuestionRequest(BaseModel):
     """Model for generating a reflection question."""
     matiere: str = Field(..., description="Subject for the question (e.g. 'MATH')")
     concept_cle: Optional[str] = Field("", description="Key concept to focus on")
-    output_format: str = Field("text", description="Response format ('text' or 'json')")
-    save_output: bool = Field(True, description="Whether to save the output")
 
 class Source(BaseModel):
     """Model for a document source in a response."""

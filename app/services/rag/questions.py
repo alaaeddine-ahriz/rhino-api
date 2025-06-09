@@ -7,6 +7,7 @@ from langchain.schema import Document
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
+import openai
 
 from app.core.config import settings
 from app.services.rag.core import (
@@ -46,84 +47,84 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
     Returns:
         Dict[str, Any]: Generated question with metadata
     """
-    # Initialize RAG system
-    _, index_name, embeddings, _ = initialize_rag_components()
-    retrieval_chain, vector_store = setup_rag_system(
-        index_name=index_name,
-        embeddings=embeddings,
-        matiere=matiere
-    )
-    
-    if not retrieval_chain:
-        return {
-            "error": "Failed to initialize RAG system",
-            "status": "error"
-        }
-    
-    # Create prompt for reflection question
-    prompt_template = """
-    Vous êtes un tuteur IA spécialisé dans la matière {matiere}, disposant d'un accès direct aux documents de cours via un système de recherche sémantique (RAG).
-
-    Votre tâche est de générer une question de réflexion originale sur le concept {concept_cle}, en vous basant strictement sur les extraits suivants:
-
-    {context}
-
-    IMPORTANT CONCERNANT LES EXAMENS:
-    Certains des documents fournis peuvent être des fichiers d'examens (identifiés par "is_exam": true dans les métadonnées).
-    Si ces documents sont présents parmi les sources, vous devez:
-    1. Analyser le style, le niveau et le type de questions posées par les professeurs dans ces examens
-    2. Comprendre la structure et la formulation typique des questions d'examen
-    3. Créer une question ORIGINALE qui suit le même style et niveau, mais qui:
-       - N'est PAS une variation ou reformulation des questions existantes
-       - Aborde un aspect différent ou complémentaire du concept
-       - Utilise un angle d'approche nouveau
-       - Reste dans le même niveau de difficulté et de réflexion
-
-    La question doit :
-    1. Être ORIGINALE et non une reformulation des questions existantes
-    2. Solliciter l'analyse critique d'un concept ou d'une relation entre plusieurs notions
-    3. Être formulée de manière claire, concise et précise, avec un vocabulaire académique adapté
-    4. Favoriser une réponse argumentée plutôt qu'une simple définition
-    5. Suivre le style et le niveau des questions d'examen si des documents d'examen font partie des sources
-
-    Votre réponse DOIT être strictement au format JSON suivant:
-
-    {{
-        "question": "La question de réflexion originale",
-        "concept": "{concept_cle}",
-        "difficulty": "medium",
-        "type": "reflection",
-        "hints": [
-            "Premier élément attendu dans la réponse",
-            "Deuxième élément attendu dans la réponse",
-            "Troisième élément attendu dans la réponse"
-        ],
-        "concepts_abordés": ["concept1", "concept2", "concept3"],
-        "compétences_visées": ["analyse critique", "synthèse", "application pratique"],
-        "basé_sur_examen": true/false,
-        "originalité": "Explication de l'angle original choisi pour la question"
-    }}
-    """
-    
-    prompt = PromptTemplate(
-        template=prompt_template,
-        input_variables=["concept_cle", "matiere", "context"]
-    )
-    
-    # Get relevant context using RAG
-    response = retrieval_chain.invoke({"input": concept_cle})
-    context = response.get("context", []) if isinstance(response, dict) else []
-    
-    # Generate question using LLM
-    llm = ChatOpenAI(
-        model_name=settings.OPENAI_MODEL,
-        temperature=0.7
-    )
-    
-    # Create the chain using the new pattern
-    chain = prompt | llm
-    
     try:
+        # Initialize RAG system
+        _, index_name, embeddings, _ = initialize_rag_components()
+        retrieval_chain, vector_store = setup_rag_system(
+            index_name=index_name,
+            embeddings=embeddings,
+            matiere=matiere
+        )
+        
+        if not retrieval_chain:
+            return {
+                "error": "Failed to initialize RAG system",
+                "status": "error"
+            }
+        
+        # Create prompt for reflection question
+        prompt_template = """
+        Vous êtes un tuteur IA spécialisé dans la matière {matiere}, disposant d'un accès direct aux documents de cours via un système de recherche sémantique (RAG).
+
+        Votre tâche est de générer une question de réflexion originale sur le concept {concept_cle}, en vous basant strictement sur les extraits suivants:
+
+        {context}
+
+        IMPORTANT CONCERNANT LES EXAMENS:
+        Certains des documents fournis peuvent être des fichiers d'examens (identifiés par "is_exam": true dans les métadonnées).
+        Si ces documents sont présents parmi les sources, vous devez:
+        1. Analyser le style, le niveau et le type de questions posées par les professeurs dans ces examens
+        2. Comprendre la structure et la formulation typique des questions d'examen
+        3. Créer une question ORIGINALE qui suit le même style et niveau, mais qui:
+           - N'est PAS une variation ou reformulation des questions existantes
+           - Aborde un aspect différent ou complémentaire du concept
+           - Utilise un angle d'approche nouveau
+           - Reste dans le même niveau de difficulté et de réflexion
+
+        La question doit :
+        1. Être ORIGINALE et non une reformulation des questions existantes
+        2. Solliciter l'analyse critique d'un concept ou d'une relation entre plusieurs notions
+        3. Être formulée de manière claire, concise et précise, avec un vocabulaire académique adapté
+        4. Favoriser une réponse argumentée plutôt qu'une simple définition
+        5. Suivre le style et le niveau des questions d'examen si des documents d'examen font partie des sources
+
+        Votre réponse DOIT être strictement au format JSON suivant:
+
+        {{
+            "question": "La question de réflexion originale",
+            "concept": "{concept_cle}",
+            "difficulty": "medium",
+            "type": "reflection",
+            "hints": [
+                "Premier élément attendu dans la réponse",
+                "Deuxième élément attendu dans la réponse",
+                "Troisième élément attendu dans la réponse"
+            ],
+            "concepts_abordés": ["concept1", "concept2", "concept3"],
+            "compétences_visées": ["analyse critique", "synthèse", "application pratique"],
+            "basé_sur_examen": true/false,
+            "originalité": "Explication de l'angle original choisi pour la question"
+        }}
+        """
+        
+        prompt = PromptTemplate(
+            template=prompt_template,
+            input_variables=["concept_cle", "matiere", "context"]
+        )
+        
+        # Get relevant context using RAG
+        response = retrieval_chain.invoke({"input": concept_cle})
+        context = response.get("context", []) if isinstance(response, dict) else []
+        
+        # Generate question using LLM
+        llm = ChatOpenAI(
+            model_name=settings.OPENAI_MODEL,
+            temperature=0.7
+        )
+        
+        # Create the chain using the new pattern
+        chain = prompt | llm
+        
         response = chain.invoke({
             "concept_cle": concept_cle,
             "matiere": matiere,
@@ -165,10 +166,35 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
         
         return question_data
         
+    except openai.RateLimitError as e:
+        return {
+            "error": "OpenAI API quota exceeded. Please check your billing details and try again later.",
+            "status": "quota_exceeded",
+            "details": str(e)
+        }
+    except openai.AuthenticationError as e:
+        return {
+            "error": "OpenAI API authentication failed. Please check your API key.",
+            "status": "auth_error",
+            "details": str(e)
+        }
+    except openai.APIError as e:
+        return {
+            "error": f"OpenAI API error: {str(e)}",
+            "status": "api_error",
+            "details": str(e)
+        }
+    except json.JSONDecodeError as e:
+        return {
+            "error": "Failed to parse generated question as JSON. The AI response may be malformed.",
+            "status": "json_parse_error",
+            "details": str(e)
+        }
     except Exception as e:
         return {
             "error": f"Failed to generate question: {str(e)}",
-            "status": "error"
+            "status": "error",
+            "details": str(e)
         }
 
 def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) -> Dict[str, Any]:

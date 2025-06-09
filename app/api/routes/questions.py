@@ -7,6 +7,7 @@ from app.models.auth import UserInDB
 from app.models.question import QuestionRequest, ReflectionQuestionRequest
 from app.api.deps import get_current_user
 from app.core.exceptions import NotFoundError
+from app.services.rag.questions import generer_question_reflexion
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
@@ -50,24 +51,19 @@ async def generate_reflection_question(
     """
     Generate a reflection question about a key concept in a subject.
     """
-    # This will be implemented to call generer_question_reflexion
-    # For now, return a placeholder
     concept = request.concept_cle if request.concept_cle else "concept général"
-    
     logger.info(f"[{current_user.username}] Génération de question de réflexion sur '{concept}' pour '{request.matiere}'")
-
+    
+    result = generer_question_reflexion(request.matiere, concept)
+    
+    if "error" in result:
+        return {
+            "success": False,
+            "message": result.get("error", "Erreur lors de la génération de la question de réflexion."),
+            "data": None
+        }
     return {
         "success": True,
         "message": "Question de réflexion générée avec succès",
-        "data": {
-            "question": f"Comment expliquer l'importance de {concept} dans le contexte de {request.matiere}?",
-            "matiere": request.matiere,
-            "concept": concept,
-            "format": request.output_format,
-            "metadata": {
-                "concepts_abordes": [concept, "analyse critique", "application pratique"],
-                "niveau_difficulte": "intermédiaire",
-                "base_sur_examen": False
-            }
-        }
+        "data": result
     }
