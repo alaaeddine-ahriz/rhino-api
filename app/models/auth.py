@@ -22,6 +22,7 @@ class UserInDB(BaseModel):
     disabled: bool = False
     role: str = "student"  # "student", "teacher", "admin"
     auth_token: str = Field(..., description="Pre-generated authentication token")
+    subscriptions: str = Field(default="", description="Comma-separated list of subscribed subjects")
 
 class TokenInDB(BaseModel):
     """Model representing a valid token in the database."""

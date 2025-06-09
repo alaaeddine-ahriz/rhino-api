@@ -1,6 +1,6 @@
 """Embeddings and vector operations for RAG system."""
 from typing import List, Dict, Any
-from langchain_pinecone import PineconeEmbeddings
+from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
 from langchain.schema import Document
 from pinecone import Pinecone
 

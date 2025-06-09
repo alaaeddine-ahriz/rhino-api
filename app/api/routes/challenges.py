@@ -7,9 +7,9 @@ from datetime import date, datetime
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
 from app.models.challenge import ChallengeCreate, ChallengeResponse, ChallengeUserResponse, LeaderboardEntry
-from app.api.deps import get_current_user, get_teacher_user
+from app.api.deps import get_current_user, get_teacher_user, get_current_user_simple
 from app.core.exceptions import NotFoundError
-from app.services.challenges import creer_challenge, lister_challenges, get_next_challenge_for_matiere
+from app.services.challenges import creer_challenge, lister_challenges, get_next_challenge_for_matiere, get_today_challenge_for_user
 from app.db.session import get_session
 
 # Config du logger
@@ -19,24 +19,118 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Challenges"])
 
 @router.get("/challenges/today", response_model=ApiResponse)
-async def get_today_challenge():
+async def get_today_challenge(
+    current_user: UserInDB = Depends(get_current_user),
+    session=Depends(get_session)
+):
     """
-    Get today's challenge based on server date.
+    Get today's challenge based on server date and user subscriptions.
+    Uses tick logic to determine which challenge should be served today.
     """
-    today = date.today().isoformat()
-    logger.info(f"Récupération du challenge du jour : {today}")
-    return {
-        "success": True,
-        "message": "Challenge du jour récupéré avec succès",
-        "data": {
-            "challenge": {
-                "challenge_id": "chall_1",
-                "date": today,
-                "question": "Expliquez comment les concepts de TCP/IP s'appliquent dans les réseaux modernes.",
-                "matieres": ["TCP", "SYD"]
+    try:
+        today = date.today().isoformat()
+        logger.info(f"User {current_user.username} requesting today's challenge for {today}")
+        
+        # Get today's challenge based on user subscriptions
+        today_challenge = get_today_challenge_for_user(current_user.subscriptions, session)
+        
+        if not today_challenge:
+            logger.warning(f"No challenge available for user {current_user.username} with subscriptions: {current_user.subscriptions}")
+            return {
+                "success": False,
+                "message": "Aucun challenge disponible pour vos abonnements",
+                "data": {
+                    "challenge": None,
+                    "user_subscriptions": current_user.subscriptions.split(',') if current_user.subscriptions else [],
+                    "date": today
+                }
+            }
+        
+        logger.info(f"Today's challenge served to {current_user.username}: {today_challenge['ref']} from {today_challenge['matiere']}")
+        
+        return {
+            "success": True,
+            "message": "Challenge du jour récupéré avec succès",
+            "data": {
+                "challenge": {
+                    "challenge_id": today_challenge["challenge_id"],
+                    "ref": today_challenge["ref"],
+                    "date": today,
+                    "question": today_challenge["question"],
+                    "matiere": today_challenge["matiere"],
+                    "matieres": today_challenge["matieres"]
+                },
+                "user_subscriptions": current_user.subscriptions.split(',') if current_user.subscriptions else []
             }
         }
-    }
+        
+    except Exception as e:
+        logger.error(f"Error getting today's challenge for user {current_user.username}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving today's challenge: {str(e)}"
+        )
+
+@router.get("/challenges/today/simple", response_model=ApiResponse)
+async def get_today_challenge_simple(
+    user_id: int = Query(..., description="User ID for authentication"),
+    session=Depends(get_session)
+):
+    """
+    Get today's challenge using simple user ID authentication (development only).
+    Just provide the user_id as a query parameter.
+    """
+    try:
+        # Get user data by ID
+        current_user = await get_current_user_simple(user_id, session)
+        
+        today = date.today().isoformat()
+        logger.info(f"User {current_user.username} (ID: {user_id}) requesting today's challenge for {today}")
+        
+        # Get today's challenge based on user subscriptions
+        today_challenge = get_today_challenge_for_user(current_user.subscriptions, session)
+        
+        if not today_challenge:
+            logger.warning(f"No challenge available for user {current_user.username} with subscriptions: {current_user.subscriptions}")
+            return {
+                "success": False,
+                "message": "Aucun challenge disponible pour vos abonnements",
+                "data": {
+                    "challenge": None,
+                    "user_subscriptions": current_user.subscriptions.split(',') if current_user.subscriptions else [],
+                    "date": today
+                }
+            }
+        
+        logger.info(f"Today's challenge served to {current_user.username}: {today_challenge['ref']} from {today_challenge['matiere']}")
+        
+        return {
+            "success": True,
+            "message": "Challenge du jour récupéré avec succès",
+            "data": {
+                "challenge": {
+                    "challenge_id": today_challenge["challenge_id"],
+                    "ref": today_challenge["ref"],
+                    "date": today,
+                    "question": today_challenge["question"],
+                    "matiere": today_challenge["matiere"],
+                    "matieres": today_challenge["matieres"]
+                },
+                "user_info": {
+                    "user_id": current_user.id,
+                    "username": current_user.username,
+                    "role": current_user.role,
+                    "subscriptions": current_user.subscriptions.split(',') if current_user.subscriptions else []
+                }
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting today's challenge for user ID {user_id}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving today's challenge: {str(e)}"
+        )
 
 @router.get("/challenges", response_model=ApiResponse)
 async def get_challenges(

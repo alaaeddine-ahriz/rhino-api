@@ -2,8 +2,9 @@
 import os
 import hashlib
 import json
+import shutil
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
 import glob
 
@@ -11,6 +12,8 @@ from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharac
 from langchain.schema import Document
 
 from app.core.config import settings
+from app.services.rag.core import initialize_pinecone, setup_embeddings, create_or_get_index
+from app.services.rag.embeddings import upsert_documents
 
 def initialiser_structure_dossiers():
     """
@@ -369,6 +372,299 @@ def split_by_paragraphs(content: str, metadata: Dict[str, Any]) -> List[Document
     
     docs = text_splitter.create_documents([content], [metadata])
     return docs
+
+def get_documents_for_subject(matiere: str) -> List[Dict[str, Any]]:
+    """
+    Get list of documents for a specific subject with metadata.
+    
+    Args:
+        matiere: Subject identifier
+        
+    Returns:
+        List[Dict[str, Any]]: List of documents with their metadata
+    """
+    matiere_dir = os.path.join(settings.COURS_DIR, matiere)
+    
+    if not os.path.exists(matiere_dir):
+        return []
+    
+    documents = []
+    extensions = ["*.md", "*.txt", "*.pdf", "*.docx", "*.pptx", "*.doc", "*.odt", "*.odp"]
+    
+    for ext in extensions:
+        for file_path in glob.glob(os.path.join(matiere_dir, "**", ext), recursive=True):
+            # Skip README files
+            if os.path.basename(file_path).lower() == "readme.md":
+                continue
+                
+            try:
+                relative_path = os.path.relpath(file_path, settings.COURS_DIR)
+                file_stats = os.stat(file_path)
+                file_hash = calculer_hash_fichier(file_path)
+                
+                # Check if document is in exams folder
+                is_exam = "examens" in relative_path
+                
+                document_info = {
+                    "id": file_hash,  # Using file hash as unique ID
+                    "filename": os.path.basename(file_path),
+                    "matiere": matiere,
+                    "document_type": os.path.splitext(file_path)[1].lower().lstrip('.'),
+                    "is_exam": is_exam,
+                    "file_path": relative_path,
+                    "file_size": file_stats.st_size,
+                    "upload_date": datetime.fromtimestamp(file_stats.st_ctime).isoformat(),
+                    "last_modified": datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
+                    "file_hash": file_hash
+                }
+                
+                documents.append(document_info)
+                
+            except Exception as e:
+                print(f"Error getting info for file {file_path}: {e}")
+    
+    # Sort by upload date (newest first)
+    documents.sort(key=lambda x: x["upload_date"], reverse=True)
+    return documents
+
+def upload_document_to_subject(
+    matiere: str, 
+    filename: str, 
+    file_content: bytes, 
+    is_exam: bool = False
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Upload a document to a specific subject folder.
+    
+    Args:
+        matiere: Subject identifier
+        filename: Name of the file
+        file_content: File content as bytes
+        is_exam: Whether this is an exam document
+        
+    Returns:
+        Tuple[bool, str, Optional[Dict]]: (success, message, document_info)
+    """
+    try:
+        # Ensure subject folder exists
+        matiere_dir = os.path.join(settings.COURS_DIR, matiere)
+        if not os.path.exists(matiere_dir):
+            os.makedirs(matiere_dir)
+        
+        # If it's an exam, create/use exams subfolder
+        if is_exam:
+            target_dir = os.path.join(matiere_dir, "examens")
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+        else:
+            target_dir = matiere_dir
+        
+        # Validate file extension
+        file_extension = os.path.splitext(filename)[1].lower()
+        allowed_extensions = ['.md', '.txt', '.pdf', '.docx', '.pptx', '.doc', '.odt', '.odp']
+        
+        if file_extension not in allowed_extensions:
+            return False, f"File type {file_extension} not supported. Allowed types: {', '.join(allowed_extensions)}", None
+        
+        # Create full file path
+        file_path = os.path.join(target_dir, filename)
+        
+        # Check if file already exists
+        if os.path.exists(file_path):
+            return False, f"File {filename} already exists in {matiere}", None
+        
+        # Write file content
+        with open(file_path, 'wb') as f:
+            f.write(file_content)
+        
+        # Get file info
+        file_stats = os.stat(file_path)
+        file_hash = calculer_hash_fichier(file_path)
+        relative_path = os.path.relpath(file_path, settings.COURS_DIR)
+        
+        document_info = {
+            "id": file_hash,
+            "filename": filename,
+            "matiere": matiere,
+            "document_type": file_extension.lstrip('.'),
+            "is_exam": is_exam,
+            "file_path": relative_path,
+            "file_size": file_stats.st_size,
+            "upload_date": datetime.fromtimestamp(file_stats.st_ctime).isoformat(),
+            "last_modified": datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
+            "file_hash": file_hash
+        }
+        
+        return True, f"Document {filename} uploaded successfully", document_info
+        
+    except Exception as e:
+        return False, f"Error uploading document: {str(e)}", None
+
+def delete_document_from_subject(matiere: str, document_id: str) -> Tuple[bool, str]:
+    """
+    Delete a document from a subject folder.
+    
+    Args:
+        matiere: Subject identifier
+        document_id: Document ID (file hash)
+        
+    Returns:
+        Tuple[bool, str]: (success, message)
+    """
+    try:
+        # Find the document by ID (hash)
+        documents = get_documents_for_subject(matiere)
+        target_document = None
+        
+        for doc in documents:
+            if doc["id"] == document_id:
+                target_document = doc
+                break
+        
+        if not target_document:
+            return False, f"Document with ID {document_id} not found in {matiere}"
+        
+        # Construct full file path
+        full_path = os.path.join(settings.COURS_DIR, target_document["file_path"])
+        
+        if not os.path.exists(full_path):
+            return False, f"File {target_document['filename']} not found on disk"
+        
+        # Delete the file
+        os.remove(full_path)
+        
+        return True, f"Document {target_document['filename']} deleted successfully"
+        
+    except Exception as e:
+        return False, f"Error deleting document: {str(e)}"
+
+def get_document_content(matiere: str, document_id: str) -> Tuple[bool, str, Optional[str]]:
+    """
+    Get the content of a specific document.
+    
+    Args:
+        matiere: Subject identifier
+        document_id: Document ID (file hash)
+        
+    Returns:
+        Tuple[bool, str, Optional[str]]: (success, message, content)
+    """
+    try:
+        # Find the document by ID
+        documents = get_documents_for_subject(matiere)
+        target_document = None
+        
+        for doc in documents:
+            if doc["id"] == document_id:
+                target_document = doc
+                break
+        
+        if not target_document:
+            return False, f"Document with ID {document_id} not found", None
+        
+        # Get full file path
+        full_path = os.path.join(settings.COURS_DIR, target_document["file_path"])
+        
+        if not os.path.exists(full_path):
+            return False, f"File not found on disk", None
+        
+        # Extract content based on file type
+        content = extraire_contenu_fichier(full_path, target_document["document_type"])
+        
+        if not content:
+            return False, f"Could not extract content from file", None
+        
+        return True, "Content extracted successfully", content
+        
+    except Exception as e:
+        return False, f"Error extracting content: {str(e)}", None
+
+def process_and_index_new_document(
+    matiere: str, 
+    document_info: Dict[str, Any]
+) -> Tuple[bool, str]:
+    """
+    Process and index a newly uploaded document into the vector database.
+    
+    Args:
+        matiere: Subject identifier
+        document_info: Document information returned from upload_document_to_subject
+        
+    Returns:
+        Tuple[bool, str]: (success, message)
+    """
+    try:
+        # Initialize RAG components
+        pc, index_name, spec = initialize_pinecone()
+        embeddings = setup_embeddings()
+        vector_store = create_or_get_index(pc, index_name, embeddings, spec)
+        
+        # Create document object for processing
+        full_path = os.path.join(settings.COURS_DIR, document_info["file_path"])
+        content = extraire_contenu_fichier(full_path, f".{document_info['document_type']}")
+        
+        if not content:
+            return False, f"Could not extract content from uploaded document"
+        
+        # Create document with metadata
+        document = {
+            "content": content,
+            "metadata": {
+                "source": document_info["file_path"],
+                "matiere": matiere,
+                "filename": document_info["filename"],
+                "filetype": f".{document_info['document_type']}",
+                "file_hash": document_info["file_hash"],
+                "is_exam": document_info["is_exam"],
+                "document_type": "exam" if document_info["is_exam"] else "course",
+                "updated_at": document_info["upload_date"]
+            }
+        }
+        
+        # Split document into sections
+        sections = split_document(document)
+        
+        if not sections:
+            return False, f"Document could not be split into sections"
+        
+        # Index the document sections
+        vector_store_result, namespace = upsert_documents(
+            pc=pc,
+            index_name=index_name,
+            embeddings=embeddings,
+            matiere=matiere,
+            docs=sections
+        )
+        
+        if vector_store_result:
+            return True, f"Document successfully indexed with {len(sections)} sections in namespace '{namespace}'"
+        else:
+            return False, f"Failed to index document sections"
+            
+    except Exception as e:
+        return False, f"Error processing and indexing document: {str(e)}"
+
+def reindex_document_if_modified(
+    matiere: str, 
+    document_info: Dict[str, Any]
+) -> Tuple[bool, str]:
+    """
+    Check if a document needs reindexing and perform it if necessary.
+    
+    Args:
+        matiere: Subject identifier
+        document_info: Document information
+        
+    Returns:
+        Tuple[bool, str]: (success, message)
+    """
+    try:
+        # This function can be used for future automatic reindexing
+        # when documents are detected as modified
+        return process_and_index_new_document(matiere, document_info)
+        
+    except Exception as e:
+        return False, f"Error reindexing document: {str(e)}"
 
 if __name__ == "__main__":
     matiere = "SYD"
