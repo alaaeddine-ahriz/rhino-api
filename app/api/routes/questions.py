@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, status, Body, Query
 
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
-from app.models.question import QuestionRequest, QuestionResponse
+from app.models.question import QuestionRequest, QuestionResponse, ReflectionQuestionRequest
 from app.api.deps import get_current_user_simple
-from app.services.questions import repondre_question, generer_question_reflexion
+from app.services.rag.questions import generer_question_reflexion
+from app.services.questions import repondre_question
 from app.db.session import get_session
 
 # Config du logger
@@ -25,15 +26,10 @@ async def ask_question(
     Pose une question au système et obtient une réponse générée par RAG.
     """
     current_user = await get_current_user_simple(user_id, session)
-    logger.info(f"Question posée par {current_user.username}: {question.question[:100]}...")
+    logger.info(f"Question posée par {current_user.username}: {question.query[:100]}...")
     
     try:
-        result = repondre_question(
-            question.question,
-            question.matiere,
-            question.contexte,
-            question.difficulte
-        )
+        result = repondre_question(question)
         
         result["user_info"] = {
             "user_id": current_user.id,
@@ -52,7 +48,7 @@ async def ask_question(
 @router.post("/question/reflection", response_model=ApiResponse)
 async def generate_reflection_question(
     user_id: int = Query(..., description="User ID for authentication"),
-    request: dict = Body(...),
+    request: ReflectionQuestionRequest = Body(...),
     session=Depends(get_session)
 ):
     """
@@ -60,21 +56,21 @@ async def generate_reflection_question(
     """
     current_user = await get_current_user_simple(user_id, session)
     
-    concept = request.get("concept", "")
-    matiere = request.get("matiere", "")
-    difficulte = request.get("difficulte", "moyen")
-    
-    logger.info(f"Génération de question de réflexion par {current_user.username} pour le concept: {concept}")
+    logger.info(f"Génération de question de réflexion par {current_user.username} pour le concept: {request.concept_cle} en {request.matiere}")
     
     try:
-        result = generer_question_reflexion(concept, matiere, difficulte)
+        result = generer_question_reflexion(request.matiere, request.concept_cle)
         
-        result["user_info"] = {
-            "user_id": current_user.id,
-            "username": current_user.username
-        }
-        
-        return result
+        # If result is successful, add user info
+        if isinstance(result, dict) and not result.get("error"):
+            result["user_info"] = {
+                "user_id": current_user.id,
+                "username": current_user.username
+            }
+            return {"success": True, "data": result, "message": "Question de réflexion générée avec succès"}
+        else:
+            # Handle error from the service
+            return {"success": False, "data": result, "message": result.get("error", "Erreur lors de la génération")}
     
     except Exception as e:
         logger.error(f"Erreur lors de la génération de question: {str(e)}")

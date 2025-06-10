@@ -12,7 +12,7 @@ from app.core.exceptions import AuthenticationError, NotFoundError, ValidationEr
 from app.models.base import ApiResponse
 
 # Import routes
-from app.api.routes import auth, matieres, documents, questions, evaluations, challenges, leaderboard, users
+from app.api.routes import auth, matieres, documents, questions, evaluations, challenges, leaderboard
 
 # Create static directory if it doesn't exist
 os.makedirs("static", exist_ok=True)
@@ -94,8 +94,6 @@ app.include_router(questions.router, prefix="/api")
 app.include_router(evaluations.router, prefix="/api")
 app.include_router(challenges.router, prefix="/api")
 app.include_router(leaderboard.router, prefix="/api")
-# app.include_router(users.router, prefix="/users")
-app.include_router(users.router)
 
 # Startup event
 @app.on_event("startup")
