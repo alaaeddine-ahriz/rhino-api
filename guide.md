@@ -104,7 +104,6 @@ Tous les chemins sont préfixés par `/api` et retournent un modèle `ApiRespons
 | GET | `/matieres` | Liste toutes les matières disponibles. |
 | POST | `/matieres` | Crée une nouvelle matière (dossier). |
 | DELETE | `/matieres/{id}` | Supprime une matière et tous ses documents. |
-| POST | `/matieres/update` | Met à jour l’index Pinecone pour une matière existante. |
 
 ### Documents
 
@@ -113,6 +112,7 @@ Tous les chemins sont préfixés par `/api` et retournent un modèle `ApiRespons
 | GET | `/matieres/{matiere}/documents` | Liste les documents uploadés pour la matière. |
 | POST | `/matieres/{matiere}/documents` | Upload d’un document (PDF, DOCX, etc.). |
 | DELETE | `/matieres/{matiere}/documents/{document_id}` | Supprime un document spécifié. |
+| POST | `/matieres/{matiere}/documents/reindex` | Réindexe tous les documents d’une matière dans la base vectorielle. |
 
 ### Questions
 
@@ -156,7 +156,7 @@ Tous les chemins sont préfixés par `/api` et retournent un modèle `ApiRespons
 ### Parcours Enseignant
 
 1. **Connexion** : l’enseignant s’authentifie via `POST /auth/token` et obtient un JWT.
-2. **Gestion des matières** : création de nouvelles matières via `POST /matieres` ou mise à jour d’une matière existante avec `POST /matieres/update`.
+2. **Gestion des matières** : création de nouvelles matières via `POST /matieres` ou réindexation d’une matière existante avec `POST /matieres/{matiere}/documents/reindex`.
 3. **Gestion des documents** : upload de supports pédagogiques (`POST /matieres/{matiere}/documents`) et suppression si nécessaire (`DELETE /matieres/{matiere}/documents/{document_id}`).
 4. **Création de questions ou de challenges** : génération de questions de réflexion via `POST /question/reflection` ou création de challenges ciblés avec `POST /challenges`.
 5. **Suivi des réponses** : récupération des réponses soumises par les étudiants (logique d’accès aux enregistrements de `POST /challenges/{challengeId}/response`).

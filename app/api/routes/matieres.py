@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
-from app.models.matiere import MatiereCreate, MatiereResponse, UpdateRequest, MatiereList
+from app.models.matiere import MatiereCreate, MatiereResponse, MatiereList
 from app.api.deps import get_current_user_simple
 from app.core.exceptions import NotFoundError
 from app.db.session import get_session
@@ -89,31 +89,3 @@ async def delete_matiere(
         "data": {"matiere_id": matiere_id}
     }
 
-@router.post("/update", response_model=ApiResponse)
-async def update_matiere(
-    user_id: int = Query(..., description="User ID for authentication"),
-    request: UpdateRequest = Body(...),
-    session=Depends(get_session)
-):
-    """
-    Update the Pinecone index for a subject (teacher or admin only).
-    """
-    current_user = await get_current_user_simple(user_id, session)
-    
-    # Check if user has teacher or admin role
-    if current_user.role not in ["teacher", "admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to access this resource. Teacher or admin role required.",
-        )
-    
-    logger.info(f"[{current_user.username}] Mise à jour de l'index pour la matière '{request.matiere}'.")
-    return {
-        "success": True,
-        "message": f"Matière {request.matiere} mise à jour avec succès",
-        "data": {
-            "matiere": request.matiere,
-            "updated": True,
-            "logs": "Indexation effectuée avec succès"
-        }
-    }

@@ -142,7 +142,7 @@ curl -X GET "http://localhost:8000/api/matieres" \
 - `GET /api/matieres` - Liste des matières
 - `POST /api/matieres` - Créer une matière (enseignant+)
 - `DELETE /api/matieres/{id}` - Supprimer une matière (enseignant+)
-- `POST /api/matieres/update` - Mettre à jour l'index (enseignant+)
+- `POST /api/matieres/{matiere}/documents/reindex` - Réindexer les documents d'une matière (enseignant+)
 
 #### 📄 Documents
 - `GET /api/matieres/{matiere}/documents` - Documents d'une matière
