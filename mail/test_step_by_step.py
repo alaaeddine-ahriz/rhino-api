@@ -314,13 +314,11 @@ def test_step_9_send_feedback(reply, evaluation, challenge_data, student):
         print(f"   Détails: {traceback.format_exc()}")
         return False
 
-def send_challenge_to_user_6():
-    """Fonction spécifique pour envoyer un challenge à l'user ID 6"""
+def send_challenge_to_user(user_id):
+    """Fonction pour envoyer un challenge à un utilisateur spécifique"""
     print("\n" + "🎯" * 30)
-    print("ENVOI CHALLENGE À L'USER ID 6 (MATHIS)")
+    print(f"ENVOI CHALLENGE À L'USER ID {user_id}")
     print("🎯" * 30)
-    
-    user_id = 8
     all_good = True
     
     # Étape 1: Base de données
@@ -405,16 +403,14 @@ def send_challenge_to_user_6():
         print("\n❌ Certaines étapes ont échoué")
         return False
 
-def real_send_to_user_6():
-    """Envoi réel du challenge à l'user ID 6"""
+def real_send_to_user(user_id):
+    """Envoi réel du challenge à un utilisateur spécifique"""
     print("\n" + "🚀" * 30)
-    print("ENVOI RÉEL DU CHALLENGE")
+    print(f"ENVOI RÉEL DU CHALLENGE À L'USER ID {user_id}")
     print("🚀" * 30)
     
     try:
         from send_questions import send_question_from_api
-        
-        user_id = 8
         
         # Récupérer l'étudiant
         student = get_student_by_id(user_id)
@@ -441,6 +437,51 @@ def real_send_to_user_6():
         print(f"❌ Erreur envoi réel: {e}")
         return False
 
+def get_user_choice():
+    """Demande à l'utilisateur de choisir un ID étudiant"""
+    print("\n" + "👥" * 30)
+    print("SÉLECTION DE L'ÉTUDIANT")
+    print("👥" * 30)
+    
+    try:
+        # Afficher la liste des étudiants disponibles
+        students = get_all_students()
+        if students:
+            print("📋 Étudiants disponibles:")
+            for student in students:
+                print(f"   ID {student['id']}: {student['username']} ({student['email']})")
+                print(f"      Abonnements: {', '.join(student['subscriptions'])}")
+            print()
+        
+        # Demander l'ID utilisateur
+        while True:
+            try:
+                user_input = input("🎯 Entrez l'ID de l'étudiant à qui envoyer le challenge: ").strip()
+                user_id = int(user_input)
+                
+                # Vérifier que l'utilisateur existe
+                student = get_student_by_id(user_id)
+                if student:
+                    print(f"✅ Étudiant sélectionné: {student['username']} (ID: {user_id})")
+                    return user_id
+                else:
+                    print(f"❌ Aucun étudiant trouvé avec l'ID {user_id}. Veuillez réessayer.")
+                    
+            except ValueError:
+                print("❌ Veuillez entrer un nombre valide.")
+            except KeyboardInterrupt:
+                print("\n\n❌ Opération annulée par l'utilisateur.")
+                return None
+                
+    except Exception as e:
+        print(f"❌ Erreur lors de la récupération des étudiants: {e}")
+        # En cas d'erreur, demander directement l'ID
+        try:
+            user_input = input("🎯 Entrez l'ID de l'étudiant: ").strip()
+            return int(user_input)
+        except (ValueError, KeyboardInterrupt):
+            return None
+
 def main():
     """Fonction principale"""
     import sys
@@ -448,18 +489,39 @@ def main():
     print("🔍 TEST ÉTAPE PAR ÉTAPE - SYSTÈME MAIL")
     print("="*60)
     
+    # Obtenir l'ID utilisateur
+    if len(sys.argv) > 2:
+        # Si l'ID est fourni en argument : python test_step_by_step.py test 8
+        try:
+            user_id = int(sys.argv[2])
+            print(f"📝 ID utilisateur fourni en argument: {user_id}")
+        except ValueError:
+            print("❌ ID utilisateur invalide fourni en argument")
+            user_id = get_user_choice()
+    else:
+        # Demander l'ID utilisateur interactivement
+        user_id = get_user_choice()
+    
+    if user_id is None:
+        print("❌ Aucun utilisateur sélectionné. Arrêt du programme.")
+        return
+    
+    # Exécuter le mode demandé
     if len(sys.argv) > 1:
         if sys.argv[1] == "real":
             # Envoi réel
-            real_send_to_user_6()
+            real_send_to_user(user_id)
         elif sys.argv[1] == "test":
             # Test complet
-            send_challenge_to_user_6()
+            send_challenge_to_user(user_id)
         else:
-            print("Usage: python test_step_by_step.py [test|real]")
+            print("Usage: python test_step_by_step.py [test|real] [user_id]")
+            print("   test : Mode test complet avec toutes les étapes")
+            print("   real : Mode envoi direct sans étapes de validation")
+            print("   user_id : (optionnel) ID de l'étudiant, sinon demandé interactivement")
     else:
         # Par défaut: test simulation
-        send_challenge_to_user_6()
+        send_challenge_to_user(user_id)
 
 if __name__ == "__main__":
     main() 

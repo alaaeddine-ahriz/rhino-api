@@ -204,5 +204,91 @@
     },
     "feedback_sent": true,
     "feedback_sent_to": "alaaeddine.ahriz@insa-lyon.fr"
+  },
+  "IDQ-20250610184654-518d15": {
+    "student": "alaaeddine.ahriz@insa-lyon.fr",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": "salam \r\n\r\n\r\nDe: \"lerhinoo\" <lerhinoo@gmail.com> \r\nÀ: \"Alaaeddine Ahriz\" <alaaeddine.ahriz@insa-lyon.fr> \r\nEnvoyé: Mardi 10 Juin 2025 18:46:54 \r\nObjet: 🧠 Question du jour - TCP - IDQ-20250610184654-518d15 \r\n\r\nBonjour, \r\n\r\nVoici ta question du jour en TCP : \r\n\r\n❓ Décrivez le protocole TCP et ses caractéristiques principales. \r\n\r\n\\uD83D\\uDCDA Matière : TCP \r\n\\uD83D\\uDD16 Référence : TCP-002 \r\n\r\n[ID de suivi : IDQ-20250610184654-518d15] \r\n[ID Challenge API : 2] \r\n\r\nBonne chance ! \\uD83C\\uDF40",
+    "evaluated": true,
+    "user_id": 8,
+    "response_date": "Tue, 10 Jun 2025 18:47:05 +0200 (CEST)",
+    "response_from": "alaaeddine.ahriz@insa-lyon.fr",
+    "evaluation": {
+      "score": 68,
+      "max_score": 100,
+      "feedback": [
+        "✅ Longueur de réponse appropriée",
+        "✅ Réponse développée"
+      ],
+      "grade": "C",
+      "details": {
+        "length_score": 20,
+        "word_score": 15,
+        "keyword_score": 4,
+        "structure_score": 14,
+        "effort_score": 15,
+        "response_length": 493,
+        "word_count": 63
+      }
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaeddine.ahriz@insa-lyon.fr"
+  },
+  "IDQ-20250610185620-dee1b6": {
+    "student": "alaaeddine.ahriz@insa-lyon.fr",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": "il est nul \r\n\r\n\r\nDe: \"lerhinoo\" <lerhinoo@gmail.com> \r\nÀ: \"Alaaeddine Ahriz\" <alaaeddine.ahriz@insa-lyon.fr> \r\nEnvoyé: Mardi 10 Juin 2025 18:56:21 \r\nObjet: 🧠 Question du jour - TCP - IDQ-20250610185620-dee1b6 \r\n\r\nBonjour, \r\n\r\nVoici ta question du jour en TCP : \r\n\r\n❓ Décrivez le protocole TCP et ses caractéristiques principales. \r\n\r\n\\uD83D\\uDCDA Matière : TCP \r\n\\uD83D\\uDD16 Référence : TCP-002 \r\n\r\n[ID de suivi : IDQ-20250610185620-dee1b6] \r\n[ID Challenge API : 2] \r\n\r\nBonne chance ! \\uD83C\\uDF40",
+    "evaluated": false,
+    "user_id": 8,
+    "response_date": "Tue, 10 Jun 2025 18:56:36 +0200 (CEST)",
+    "response_from": "alaaeddine.ahriz@insa-lyon.fr"
+  },
+  "IDQ-20250610190002-6f427f": {
+    "student": "alaaeddine.ahriz@insa-lyon.fr",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": "salam \r\n\r\n\r\nDe: \"lerhinoo\" <lerhinoo@gmail.com> \r\nÀ: \"Alaaeddine Ahriz\" <alaaeddine.ahriz@insa-lyon.fr> \r\nEnvoyé: Mardi 10 Juin 2025 19:00:03 \r\nObjet: 🧠 Question du jour - TCP - IDQ-20250610190002-6f427f \r\n\r\nBonjour, \r\n\r\nVoici ta question du jour en TCP : \r\n\r\n❓ Décrivez le protocole TCP et ses caractéristiques principales. \r\n\r\n\\uD83D\\uDCDA Matière : TCP \r\n\\uD83D\\uDD16 Référence : TCP-002 \r\n\r\n[ID de suivi : IDQ-20250610190002-6f427f] \r\n[ID Challenge API : 2] \r\n\r\nBonne chance ! \\uD83C\\uDF40",
+    "evaluated": true,
+    "user_id": 8,
+    "response_date": "Tue, 10 Jun 2025 19:00:13 +0200 (CEST)",
+    "response_from": "alaaeddine.ahriz@insa-lyon.fr",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière TCP",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne contient aucune information pertinente concernant le protocole TCP. Elle semble être un message d'erreur ou un texte hors sujet, sans lien avec la question posée.",
+          "note": 0,
+          "points_forts": [
+            "Aucun point fort identifiable dans la réponse fournie."
+          ],
+          "points_ameliorer": [
+            "La réponse doit être pertinente par rapport à la question posée.",
+            "L'étudiant doit démontrer une compréhension des concepts de TCP.",
+            "La réponse doit être structurée et organisée pour être compréhensible."
+          ],
+          "justification_note": "La réponse de l'étudiant ne contient aucune information pertinente concernant le protocole TCP. Elle semble être un message d'erreur ou un texte hors sujet, sans lien avec la question posée.",
+          "suggestions": [
+            "Revoir les concepts de base du protocole TCP et s'assurer de répondre directement à la question posée."
+          ],
+          "reponse_modele": "Le protocole TCP (Transmission Control Protocol) est un protocole de communication qui permet la transmission fiable de données entre deux ordinateurs sur un réseau. Ses principales caractéristiques incluent l'établissement de connexions, la fiabilité de la transmission grâce à des mécanismes de contrôle d'erreurs et de flux, la segmentation des données, et l'ordonnancement des paquets. TCP assure que les données arrivent complètes et dans le bon ordre, ce qui est essentiel pour des applications telles que le web et le courrier électronique.",
+          "base_sur_examen": false,
+          "matiere": "TCP",
+          "evaluated_at": "2025-06-10T19:00:38.127025"
+        },
+        "timestamp": "2025-06-10T18:59:57.091741"
+      },
+      "api_status": "success",
+      "status_code": 200
+    }
   }
 }
