@@ -234,7 +234,7 @@ def test_step_8_evaluate_response(reply, challenge_data):
         print(f"🧠 Évaluation de la réponse en {matiere}...")
         
         # Évaluer la réponse
-        evaluation = evaluate_and_display(question, response_text, matiere)
+        evaluation = evaluate_and_display(question, response_text, matiere, user_id=8)
         
         # Sauvegarder l'évaluation
         question_id = reply.get('question_id')
@@ -276,7 +276,8 @@ def test_step_9_send_feedback(reply, evaluation, challenge_data, student):
         
         print(f"📧 Envoi du feedback en réponse à {student_email}")
         print(f"👤 Étudiant: {student_name}")
-        print(f"📊 Note obtenue: {evaluation['grade']} ({evaluation['score']}/100)")
+        print(f"📊 Note obtenue: {evaluation['raw_api_response']['data']['note']}")
+        print(f"📊 Score final: {evaluation['raw_api_response']['data']['score']}")
         print(f"💬 Le feedback sera envoyé dans la même discussion que la réponse de l'étudiant")
         
         # Envoyer le feedback en réponse à l'email original
@@ -286,7 +287,7 @@ def test_step_9_send_feedback(reply, evaluation, challenge_data, student):
             question=question,
             response=response_text,
             student_name=student_name,
-            original_email=reply  # Passer l'email original pour créer une réponse
+            original_email=reply
         )
         
         if feedback_sent:
@@ -388,7 +389,7 @@ def send_challenge_to_user(user_id):
     if eval_ok:
         print(f"✅ Évaluation: {'OK' if eval_ok else 'ÉCHEC'}")
         if evaluation:
-            print(f"📊 Score final: {evaluation['score']}/100 ({evaluation['grade']})")
+            print(f"📊 Score final: {evaluation['raw_api_response']['data']['score']}")
     if feedback_ok:
         print(f"✅ Envoi feedback: {'OK' if feedback_ok else 'ÉCHEC'}")
     

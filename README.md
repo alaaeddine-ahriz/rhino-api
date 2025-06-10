@@ -280,20 +280,34 @@ async def ask_question(request: QuestionRequest, current_user: UserInDB = Depend
 **Fichier :** `app/api/routes/evaluations.py`
 
 ```python
-from main import evaluer_reponse_etudiant
+from app.services.evaluations import evaluer_reponse
+from app.models.evaluation import EvaluationRequest
 
 @router.post("/evaluation/response", response_model=ApiResponse)
-async def evaluate_student_response(request: EvaluationRequest, current_user: UserInDB = Depends(get_current_user)):
+async def evaluate_response(
+    user_id: int = Query(..., description="User ID for authentication"),
+    evaluation: EvaluationRequest = Body(...),
+    session=Depends(get_session)
+):
+    """Évalue la réponse d'un étudiant et retourne un feedback détaillé via IA/RAG."""
+    current_user = await get_current_user_simple(user_id, session)
+    
     try:
-        result = evaluer_reponse_etudiant(
-            matiere=request.matiere,
-            question=request.question,
-            reponse_etudiant=request.student_response,
-            save_output=request.save_output
-        )
-        return {"success": True, "message": "Évaluation générée", "data": result}
+        # Call AI-powered evaluation service
+        result = evaluer_reponse(evaluation)
+        
+        result["user_info"] = {
+            "user_id": current_user.id,
+            "username": current_user.username
+        }
+        
+        return result
+    
     except Exception as e:
-        raise HTTPException(500, f"Erreur: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erreur lors de l'évaluation: {str(e)}"
+        )
 ```
 
 ### 5. 🗄️ Base de données pour les challenges

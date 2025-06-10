@@ -15,7 +15,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def evaluate_response_simple(question: str, response: str, matiere: str) -> Dict:
+def evaluate_response_simple(question: str, response: str, matiere: str, user_id: int = 1) -> Dict:
     """
     Évaluation d'une réponse via l'API d'évaluation
     
@@ -38,9 +38,9 @@ def evaluate_response_simple(question: str, response: str, matiere: str) -> Dict
     }
     
     # Appel à l'API d'évaluation avec user_id requis
-    logger.info(f"Appel API d'évaluation pour la matière: {matiere}")
+    logger.info(f"Appel API d'évaluation pour la matière: {matiere} (user_id: {user_id})")
     api_response = requests.post(
-        'http://localhost:8000/api/evaluation/response?user_id=1',  # Ajout du user_id requis
+        f'http://localhost:8000/api/evaluation/response?user_id={user_id}',  # Utilise le user_id de l'étudiant
         json=api_data,
         headers={'Content-Type': 'application/json'},
         timeout=30
@@ -81,9 +81,9 @@ def display_evaluation(evaluation: Dict, question: str, response: str):
     
     print("\n" + "🤖" * 30)
 
-def evaluate_and_display(question: str, response: str, matiere: str) -> Dict:
+def evaluate_and_display(question: str, response: str, matiere: str, user_id: int = 1) -> Dict:
     """Évalue et affiche une réponse"""
-    evaluation = evaluate_response_simple(question, response, matiere)
+    evaluation = evaluate_response_simple(question, response, matiere, user_id)
     display_evaluation(evaluation, question, response)
     return evaluation
 
@@ -176,46 +176,8 @@ Note: Cette réponse contient les données brutes de l'API pour debug/développe
         logger.error(f"❌ Erreur envoi feedback: {e}")
         return False
 
-def format_evaluation_details(evaluation: Dict) -> str:
-    """Formate les détails de l'évaluation pour l'email"""
-    details = evaluation['details']
-    return f"""• Longueur de réponse : {details['length_score']}/20 points ({details['response_length']} caractères)
-• Nombre de mots : {details['word_score']}/15 points ({details['word_count']} mots)
-• Mots-clés techniques : {details['keyword_score']}/25 points
-• Structure et présentation : {details['structure_score']}/20 points
-• Effort et réflexion : {details['effort_score']}/20 points"""
-
-def format_feedback_list(feedback_list: list) -> str:
-    """Formate la liste de feedback pour l'email"""
-    return '\n'.join([f"• {feedback}" for feedback in feedback_list])
-
-def format_recommendations(score: int) -> str:
-    """Génère des recommandations basées sur le score"""
-    if score < 60:
-        return """• Développez davantage votre réponse pour montrer votre compréhension
-• Utilisez des termes techniques appropriés à la matière
-• Structurez votre réponse en paragraphes clairs
-• Ajoutez des exemples concrets pour illustrer vos propos"""
-    elif score < 80:
-        return """• Bonne base ! Ajoutez plus d'exemples concrets
-• Approfondissez certains aspects de votre explication
-• Utilisez plus de vocabulaire technique spécialisé"""
-    else:
-        return """• Excellente réponse ! Continuez sur cette lancée
-• Votre maîtrise du sujet est évidente
-• La structure et le contenu sont très satisfaisants"""
-
-def format_encouragement(grade: str) -> str:
-    """Génère un message d'encouragement basé sur la note"""
-    encouragements = {
-        'A+': "🌟 Travail exceptionnel ! Vous maîtrisez parfaitement le sujet.",
-        'A': "🎉 Très bon travail ! Vous démontrez une solide compréhension.",
-        'B': "👍 Bon travail ! Continuez vos efforts, vous êtes sur la bonne voie.",
-        'C': "💪 Travail correct. Avec un peu plus d'effort, vous pouvez encore progresser.",
-        'D': "📚 Il y a des améliorations à apporter. N'hésitez pas à approfondir vos révisions.",
-        'F': "🔄 Cette réponse nécessite plus de travail. Reprenez les concepts de base et n'hésitez pas à demander de l'aide."
-    }
-    return encouragements.get(grade, "Continuez vos efforts !")
+# Les fonctions de formatage de l'ancien système d'évaluation ont été supprimées
+# car nous utilisons maintenant la réponse brute de l'API d'évaluation
 
 def send_apology_email(to_email: str, question: str, response: str, student_name: str = None, original_email: Dict = None, error_details: str = "") -> bool:
     """
@@ -311,7 +273,7 @@ Détails techniques : Système d'évaluation temporairement indisponible
         return False
 
 def evaluate_display_and_send_feedback(question: str, response: str, matiere: str, 
-                                      student_email: str, student_name: str = None, original_email: Dict = None) -> tuple:
+                                      student_email: str, student_name: str = None, original_email: Dict = None, user_id: int = 1) -> tuple:
     """
     Évalue une réponse, l'affiche et envoie le feedback par email
     
@@ -320,7 +282,7 @@ def evaluate_display_and_send_feedback(question: str, response: str, matiere: st
     """
     try:
         # Évaluer et afficher
-        evaluation = evaluate_and_display(question, response, matiere)
+        evaluation = evaluate_and_display(question, response, matiere, user_id)
         
         # Envoyer le feedback
         feedback_sent = send_feedback_email(student_email, evaluation, question, response, student_name, original_email)
