@@ -2,7 +2,7 @@
 import os
 from typing import Tuple, Optional
 from pinecone import Pinecone, ServerlessSpec
-from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
+from langchain_pinecone import PineconeVectorStore
 from langchain_openai import ChatOpenAI
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -24,23 +24,23 @@ def initialize_pinecone() -> Tuple[Pinecone, str, ServerlessSpec]:
     
     return pc, settings.PINECONE_INDEX_NAME, spec
 
-def setup_embeddings() -> PineconeEmbeddings:
+def setup_embeddings():
     """
     Initialize the embedding model for text vectorization.
     
     Returns:
-        PineconeEmbeddings: Configured embedding model
+        Embedding model: Configured embedding model  
     """
-    model_name = 'multilingual-e5-large'
+    from langchain_openai import OpenAIEmbeddings
     
-    embeddings = PineconeEmbeddings(
-        model=model_name,
-        pinecone_api_key=settings.PINECONE_API_KEY
+    embeddings = OpenAIEmbeddings(
+        model='text-embedding-ada-002',
+        openai_api_key=settings.OPENAI_API_KEY
     )
     
     return embeddings
 
-def create_or_get_index(pc: Pinecone, index_name: str, embeddings: PineconeEmbeddings, spec: ServerlessSpec) -> PineconeVectorStore:
+def create_or_get_index(pc: Pinecone, index_name: str, embeddings, spec: ServerlessSpec) -> PineconeVectorStore:
     """
     Create a new index if needed or retrieve an existing one.
     
@@ -53,23 +53,25 @@ def create_or_get_index(pc: Pinecone, index_name: str, embeddings: PineconeEmbed
     Returns:
         PineconeVectorStore: Vector store instance
     """
-    if index_name not in pc.list_indexes().names():
+    if index_name not in [index_info["name"] for index_info in pc.list_indexes()]:
         print(f"Creating new index: {index_name}")
         pc.create_index(
             name=index_name,
-            dimension=embeddings.dimension,
+            dimension=1536,  # dimension for text-embedding-ada-002
             metric="cosine",
             spec=spec
         )
+        # Wait for index to be ready
+        import time
+        while not pc.describe_index(index_name).status["ready"]:
+            time.sleep(1)
     
-    return PineconeVectorStore(
-        index_name=index_name,
-        embedding=embeddings
-    )
+    index = pc.Index(index_name)
+    return PineconeVectorStore(index=index, embedding=embeddings)
 
 def setup_rag_system(
     index_name: str,
-    embeddings: PineconeEmbeddings,
+    embeddings,
     matiere: str,
     custom_prompt: Optional[ChatPromptTemplate] = None,
     output_format: str = "text"
@@ -89,9 +91,13 @@ def setup_rag_system(
     """
     namespace = f"matiere-{matiere.lower()}"
     
+    # Get Pinecone client
+    pc = Pinecone(api_key=settings.PINECONE_API_KEY)
+    index = pc.Index(index_name)
+    
     # Create vector store for this subject
     vector_store = PineconeVectorStore(
-        index_name=index_name,
+        index=index,
         embedding=embeddings,
         namespace=namespace
     )

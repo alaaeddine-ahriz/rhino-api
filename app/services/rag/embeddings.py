@@ -1,8 +1,9 @@
 """Embeddings and vector operations for RAG system."""
 from typing import List, Dict, Any, Tuple
-from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
+from langchain_pinecone import PineconeVectorStore
 from langchain.schema import Document
-from pinecone import Pinecone
+from langchain.embeddings.base import Embeddings
+import pinecone
 
 from app.core.config import settings
 from app.services.rag.core import setup_embeddings
@@ -22,9 +23,8 @@ def get_matiere_namespace(matiere: str) -> str:
 def index_documents(
     documents: List[Document],
     matiere: str,
-    pc: Pinecone,
     index_name: str,
-    embeddings: PineconeEmbeddings
+    embeddings: Embeddings
 ) -> Tuple[bool, str]:
     """
     Index a list of documents into Pinecone for a specific subject.
@@ -32,7 +32,6 @@ def index_documents(
     Args:
         documents: List of document chunks to index
         matiere: Subject identifier
-        pc: Pinecone client
         index_name: Name of the Pinecone index
         embeddings: Embedding model
         
@@ -68,9 +67,9 @@ def index_documents(
         return False, error_message
 
 def upsert_documents(
-    pc: Pinecone,
+    pc,
     index_name: str,
-    embeddings: PineconeEmbeddings,
+    embeddings,
     matiere: str,
     docs: List[Document]
 ) -> tuple[PineconeVectorStore, str]:
@@ -108,7 +107,7 @@ def upsert_documents(
         return None, None
 
 def delete_documents(
-    pc: Pinecone,
+    pc,
     index_name: str,
     matiere: str,
     file_paths: List[str]

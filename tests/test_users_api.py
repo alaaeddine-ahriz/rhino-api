@@ -5,7 +5,7 @@ client = TestClient(app)
 
 
 def test_register_user():
-    response = client.post("/users/register", json={
+    response = client.post("/api/users/register", json={
         "username": "testuser",
         "email": "testuser@example.com",
         "role": "student",
@@ -20,7 +20,7 @@ def test_register_user():
 
 def test_update_and_get_subscriptions():
     # Register a user first
-    reg = client.post("/users/register", json={
+    reg = client.post("/api/users/register", json={
         "username": "subuser",
         "email": "subuser@example.com",
         "role": "student",
@@ -29,7 +29,7 @@ def test_update_and_get_subscriptions():
     user_id = reg.json()["data"]["user_id"]
 
     # Update subscriptions
-    response = client.put("/users/subscriptions", json={
+    response = client.put("/api/users/subscriptions", json={
         "user_id": user_id,
         "subscriptions": ["SYD", "TCP"]
     })
@@ -40,7 +40,7 @@ def test_update_and_get_subscriptions():
     assert data["message"] == "Abonnements mis à jour"
 
     # Get subscriptions
-    response = client.put("/users/subscriptions", json={
+    response = client.put("/api/users/subscriptions", json={
         "user_id": user_id
     })
     assert response.status_code == 200
