@@ -166,7 +166,7 @@ async def create_challenge(
             detail="You don't have permission to access this resource. Teacher or admin role required.",
         )
     
-    logger.info(f"Création d'un challenge par {current_user.username} pour les matières : {challenge.matieres}")
+    logger.info(f"Création d'un challenge par {current_user.username} pour la matière : {challenge.matiere}")
     result = creer_challenge(challenge.dict(), session=session)
     result["message"] = "Challenge créé avec succès"
     logger.info(f"Challenge créé avec succès : {result.get('data', {}).get('challenge_id', 'N/A')}")

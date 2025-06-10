@@ -33,5 +33,18 @@ from .utils import (
     save_conversations
 )
 
+from .send_evaluation import (
+    send_evaluation_to_student,
+    send_evaluations_for_pending_responses,
+    print_evaluation_send_report
+)
+
+from .database_utils import (
+    get_student_by_id,
+    get_all_students,
+    get_students_by_subscription,
+    print_database_info
+)
+
 __version__ = "1.0.0"
 __author__ = "API-rhino Mail System" 

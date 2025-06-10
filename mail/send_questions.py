@@ -15,7 +15,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://127.0.0.1:8000/api"  # Modifiez selon votre configuration
+API_BASE_URL = "http://localhost:8000/api"  # Modifiez selon votre configuration
 
 class APIError(Exception):
     """Exception levée en cas d'erreur avec l'API"""

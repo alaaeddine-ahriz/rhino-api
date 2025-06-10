@@ -15,20 +15,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://127.0.0.1:8000/api"
+API_BASE_URL = "http://localhost:8000/api"
 
 class EvaluationError(Exception):
     """Exception levée en cas d'erreur lors de l'évaluation"""
     pass
 
-def evaluate_response_with_ai(question: str, response: str, context: Optional[str] = None) -> Dict[str, Any]:
+def evaluate_response_with_ai(question: str, response: str, matiere: str, user_id: int = 1) -> Dict[str, Any]:
     """
     Évalue une réponse d'étudiant en utilisant l'IA
     
     Args:
         question: La question posée
         response: La réponse de l'étudiant
-        context: Contexte additionnel (matière, référence, etc.)
+        matiere: La matière du challenge
+        user_id: ID de l'utilisateur pour l'authentification
     
     Returns:
         Dict contenant l'évaluation
@@ -37,15 +38,16 @@ def evaluate_response_with_ai(question: str, response: str, context: Optional[st
         EvaluationError: En cas d'erreur lors de l'évaluation
     """
     try:
-        url = f"{API_BASE_URL}/evaluations/evaluate"
+        url = f"{API_BASE_URL}/evaluation/response"
+        params = {"user_id": user_id}
         payload = {
+            "matiere": matiere,
             "question": question,
-            "response": response,
-            "context": context or ""
+            "reponse_etudiant": response
         }
         
-        logger.info(f"Envoi de l'évaluation à l'API...")
-        response_api = requests.post(url, json=payload, timeout=30)
+        logger.info(f"Envoi de l'évaluation à l'API pour la matière {matiere}...")
+        response_api = requests.post(url, params=params, json=payload, timeout=30)
         response_api.raise_for_status()
         
         data = response_api.json()
@@ -57,9 +59,12 @@ def evaluate_response_with_ai(question: str, response: str, context: Optional[st
         return {
             "score": evaluation.get("score", 0),
             "feedback": evaluation.get("feedback", ""),
-            "points_positifs": evaluation.get("points_positifs", []),
-            "points_amelioration": evaluation.get("points_amelioration", []),
-            "note_sur_20": evaluation.get("note_sur_20", 0)
+            "points_forts": evaluation.get("points_forts", []),
+            "points_ameliorer": evaluation.get("points_ameliorer", []),
+            "note": evaluation.get("note", 0),
+            "justification_note": evaluation.get("justification_note", ""),
+            "suggestions": evaluation.get("suggestions", []),
+            "matiere": matiere
         }
         
     except requests.exceptions.RequestException as e:
@@ -85,14 +90,16 @@ def evaluate_pending_responses() -> int:
             try:
                 logger.info(f"Évaluation de la réponse pour l'ID {question_id}")
                 
-                # Préparer le contexte
-                context = f"Matière: {conv.get('matiere', 'N/A')}, Référence: {conv.get('challenge_ref', 'N/A')}"
+                # Récupérer la matière et l'user_id
+                matiere = conv.get('matiere', 'SYD')  # Valeur par défaut
+                user_id = conv.get('user_id', 1)  # Valeur par défaut
                 
                 # Évaluer la réponse
                 evaluation = evaluate_response_with_ai(
                     question=conv["question"],
                     response=conv["response"],
-                    context=context
+                    matiere=matiere,
+                    user_id=user_id
                 )
                 
                 # Mettre à jour la conversation
@@ -100,7 +107,7 @@ def evaluate_pending_responses() -> int:
                 conversations[question_id]["evaluated"] = True
                 
                 logger.info(f"✅ Réponse évaluée pour {conv['student']}")
-                logger.info(f"   - Note: {evaluation['note_sur_20']}/20")
+                logger.info(f"   - Note: {evaluation['note']}/20")
                 logger.info(f"   - Score: {evaluation['score']}%")
                 
                 evaluated_count += 1
@@ -141,7 +148,7 @@ def get_evaluation_report() -> Dict[str, Any]:
             if conv.get("evaluated"):
                 evaluated_responses += 1
                 evaluation = conv.get("evaluation", {})
-                score = evaluation.get("note_sur_20", 0)
+                score = evaluation.get("note", 0)
                 scores.append(score)
                 total_score += score
             else:

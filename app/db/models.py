@@ -16,7 +16,7 @@ class Matiere(SQLModel, table=True):
 
 class Challenge(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
-    ref: str  # ex: "SYD-001"
+    ref: Optional[str] = Field(default=None)  # ex: "SYD-001"
     question: str
     matiere: str
     date: str
