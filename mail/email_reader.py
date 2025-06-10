@@ -67,6 +67,7 @@ def read_new_replies() -> List[Dict]:
                 from_email = email.utils.parseaddr(msg['From'])[1]
                 subject = msg['Subject'] or ""
                 date = msg['Date']
+                message_id = msg['Message-ID'] or ""
                 
                 # Extraire le contenu
                 body = ""
@@ -86,6 +87,7 @@ def read_new_replies() -> List[Dict]:
                     'subject': subject,
                     'body': body.strip(),
                     'date': date,
+                    'message_id': message_id,
                     'question_id': question_id,
                     'email_id': email_id.decode()
                 }
@@ -166,6 +168,7 @@ def display_reply(reply: Dict):
     print(f"📝 Sujet: {reply['subject']}")
     print(f"📅 Date: {reply['date']}")
     print(f"🔖 ID Question: {reply.get('question_id', 'Non identifié')}")
+    print(f"📧 Message ID: {reply.get('message_id', 'Non disponible')}")
     print("\n📄 Contenu de la réponse:")
     print("-" * 50)
     print(reply['body'])

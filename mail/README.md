@@ -33,6 +33,7 @@ This folder contains the essential components for sending challenge emails to st
    - Optionally wait for the student's reply
    - Display the received response
    - Automatically evaluate the response
+   - Send detailed feedback email **as a reply** in the same email thread
 
 3. **Send a challenge to a specific user**:
    ```python
@@ -47,6 +48,7 @@ This folder contains the essential components for sending challenge emails to st
 - `get_student_by_id(user_id)` - Get student info from database
 - `wait_for_reply(email, timeout_minutes)` - Wait for email reply from user
 - `evaluate_and_display(question, response, matiere)` - Evaluate student response
+- `send_feedback_email(email, evaluation, question, response, original_email)` - Send evaluation feedback as email reply
 
 ## Requirements
 
@@ -55,14 +57,27 @@ Make sure these dependencies are installed:
 - `requests` - for API communication
 - `python-dotenv` - for environment variables
 
+## Key Features
+
+### 🔗 **Email Thread Continuity**
+The feedback is sent **as a reply** to the student's response email, maintaining the conversation thread:
+- Uses `In-Reply-To` and `References` headers
+- Subject prefixed with "Re:" 
+- Same discussion thread from question → response → feedback
+
+### 📧 **Email Flow Example**
+1. **Question sent:** `Subject: 🧠 Question du jour - TCP`
+2. **Student replies:** `Subject: Re: 🧠 Question du jour - TCP`  
+3. **Feedback sent:** `Subject: Re: 🧠 Question du jour - TCP - 📊 Note: B (75/100)`
+
 ## Usage Example
 
 ```python
-# Send today's challenge to user ID 6
+# Send today's challenge to user ID 8
 from send_questions import send_question_from_api
 
 success = send_question_from_api(
-    to="mathis@example.com", 
-    user_id=6
+    to="student@example.com", 
+    user_id=8
 )
 ``` 

@@ -254,6 +254,66 @@ def test_step_8_evaluate_response(reply, challenge_data):
         print(f"   Détails: {traceback.format_exc()}")
         return False, None
 
+def test_step_9_send_feedback(reply, evaluation, challenge_data, student):
+    """Étape 9: Envoyer le feedback à l'étudiant"""
+    print("\n" + "="*60)
+    print("📤 ÉTAPE 9: ENVOI DU FEEDBACK")
+    print("="*60)
+    
+    try:
+        from evaluator import send_feedback_email
+        from utils import load_conversations, save_conversations
+        
+        if not reply or not evaluation:
+            print("❌ Réponse ou évaluation manquante")
+            return False
+            
+        # Extraire les données nécessaires
+        question = challenge_data.get('data', {}).get('challenge', {}).get('question', 'Question non trouvée')
+        student_email = reply['from']
+        student_name = student.get('username', 'Étudiant')
+        response_text = reply['body']
+        
+        print(f"📧 Envoi du feedback en réponse à {student_email}")
+        print(f"👤 Étudiant: {student_name}")
+        print(f"📊 Note obtenue: {evaluation['grade']} ({evaluation['score']}/100)")
+        print(f"💬 Le feedback sera envoyé dans la même discussion que la réponse de l'étudiant")
+        
+        # Envoyer le feedback en réponse à l'email original
+        feedback_sent = send_feedback_email(
+            to_email=student_email,
+            evaluation=evaluation,
+            question=question,
+            response=response_text,
+            student_name=student_name,
+            original_email=reply  # Passer l'email original pour créer une réponse
+        )
+        
+        if feedback_sent:
+            print("✅ Feedback envoyé avec succès!")
+            print(f"📬 L'étudiant {student_name} va recevoir son évaluation détaillée")
+            
+            # Sauvegarder l'envoi du feedback
+            question_id = reply.get('question_id')
+            if question_id:
+                conversations = load_conversations()
+                if question_id in conversations:
+                    conversations[question_id]['feedback_sent'] = True
+                    conversations[question_id]['feedback_sent_to'] = student_email
+                    save_conversations(conversations)
+                    print(f"✅ Envoi du feedback enregistré pour {question_id}")
+            
+            return True
+        else:
+            print("❌ Échec de l'envoi du feedback")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Erreur lors de l'envoi du feedback: {e}")
+        import traceback
+        print(f"   Détails: {traceback.format_exc()}")
+        return False
+
 def send_challenge_to_user_6():
     """Fonction spécifique pour envoyer un challenge à l'user ID 6"""
     print("\n" + "🎯" * 30)
@@ -284,9 +344,10 @@ def send_challenge_to_user_6():
     # Étape 6: Envoi réel
     send_ok = test_step_6_send_email_real(student, challenge_data)
     
-    # Nouvelles étapes: Attente et évaluation de la réponse
+    # Nouvelles étapes: Attente, évaluation et feedback
     reply_ok, reply = False, None
     eval_ok, evaluation = False, None
+    feedback_ok = False
     
     if send_ok:
         # Demander à l'utilisateur s'il veut attendre une réponse
@@ -309,6 +370,10 @@ def send_challenge_to_user_6():
             if reply_ok and reply:
                 # Étape 8: Évaluer la réponse
                 eval_ok, evaluation = test_step_8_evaluate_response(reply, challenge_data)
+                
+                if eval_ok and evaluation:
+                    # Étape 9: Envoyer le feedback
+                    feedback_ok = test_step_9_send_feedback(reply, evaluation, challenge_data, student)
     
     # Résumé
     print("\n" + "📋" * 30)
@@ -326,11 +391,15 @@ def send_challenge_to_user_6():
         print(f"✅ Évaluation: {'OK' if eval_ok else 'ÉCHEC'}")
         if evaluation:
             print(f"📊 Score final: {evaluation['score']}/100 ({evaluation['grade']})")
+    if feedback_ok:
+        print(f"✅ Envoi feedback: {'OK' if feedback_ok else 'ÉCHEC'}")
     
     if db_ok and api_ok and challenge_ok and email_config_ok and send_ok:
         print("\n🎉 Toutes les étapes sont OK! Email envoyé avec succès!")
         if reply_ok and eval_ok:
             print("🌟 Bonus: Réponse reçue et évaluée!")
+            if feedback_ok:
+                print("🚀 Super bonus: Feedback automatique envoyé à l'étudiant!")
         return True
     else:
         print("\n❌ Certaines étapes ont échoué")

@@ -223,4 +223,152 @@ def evaluate_and_display(question: str, response: str, matiere: str) -> Dict:
     """Évalue et affiche une réponse"""
     evaluation = evaluate_response_simple(question, response, matiere)
     display_evaluation(evaluation, question, response)
-    return evaluation 
+    return evaluation
+
+def send_feedback_email(to_email: str, evaluation: Dict, question: str, response: str, student_name: str = None, original_email: Dict = None) -> bool:
+    """
+    Envoie un email de feedback avec l'évaluation à l'étudiant en réponse à son email
+    
+    Args:
+        to_email: Adresse email de l'étudiant
+        evaluation: Dictionnaire contenant l'évaluation
+        question: Question originale
+        response: Réponse de l'étudiant
+        student_name: Nom de l'étudiant (optionnel)
+        original_email: Dict contenant les infos de l'email original pour créer une réponse
+    
+    Returns:
+        bool: True si envoyé avec succès
+    """
+    try:
+        import yagmail
+        from config import EMAIL, PASSWORD
+        
+        # Préparer le contenu du feedback
+        student_greeting = f"Bonjour {student_name}" if student_name else "Bonjour"
+        
+        # Préparer le sujet en réponse à l'email original
+        if original_email and original_email.get('subject'):
+            original_subject = original_email['subject']
+            # Supprimer les "Re: " existants pour éviter "Re: Re: ..."
+            clean_subject = original_subject
+            while clean_subject.startswith('Re: ') or clean_subject.startswith('RE: '):
+                clean_subject = clean_subject[4:]
+            subject = f"Re: {clean_subject} - 📊 Note: {evaluation['grade']} ({evaluation['score']}/100)"
+        else:
+            subject = f"📊 Feedback - Note: {evaluation['grade']} ({evaluation['score']}/100)"
+        
+        # Corps du message de feedback
+        body = f"""{student_greeting},
+
+Voici l'évaluation de votre réponse :
+
+🎯 **RÉSULTAT GLOBAL**
+• Score : {evaluation['score']}/100
+• Note : {evaluation['grade']}
+
+📝 **QUESTION POSÉE**
+{question}
+
+📄 **VOTRE RÉPONSE**
+{response[:200]}{'...' if len(response) > 200 else ''}
+
+📊 **DÉTAIL DE L'ÉVALUATION**
+{format_evaluation_details(evaluation)}
+
+📋 **FEEDBACK DÉTAILLÉ**
+{format_feedback_list(evaluation['feedback'])}
+
+💡 **RECOMMANDATIONS**
+{format_recommendations(evaluation['score'])}
+
+{format_encouragement(evaluation['grade'])}
+
+Cordialement,
+Le système d'évaluation automatique 🤖
+"""
+        
+        # Envoi de l'email avec en-têtes de réponse si disponibles
+        logger.info(f"Envoi du feedback à {to_email}")
+        yag = yagmail.SMTP(EMAIL, PASSWORD)
+        
+        # Préparer les en-têtes pour créer une réponse dans le même thread
+        headers = {}
+        if original_email:
+            # Extraire le Message-ID de l'email original
+            original_message_id = original_email.get('message_id')
+            if original_message_id:
+                headers['In-Reply-To'] = original_message_id
+                headers['References'] = original_message_id
+                logger.info(f"Envoi en réponse au message ID: {original_message_id}")
+        
+        if headers:
+            # Envoyer avec en-têtes personnalisés pour créer une réponse
+            yag.send(to=to_email, subject=subject, contents=body, headers=headers)
+        else:
+            # Envoi normal si pas d'informations pour la réponse
+            yag.send(to=to_email, subject=subject, contents=body)
+        
+        logger.info(f"✅ Feedback envoyé avec succès à {to_email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur envoi feedback: {e}")
+        return False
+
+def format_evaluation_details(evaluation: Dict) -> str:
+    """Formate les détails de l'évaluation pour l'email"""
+    details = evaluation['details']
+    return f"""• Longueur de réponse : {details['length_score']}/20 points ({details['response_length']} caractères)
+• Nombre de mots : {details['word_score']}/15 points ({details['word_count']} mots)
+• Mots-clés techniques : {details['keyword_score']}/25 points
+• Structure et présentation : {details['structure_score']}/20 points
+• Effort et réflexion : {details['effort_score']}/20 points"""
+
+def format_feedback_list(feedback_list: list) -> str:
+    """Formate la liste de feedback pour l'email"""
+    return '\n'.join([f"• {feedback}" for feedback in feedback_list])
+
+def format_recommendations(score: int) -> str:
+    """Génère des recommandations basées sur le score"""
+    if score < 60:
+        return """• Développez davantage votre réponse pour montrer votre compréhension
+• Utilisez des termes techniques appropriés à la matière
+• Structurez votre réponse en paragraphes clairs
+• Ajoutez des exemples concrets pour illustrer vos propos"""
+    elif score < 80:
+        return """• Bonne base ! Ajoutez plus d'exemples concrets
+• Approfondissez certains aspects de votre explication
+• Utilisez plus de vocabulaire technique spécialisé"""
+    else:
+        return """• Excellente réponse ! Continuez sur cette lancée
+• Votre maîtrise du sujet est évidente
+• La structure et le contenu sont très satisfaisants"""
+
+def format_encouragement(grade: str) -> str:
+    """Génère un message d'encouragement basé sur la note"""
+    encouragements = {
+        'A+': "🌟 Travail exceptionnel ! Vous maîtrisez parfaitement le sujet.",
+        'A': "🎉 Très bon travail ! Vous démontrez une solide compréhension.",
+        'B': "👍 Bon travail ! Continuez vos efforts, vous êtes sur la bonne voie.",
+        'C': "💪 Travail correct. Avec un peu plus d'effort, vous pouvez encore progresser.",
+        'D': "📚 Il y a des améliorations à apporter. N'hésitez pas à approfondir vos révisions.",
+        'F': "🔄 Cette réponse nécessite plus de travail. Reprenez les concepts de base et n'hésitez pas à demander de l'aide."
+    }
+    return encouragements.get(grade, "Continuez vos efforts !")
+
+def evaluate_display_and_send_feedback(question: str, response: str, matiere: str, 
+                                      student_email: str, student_name: str = None, original_email: Dict = None) -> tuple:
+    """
+    Évalue une réponse, l'affiche et envoie le feedback par email
+    
+    Returns:
+        tuple: (evaluation_dict, feedback_sent_success)
+    """
+    # Évaluer et afficher
+    evaluation = evaluate_and_display(question, response, matiere)
+    
+    # Envoyer le feedback
+    feedback_sent = send_feedback_email(student_email, evaluation, question, response, student_name, original_email)
+    
+    return evaluation, feedback_sent 
