@@ -1,93 +1,68 @@
-# Système de Gestion des Emails Automatisé
+# Mail System - Challenge Email Distribution
 
-Ce système permet d'envoyer automatiquement des questions aux étudiants via email, de récupérer leurs réponses et de les évaluer automatiquement.
+This folder contains the essential components for sending challenge emails to students.
 
-## Installation
+## Core Files
 
-1. Installer les dépendances :
-```bash
-pip install -r requirements.txt
-```
+### Essential Components
+- **`test_step_by_step.py`** - Complete step-by-step test with reply waiting and evaluation
+- **`send_questions.py`** - Core email sending functionality 
+- **`email_reader.py`** - Email reply reading and monitoring
+- **`evaluator.py`** - Response evaluation system
+- **`database_utils.py`** - Database utilities for user management
+- **`config.py`** - Email configuration settings
+- **`utils.py`** - Utility functions for conversation tracking
+- **`conversations.json`** - Data file tracking sent emails and responses
 
-2. Configurer les variables d'environnement :
-   - Créer un fichier `.env` dans le dossier `mail/`
-   - Ajouter vos identifiants email :
-```
-EMAIL=votre_email@gmail.com
-PASSWORD=votre_mot_de_passe_app
-```
+## Quick Start
 
-## Utilisation
+1. **Configure email settings** in `.env` file:
+   ```
+   EMAIL=your-email@gmail.com
+   PASSWORD=your-app-password
+   ```
 
-### Commandes principales
+2. **Run the step-by-step test** (now includes reply waiting and evaluation):
+   ```bash
+   cd mail
+   python test_step_by_step.py
+   ```
+   
+   The test will:
+   - Send a challenge email to a student
+   - Optionally wait for the student's reply
+   - Display the received response
+   - Automatically evaluate the response
 
-1. **Envoyer une question à un étudiant :**
-```bash
-python mail_system.py send --email student@example.com --user-id 1
-```
+3. **Send a challenge to a specific user**:
+   ```python
+   from send_questions import send_question_from_api
+   success = send_question_from_api(to="student@email.com", user_id=6)
+   ```
 
-2. **Lire les nouvelles réponses :**
-```bash
-python mail_system.py read
-```
+## Key Functions
 
-3. **Évaluer les réponses en attente :**
-```bash
-python mail_system.py evaluate
-```
+- `send_question_from_api(to, user_id)` - Send today's challenge to a user
+- `get_challenge_from_api(user_id)` - Retrieve challenge data from API
+- `get_student_by_id(user_id)` - Get student info from database
+- `wait_for_reply(email, timeout_minutes)` - Wait for email reply from user
+- `evaluate_and_display(question, response, matiere)` - Evaluate student response
 
-4. **Afficher le rapport d'évaluation :**
-```bash
-python mail_system.py report
-```
+## Requirements
 
-5. **Exécuter le workflow complet :**
-```bash
-python mail_system.py workflow
-```
+Make sure these dependencies are installed:
+- `yagmail` - for sending emails
+- `requests` - for API communication
+- `python-dotenv` - for environment variables
 
-6. **Mode surveillance (vérification automatique) :**
-```bash
-python mail_system.py monitor --interval 300
-```
-
-### Utilisation programmatique
+## Usage Example
 
 ```python
-from mail import send_daily_challenge_to_user, read_replies, evaluate_pending_responses
+# Send today's challenge to user ID 6
+from send_questions import send_question_from_api
 
-# Envoyer une question
-success = send_daily_challenge_to_user("student@example.com", user_id=1)
-
-# Lire les réponses
-read_replies()
-
-# Évaluer les réponses
-count = evaluate_pending_responses()
-```
-
-## Fonctionnalités
-
-- ✅ Envoi automatique de questions via l'API
-- ✅ Réception et parsing des réponses par email
-- ✅ Évaluation automatique avec IA
-- ✅ Suivi des conversations
-- ✅ Rapports statistiques
-- ✅ Mode surveillance en temps réel
-
-## Configuration Gmail
-
-Pour utiliser Gmail, vous devez :
-1. Activer l'authentification à 2 facteurs
-2. Générer un mot de passe d'application
-3. Utiliser ce mot de passe dans la variable `PASSWORD`
-
-## Structure des fichiers
-
-- `config.py` : Configuration des emails et API
-- `send_questions.py` : Envoi des questions
-- `read_replies.py` : Lecture des réponses
-- `evaluate_responses.py` : Évaluation des réponses
-- `mail_system.py` : Orchestrateur principal
-- `utils.py` : Fonctions utilitaires
-- `conversations.json` : Stockage des conversations 
+success = send_question_from_api(
+    to="mathis@example.com", 
+    user_id=6
+)
+``` 

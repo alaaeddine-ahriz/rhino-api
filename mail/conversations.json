@@ -50,5 +50,95 @@
     "response": null,
     "evaluated": false,
     "user_id": 6
+  },
+  "IDQ-20250610182119-ea2a9e": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610182219-8123c2": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610182540-cf010e": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610182804-0c181b": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610182842-8d49b9": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610183022-82ab55": {
+    "student": "mathis.beaufour71@gmail.com",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": null,
+    "evaluated": false,
+    "user_id": 6
+  },
+  "IDQ-20250610183242-50c694": {
+    "student": "alaaeddine.ahriz@insa-lyon.fr",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": "c'est un bon protocole, assez utile je trouve \r\n\r\n\r\nDe: lerhinoo@gmail.com \r\nÀ: \"Alaaeddine Ahriz\" <alaaeddine.ahriz@insa-lyon.fr> \r\nEnvoyé: Mardi 10 Juin 2025 18:32:43 \r\nObjet: 🧠 Question du jour - TCP - IDQ-20250610183242-50c694 \r\n\r\nBonjour, \r\n\r\nVoici ta question du jour en TCP : \r\n\r\n❓ Décrivez le protocole TCP et ses caractéristiques principales. \r\n\r\n\\uD83D\\uDCDA Matière : TCP \r\n\\uD83D\\uDD16 Référence : TCP-002 \r\n\r\n[ID de suivi : IDQ-20250610183242-50c694] \r\n[ID Challenge API : 2] \r\n\r\nBonne chance ! \\uD83C\\uDF40",
+    "evaluated": true,
+    "user_id": 8,
+    "response_date": "Tue, 10 Jun 2025 18:33:08 +0200 (CEST)",
+    "response_from": "alaaeddine.ahriz@insa-lyon.fr",
+    "evaluation": {
+      "score": 68,
+      "max_score": 100,
+      "feedback": [
+        "✅ Réponse détaillée",
+        "✅ Réponse développée"
+      ],
+      "grade": "C",
+      "details": {
+        "length_score": 20,
+        "word_score": 15,
+        "keyword_score": 4,
+        "structure_score": 14,
+        "effort_score": 15,
+        "response_length": 520,
+        "word_count": 69
+      }
+    }
   }
 }

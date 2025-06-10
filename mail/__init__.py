@@ -1,50 +1,31 @@
 """
-Système de gestion des emails automatisé pour l'envoi de questions et l'évaluation des réponses
+Mail System - Essential email functionality for challenge distribution
+
+This module provides the core functionality for sending challenge emails
+to students and tracking conversations.
 """
 
-from .send_questions import (
-    send_question_from_api,
-    send_daily_challenge_to_user,
-    send_subject_challenge,
-    test_api_connection
-)
+from .send_questions import send_question_from_api, get_challenge_from_api
+from .database_utils import get_student_by_id, get_all_students, get_students_by_subscription
+from .utils import generate_question_id, load_conversations, save_conversations
+from .email_reader import wait_for_reply, display_reply, read_new_replies
+from .evaluator import evaluate_and_display, evaluate_response_simple
 
-from .read_replies import (
-    read_replies,
-    get_unread_count
-)
-
-from .evaluate_responses import (
-    evaluate_pending_responses,
-    print_evaluation_report,
-    get_evaluation_report
-)
-
-from .mail_system import (
-    run_full_workflow,
-    monitor_mode,
-    send_question_to_student,
-    send_questions_to_multiple_students
-)
-
-from .utils import (
-    generate_question_id,
-    load_conversations,
-    save_conversations
-)
-
-from .send_evaluation import (
-    send_evaluation_to_student,
-    send_evaluations_for_pending_responses,
-    print_evaluation_send_report
-)
-
-from .database_utils import (
-    get_student_by_id,
-    get_all_students,
-    get_students_by_subscription,
-    print_database_info
-)
+__all__ = [
+    'send_question_from_api',
+    'get_challenge_from_api', 
+    'get_student_by_id',
+    'get_all_students',
+    'get_students_by_subscription',
+    'generate_question_id',
+    'load_conversations',
+    'save_conversations',
+    'wait_for_reply',
+    'display_reply',
+    'read_new_replies',
+    'evaluate_and_display',
+    'evaluate_response_simple'
+]
 
 __version__ = "1.0.0"
-__author__ = "API-rhino Mail System" 
+__author__ = "Le Rhino Team" 
