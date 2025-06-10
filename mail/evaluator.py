@@ -110,6 +110,12 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         # Préparer le contenu du feedback
         student_greeting = f"Bonjour {student_name}" if student_name else "Bonjour"
         
+        # Extraire score et note pour le sujet
+        api_data = evaluation.get('raw_api_response', {}).get('data', {})
+        score = api_data.get('score', 0)
+        note = api_data.get('note', 0)
+        note_emoji = get_note_emoji(note)
+        
         # Préparer le sujet en réponse à l'email original
         if original_email and original_email.get('subject'):
             original_subject = original_email['subject']
@@ -117,35 +123,46 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
             clean_subject = original_subject
             while clean_subject.startswith('Re: ') or clean_subject.startswith('RE: '):
                 clean_subject = clean_subject[4:]
-            subject = f"Re: {clean_subject} - 🤖 Réponse de l'API d'évaluation"
+            subject = f"Re: {clean_subject} - {note_emoji} Note: {note}/20 ({score}/20)"
         else:
-            subject = "🤖 Réponse de l'API d'évaluation"
+            subject = f"{note_emoji} Évaluation terminée - Note: {note}/20 ({score}/20)"
         
-        # Corps du message avec la réponse brute de l'API
+        # Formater le feedback
+        feedback = api_data.get('feedback', 'Aucun feedback disponible')
+        
+        # Corps du message avec évaluation formatée
         body = f"""{student_greeting},
 
-Voici la réponse brute de l'API d'évaluation pour votre question :
+Voici l'évaluation de votre réponse :
+
+{note_emoji} **RÉSULTAT GLOBAL**
+• Score : {score}/20
+• Note : {note}/20
 
 📝 **QUESTION POSÉE**
 {question}
 
 📄 **VOTRE RÉPONSE**
-{response[:200]}{'...' if len(response) > 200 else ''}
+{response[:300]}{'...' if len(response) > 300 else ''}
 
-🤖 **RÉPONSE BRUTE DE L'API**
-```json
-{json.dumps(evaluation, indent=2, ensure_ascii=False)}
-```
+📋 **FEEDBACK DÉTAILLÉ**
+{feedback}
 
-📊 **INFORMATIONS TECHNIQUES**
-• Status Code: {evaluation.get('status_code', 'N/A')}
-• API Status: {evaluation.get('api_status', 'N/A')}
+{format_points_forts(api_data.get('points_forts', []))}
+
+{format_points_ameliorer(api_data.get('points_ameliorer', []))}
+
+{format_suggestions(api_data.get('suggestions', []))}
+
+{format_reponse_modele(api_data.get('reponse_modele', ''))}
+
+{get_encouragement_message(note)}
 
 Cordialement,
 Le système d'évaluation automatique 🤖
 
 ---
-Note: Cette réponse contient les données brutes de l'API pour debug/développement.
+Matière : {api_data.get('matiere', 'N/A')} | Évalué le : {api_data.get('evaluated_at', 'N/A')}
 """
         
         # Envoi de l'email avec en-têtes de réponse si disponibles
@@ -176,8 +193,67 @@ Note: Cette réponse contient les données brutes de l'API pour debug/développe
         logger.error(f"❌ Erreur envoi feedback: {e}")
         return False
 
-# Les fonctions de formatage de l'ancien système d'évaluation ont été supprimées
-# car nous utilisons maintenant la réponse brute de l'API d'évaluation
+def get_note_emoji(note: int) -> str:
+    """Retourne l'emoji correspondant à la note"""
+    if note >= 18:
+        return "🌟"  # Excellent
+    elif note >= 15:
+        return "🎉"  # Très bien
+    elif note >= 12:
+        return "👍"  # Bien
+    elif note >= 10:
+        return "💪"  # Passable
+    elif note >= 6:
+        return "📚"  # À améliorer
+    else:
+        return "🔄"  # Insuffisant
+
+def format_points_forts(points_forts: list) -> str:
+    """Formate la liste des points forts"""
+    if not points_forts or (len(points_forts) == 1 and "Aucun" in points_forts[0]):
+        return "✨ **POINTS FORTS**\n• Aucun point fort particulier identifié"
+    
+    formatted_points = '\n'.join([f"• {point}" for point in points_forts])
+    return f"✨ **POINTS FORTS**\n{formatted_points}"
+
+def format_points_ameliorer(points_ameliorer: list) -> str:
+    """Formate la liste des points à améliorer"""
+    if not points_ameliorer:
+        return "🔧 **POINTS À AMÉLIORER**\n• Aucune amélioration spécifique suggérée"
+    
+    formatted_points = '\n'.join([f"• {point}" for point in points_ameliorer])
+    return f"🔧 **POINTS À AMÉLIORER**\n{formatted_points}"
+
+def format_suggestions(suggestions: list) -> str:
+    """Formate la liste des suggestions"""
+    if not suggestions:
+        return "💡 **SUGGESTIONS**\n• Aucune suggestion particulière"
+    
+    formatted_suggestions = '\n'.join([f"• {suggestion}" for suggestion in suggestions])
+    return f"💡 **SUGGESTIONS**\n{formatted_suggestions}"
+
+def format_reponse_modele(reponse_modele: str) -> str:
+    """Formate la réponse modèle"""
+    if not reponse_modele:
+        return "📖 **EXEMPLE DE RÉPONSE**\n• Aucun exemple disponible"
+    
+    return f"""📖 **EXEMPLE DE RÉPONSE ATTENDUE**
+{reponse_modele}"""
+
+def get_encouragement_message(note: int) -> str:
+    """Génère un message d'encouragement basé sur la note"""
+    if note >= 18:
+        return "🌟 **Excellent travail !** Vous maîtrisez parfaitement le sujet."
+    elif note >= 15:
+        return "🎉 **Très bon travail !** Vous démontrez une solide compréhension."
+    elif note >= 12:
+        return "👍 **Bon travail !** Continuez vos efforts, vous êtes sur la bonne voie."
+    elif note >= 10:
+        return "💪 **Travail correct.** Avec un peu plus d'effort, vous pouvez encore progresser."
+    elif note >= 6:
+        return "📚 **Il y a des améliorations à apporter.** N'hésitez pas à approfondir vos révisions."
+    else:
+        return "🔄 **Cette réponse nécessite plus de travail.** Reprenez les concepts de base et n'hésitez pas à demander de l'aide."
 
 def send_apology_email(to_email: str, question: str, response: str, student_name: str = None, original_email: Dict = None, error_details: str = "") -> bool:
     """
