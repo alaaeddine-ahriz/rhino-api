@@ -1,17 +1,17 @@
 """Routes for document management."""
 import logging
-from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Path
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Path, Query
 from typing import List, Optional
 from datetime import datetime
 
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
 from app.models.document import DocumentCreate, DocumentResponse, DocumentList
-from app.api.deps import get_current_user, get_teacher_user
+from app.api.deps import get_current_user_simple
 from app.core.exceptions import NotFoundError
 from app.services.rag.documents import (
-    get_documents_for_subject,
-    upload_document_to_subject,
+    get_documents_for_subject, 
+    upload_document_to_subject, 
     delete_document_from_subject,
     get_document_content,
     process_and_index_new_document,
@@ -19,6 +19,7 @@ from app.services.rag.documents import (
 )
 from app.services.rag.embeddings import delete_documents
 from app.services.rag.core import initialize_pinecone
+from app.db.session import get_session
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
@@ -28,13 +29,15 @@ router = APIRouter(tags=["Documents"])
 
 @router.get("/matieres/{matiere}/documents", response_model=ApiResponse)
 async def get_documents(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
-    current_user: UserInDB = Depends(get_current_user)
+    session=Depends(get_session)
 ):
     """
     List all documents for a specific subject.
     """
     try:
+        current_user = await get_current_user_simple(user_id, session)
         logger.info(f"User {current_user.username} is listing documents for subject {matiere}")
         
         # Ensure folder structure exists
@@ -61,15 +64,25 @@ async def get_documents(
 
 @router.post("/matieres/{matiere}/documents", response_model=ApiResponse)
 async def upload_document(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
     file: UploadFile = File(...),
     is_exam: bool = Form(False),
-    current_user: UserInDB = Depends(get_teacher_user)
+    session=Depends(get_session)
 ):
     """
     Upload a new document for a subject (teacher or admin only).
     """
     try:
+        current_user = await get_current_user_simple(user_id, session)
+        
+        # Check if user has teacher or admin role
+        if current_user.role not in ["teacher", "admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this resource. Teacher or admin role required.",
+            )
+        
         logger.info(f"User {current_user.username} is uploading document {file.filename} for subject {matiere}, is_exam={is_exam}")
         
         # Ensure folder structure exists
@@ -100,27 +113,28 @@ async def upload_document(
         
         # Automatically process and index the document into vector database
         try:
-            index_success, index_message = process_and_index_new_document(matiere, document_info)
+            index_success, index_message = process_and_index_new_document(
+                matiere=matiere,
+                document_info=document_info
+            )
+            
             if index_success:
-                logger.info(f"Document {file.filename} successfully indexed: {index_message}")
-                # Add indexing info to response
-                document_info["last_indexed"] = datetime.now().isoformat()
-                document_info["indexing_status"] = "success"
+                logger.info(f"Document {file.filename} successfully indexed into vector database")
+                message += f". Document indexed successfully: {index_message}"
             else:
-                logger.warning(f"Document {file.filename} uploaded but indexing failed: {index_message}")
-                # Add indexing failure info to response
-                document_info["indexing_status"] = "failed"
-                document_info["indexing_error"] = index_message
-        except Exception as e:
-            logger.error(f"Error during automatic indexing of {file.filename}: {str(e)}")
-            document_info["indexing_status"] = "error"
-            document_info["indexing_error"] = str(e)
+                logger.warning(f"Document uploaded but indexing failed: {index_message}")
+                message += f". Warning - indexing failed: {index_message}"
+                
+        except Exception as index_error:
+            logger.error(f"Error during automatic indexing: {str(index_error)}")
+            message += f". Warning - indexing error: {str(index_error)}"
         
         return {
             "success": True,
             "message": message,
             "data": {
-                "document": document_info
+                "document": document_info,
+                "matiere": matiere
             }
         }
         
@@ -135,15 +149,25 @@ async def upload_document(
 
 @router.delete("/matieres/{matiere}/documents/{document_id}", response_model=ApiResponse)
 async def delete_document(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
-    document_id: str = Path(..., description="Document ID to delete"),
-    current_user: UserInDB = Depends(get_teacher_user)
+    document_id: str = Path(..., description="Document ID"),
+    session=Depends(get_session)
 ):
     """
-    Delete a document (teacher or admin only).
+    Delete a document from a subject (teacher or admin only).
     """
     try:
-        logger.warning(f"User {current_user.username} is deleting document {document_id} for subject {matiere}")
+        current_user = await get_current_user_simple(user_id, session)
+        
+        # Check if user has teacher or admin role
+        if current_user.role not in ["teacher", "admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this resource. Teacher or admin role required.",
+            )
+        
+        logger.info(f"User {current_user.username} is deleting document {document_id} from subject {matiere}")
         
         # First, get document info before deletion (for vector database cleanup)
         documents = get_documents_for_subject(matiere)
@@ -189,7 +213,7 @@ async def delete_document(
             "success": True,
             "message": message,
             "data": {
-                "document_id": document_id,
+                "deleted_document": target_document,
                 "matiere": matiere
             }
         }
@@ -197,7 +221,7 @@ async def delete_document(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting document {document_id} for subject {matiere}: {str(e)}")
+        logger.error(f"Error deleting document {document_id} from subject {matiere}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting document: {str(e)}"
@@ -205,14 +229,16 @@ async def delete_document(
 
 @router.get("/matieres/{matiere}/documents/{document_id}/content", response_model=ApiResponse)
 async def get_document_content_endpoint(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
     document_id: str = Path(..., description="Document ID"),
-    current_user: UserInDB = Depends(get_current_user)
+    session=Depends(get_session)
 ):
     """
     Get the content of a specific document.
     """
     try:
+        current_user = await get_current_user_simple(user_id, session)
         logger.info(f"User {current_user.username} is getting content for document {document_id} in subject {matiere}")
         
         # Get document content
@@ -251,14 +277,24 @@ async def get_document_content_endpoint(
 
 @router.post("/matieres/{matiere}/documents/reindex", response_model=ApiResponse)
 async def reindex_subject_documents(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
-    current_user: UserInDB = Depends(get_teacher_user)
+    session=Depends(get_session)
 ):
     """
     Manually trigger re-indexing of all documents for a subject (teacher or admin only).
     Useful for maintenance or after system updates.
     """
     try:
+        current_user = await get_current_user_simple(user_id, session)
+        
+        # Check if user has teacher or admin role
+        if current_user.role not in ["teacher", "admin"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this resource. Teacher or admin role required.",
+            )
+        
         logger.info(f"User {current_user.username} is triggering re-indexing for subject {matiere}")
         
         # Get all documents for the subject
@@ -280,35 +316,47 @@ async def reindex_subject_documents(
         success_count = 0
         failed_count = 0
         
-        # Process each document
-        for doc in documents:
+        for document in documents:
             try:
-                index_success, index_message = process_and_index_new_document(matiere, doc)
+                logger.info(f"Re-indexing document: {document['filename']}")
+                
+                # Process and index the document
+                index_success, index_message = process_and_index_new_document(
+                    matiere=matiere,
+                    document_info=document
+                )
+                
+                result = {
+                    "document_id": document["id"],
+                    "filename": document["filename"],
+                    "success": index_success,
+                    "message": index_message
+                }
+                
+                indexing_results.append(result)
+                
                 if index_success:
                     success_count += 1
-                    indexing_results.append({
-                        "filename": doc["filename"],
-                        "status": "success",
-                        "message": index_message
-                    })
+                    logger.info(f"Successfully re-indexed: {document['filename']}")
                 else:
                     failed_count += 1
-                    indexing_results.append({
-                        "filename": doc["filename"],
-                        "status": "failed",
-                        "message": index_message
-                    })
-            except Exception as e:
+                    logger.warning(f"Failed to re-index {document['filename']}: {index_message}")
+                    
+            except Exception as doc_error:
                 failed_count += 1
+                error_msg = f"Error processing document: {str(doc_error)}"
+                logger.error(f"Error re-indexing {document['filename']}: {error_msg}")
+                
                 indexing_results.append({
-                    "filename": doc["filename"],
-                    "status": "error",
-                    "message": str(e)
+                    "document_id": document["id"],
+                    "filename": document["filename"],
+                    "success": False,
+                    "message": error_msg
                 })
         
         return {
             "success": True,
-            "message": f"Re-indexing completed for subject {matiere}",
+            "message": f"Re-indexing completed. {success_count} successful, {failed_count} failed",
             "data": {
                 "processed_count": len(documents),
                 "success_count": success_count,
@@ -317,6 +365,8 @@ async def reindex_subject_documents(
             }
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error during re-indexing for subject {matiere}: {str(e)}")
         raise HTTPException(

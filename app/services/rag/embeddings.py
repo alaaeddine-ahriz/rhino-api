@@ -1,5 +1,5 @@
 """Embeddings and vector operations for RAG system."""
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from langchain_pinecone import PineconeEmbeddings, PineconeVectorStore
 from langchain.schema import Document
 from pinecone import Pinecone
@@ -18,6 +18,54 @@ def get_matiere_namespace(matiere: str) -> str:
         str: Standardized namespace
     """
     return f"matiere-{matiere.lower()}"
+
+def index_documents(
+    documents: List[Document],
+    matiere: str,
+    pc: Pinecone,
+    index_name: str,
+    embeddings: PineconeEmbeddings
+) -> Tuple[bool, str]:
+    """
+    Index a list of documents into Pinecone for a specific subject.
+    
+    Args:
+        documents: List of document chunks to index
+        matiere: Subject identifier
+        pc: Pinecone client
+        index_name: Name of the Pinecone index
+        embeddings: Embedding model
+        
+    Returns:
+        Tuple[bool, str]: (success, message)
+    """
+    try:
+        if not documents:
+            return False, "No documents provided to index"
+        
+        namespace = get_matiere_namespace(matiere)
+        
+        print(f"Indexing {len(documents)} document chunks for subject {matiere} in namespace {namespace}")
+        
+        # Create vector store and add documents
+        vector_store = PineconeVectorStore(
+            index_name=index_name,
+            embedding=embeddings,
+            namespace=namespace
+        )
+        
+        # Add documents to the vector store
+        ids = vector_store.add_documents(documents)
+        
+        success_message = f"Successfully indexed {len(documents)} document chunks. Generated {len(ids)} vector embeddings."
+        print(success_message)
+        
+        return True, success_message
+        
+    except Exception as e:
+        error_message = f"Error indexing documents: {str(e)}"
+        print(error_message)
+        return False, error_message
 
 def upsert_documents(
     pc: Pinecone,

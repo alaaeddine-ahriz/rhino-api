@@ -7,7 +7,7 @@ from datetime import date, datetime
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
 from app.models.challenge import ChallengeCreate, ChallengeResponse, ChallengeUserResponse, LeaderboardEntry
-from app.api.deps import get_current_user, get_teacher_user, get_current_user_simple
+from app.api.deps import get_current_user_simple
 from app.core.exceptions import NotFoundError
 from app.services.challenges import creer_challenge, lister_challenges, get_next_challenge_for_matiere, get_today_challenge_for_user
 from app.db.session import get_session
@@ -20,7 +20,7 @@ router = APIRouter(tags=["Challenges"])
 
 @router.get("/challenges/today", response_model=ApiResponse)
 async def get_today_challenge(
-    current_user: UserInDB = Depends(get_current_user),
+    user_id: int = Query(..., description="User ID for authentication"),
     session=Depends(get_session)
 ):
     """
@@ -28,8 +28,9 @@ async def get_today_challenge(
     Uses tick logic to determine which challenge should be served today.
     """
     try:
+        current_user = await get_current_user_simple(user_id, session)
         today = date.today().isoformat()
-        logger.info(f"User {current_user.username} requesting today's challenge for {today}")
+        logger.info(f"User {current_user.username} (ID: {user_id}) requesting today's challenge for {today}")
         
         # Get today's challenge based on user subscriptions
         today_challenge = get_today_challenge_for_user(current_user.subscriptions, session)
@@ -65,7 +66,7 @@ async def get_today_challenge(
         }
         
     except Exception as e:
-        logger.error(f"Error getting today's challenge for user {current_user.username}: {str(e)}")
+        logger.error(f"Error getting today's challenge for user ID {user_id}: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving today's challenge: {str(e)}"
@@ -134,13 +135,14 @@ async def get_today_challenge_simple(
 
 @router.get("/challenges", response_model=ApiResponse)
 async def get_challenges(
+    user_id: int = Query(..., description="User ID for authentication"),
     matiere: Optional[str] = Query(None, description="Filter by subject"),
-    current_user: UserInDB = Depends(get_current_user),
     session=Depends(get_session)
 ):
     """
     List all challenges, optionally filtered by subject or date range.
     """
+    current_user = await get_current_user_simple(user_id, session)
     logger.info(f"Utilisateur {current_user.username} demande la liste des challenges pour la matière: {matiere}")
     result = lister_challenges(matiere=matiere, session=session)
     result["message"] = "Challenges récupérés avec succès"
@@ -148,13 +150,22 @@ async def get_challenges(
 
 @router.post("/challenges", response_model=ApiResponse)
 async def create_challenge(
-    challenge: ChallengeCreate,
-    current_user: UserInDB = Depends(get_teacher_user),
+    user_id: int = Query(..., description="User ID for authentication"),
+    challenge: ChallengeCreate = Body(...),
     session=Depends(get_session)
 ):
     """
     Create a new challenge for one or more subjects (teacher or admin only).
     """
+    current_user = await get_current_user_simple(user_id, session)
+    
+    # Check if user has teacher or admin role
+    if current_user.role not in ["teacher", "admin"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to access this resource. Teacher or admin role required.",
+        )
+    
     logger.info(f"Création d'un challenge par {current_user.username} pour les matières : {challenge.matieres}")
     result = creer_challenge(challenge.dict(), session=session)
     result["message"] = "Challenge créé avec succès"
@@ -163,13 +174,15 @@ async def create_challenge(
 
 @router.post("/challenges/{challenge_id}/response", response_model=ApiResponse)
 async def submit_challenge_response(
+    user_id: int = Query(..., description="User ID for authentication"),
     challenge_id: str = Path(..., description="Challenge ID"),
     response_data: ChallengeUserResponse = Body(...),
-    current_user: UserInDB = Depends(get_current_user)
+    session=Depends(get_session)
 ):
     """
     Submit a user's response to a specific challenge.
     """
+    current_user = await get_current_user_simple(user_id, session)
     logger.info(f"Soumission de réponse pour le challenge {challenge_id} par utilisateur {response_data.user_id}")
     return {
         "success": True,
@@ -186,12 +199,14 @@ async def submit_challenge_response(
 
 @router.get("/challenges/{challenge_id}/leaderboard", response_model=ApiResponse)
 async def get_challenge_leaderboard(
+    user_id: int = Query(..., description="User ID for authentication"),
     challenge_id: str = Path(..., description="Challenge ID"),
-    current_user: UserInDB = Depends(get_current_user)
+    session=Depends(get_session)
 ):
     """
     Get the leaderboard for a specific challenge.
     """
+    current_user = await get_current_user_simple(user_id, session)
     logger.info(f"Récupération du classement pour le challenge {challenge_id} par {current_user.username}")
     return {
         "success": True,
@@ -208,9 +223,11 @@ async def get_challenge_leaderboard(
 
 @router.get("/challenges/next", response_model=ApiResponse)
 async def get_next_challenge(
-    matiere: str,
+    user_id: int = Query(..., description="User ID for authentication"),
+    matiere: str = Query(..., description="Subject to get challenge for"),
     session=Depends(get_session)
 ):
+    current_user = await get_current_user_simple(user_id, session)
     logger.info(f"Recherche du prochain challenge pour la matière : {matiere}")
     challenge = get_next_challenge_for_matiere(matiere, session)
     if not challenge:

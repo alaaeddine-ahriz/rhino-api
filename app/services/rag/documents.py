@@ -8,12 +8,14 @@ from typing import List, Dict, Any, Optional, Tuple
 from pathlib import Path
 import glob
 
-from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_community.document_loaders import PyPDFLoader, UnstructuredWordDocumentLoader
+from langchain_text_splitters import MarkdownHeaderTextSplitter
 from langchain.schema import Document
 
-from app.core.config import settings
 from app.services.rag.core import initialize_pinecone, setup_embeddings, create_or_get_index
-from app.services.rag.embeddings import upsert_documents
+from app.services.rag.embeddings import upsert_documents, index_documents, delete_documents
+from app.core.config import settings
 
 def initialiser_structure_dossiers():
     """
