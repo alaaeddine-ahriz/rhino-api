@@ -48,6 +48,16 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
         Dict[str, Any]: Generated question with metadata
     """
     try:
+        # Validate input
+        if not concept_cle or concept_cle.strip() == "":
+            return {
+                "error": "Le concept clé ne peut pas être vide. Veuillez fournir un concept à explorer.",
+                "status": "validation_error",
+                "details": "concept_cle is required and cannot be empty"
+            }
+        
+        concept_cle = concept_cle.strip()
+        
         # Initialize RAG system
         _, index_name, embeddings, _ = initialize_rag_components()
         retrieval_chain, vector_store = setup_rag_system(
@@ -132,7 +142,22 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
         })
         
         # Parse JSON response from AIMessage content
-        question_data = json.loads(response.content)
+        if not response.content or response.content.strip() == "":
+            return {
+                "error": "OpenAI returned empty response. Likely quota exceeded or API error.",
+                "status": "empty_response",
+                "details": "Empty content from OpenAI API"
+            }
+        
+        # Clean the response content to remove markdown code blocks
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:]  # Remove ```json
+        if content.endswith("```"):
+            content = content[:-3]  # Remove ```
+        content = content.strip()
+        
+        question_data = json.loads(content)
         
         # Add metadata and source documents
         sources = []
@@ -209,6 +234,16 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
     Returns:
         Dict[str, Any]: Generated MCQ with metadata
     """
+    # Validate input
+    if not concept or concept.strip() == "":
+        return {
+            "error": "Le concept ne peut pas être vide. Veuillez fournir un concept à explorer.",
+            "status": "validation_error",
+            "details": "concept is required and cannot be empty"
+        }
+    
+    concept = concept.strip()
+    
     # Initialize RAG system
     _, index_name, embeddings, _ = initialize_rag_components()
     retrieval_chain, vector_store = setup_rag_system(
@@ -298,7 +333,22 @@ def generer_question_qcm(matiere: str, concept: str, nombre_options: int = 4) ->
         })
         
         # Parse JSON response from AIMessage content
-        question_data = json.loads(response.content)
+        if not response.content or response.content.strip() == "":
+            return {
+                "error": "OpenAI returned empty response. Likely quota exceeded or API error.",
+                "status": "empty_response",
+                "details": "Empty content from OpenAI API"
+            }
+        
+        # Clean the response content to remove markdown code blocks
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:]  # Remove ```json
+        if content.endswith("```"):
+            content = content[:-3]  # Remove ```
+        content = content.strip()
+        
+        question_data = json.loads(content)
         
         # Add metadata and source documents
         sources = []
@@ -493,7 +543,22 @@ def evaluer_reponse_etudiant(
             })
         
         # Parse JSON response
-        evaluation = json.loads(response.content)
+        if not response.content or response.content.strip() == "":
+            return {
+                "error": "OpenAI returned empty response for evaluation. Likely quota exceeded.",
+                "status": "empty_response",
+                "details": "Empty content from OpenAI API"
+            }
+        
+        # Clean the response content to remove markdown code blocks
+        content = response.content.strip()
+        if content.startswith("```json"):
+            content = content[7:]  # Remove ```json
+        if content.endswith("```"):
+            content = content[:-3]  # Remove ```
+        content = content.strip()
+        
+        evaluation = json.loads(content)
         
         # Add metadata
         evaluation.update({

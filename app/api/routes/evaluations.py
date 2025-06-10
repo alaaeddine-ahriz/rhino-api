@@ -28,13 +28,7 @@ async def evaluate_response(
     logger.info(f"Évaluation d'une réponse par {current_user.username}")
     
     try:
-        result = evaluer_reponse(
-            evaluation.question,
-            evaluation.reponse_etudiant,
-            evaluation.reponse_attendue,
-            evaluation.matiere,
-            evaluation.criteres
-        )
+        result = evaluer_reponse(evaluation)
         
         result["user_info"] = {
             "user_id": current_user.id,

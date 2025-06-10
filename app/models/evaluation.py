@@ -6,8 +6,7 @@ class EvaluationRequest(BaseModel):
     """Model for evaluating a student's response."""
     matiere: str = Field(..., description="Subject (e.g. 'MATH')")
     question: str = Field(..., description="Question that was asked")
-    student_response: str = Field(..., description="Student's answer to evaluate")
-    save_output: bool = Field(True, description="Whether to save the evaluation output")
+    reponse_etudiant: str = Field(..., description="Student's answer to evaluate")
 
 class EvaluationResponse(BaseModel):
     """Model for the evaluation result."""

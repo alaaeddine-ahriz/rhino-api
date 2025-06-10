@@ -34,7 +34,7 @@ def setup_embeddings():
     from langchain_openai import OpenAIEmbeddings
     
     embeddings = OpenAIEmbeddings(
-        model='text-embedding-ada-002',
+        model='text-embedding-ada-002',  # 1536 dimensions
         openai_api_key=settings.OPENAI_API_KEY
     )
     
@@ -116,7 +116,7 @@ def setup_rag_system(
     # Configure language model
     llm = ChatOpenAI(
         openai_api_key=settings.OPENAI_API_KEY,
-        model_name='gpt-4',
+        model_name='gpt-4o',
         temperature=0.0
     )
     
