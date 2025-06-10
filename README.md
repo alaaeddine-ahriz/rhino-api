@@ -341,24 +341,194 @@ pip install pinecone-client langchain langchain-openai openai pdfplumber python-
 
 ## 🧪 Tests
 
-### Tests manuels avec Swagger
+L'API dispose d'une suite de tests complète avec isolement de base de données et fixtures automatisées.
 
-1. Allez sur http://localhost:8000/api/docs
-2. Authentifiez-vous avec un token
-3. Testez chaque endpoint
-
-### Tests automatisés (à implémenter)
+### Installation des dépendances de test
 
 ```bash
-# Installer pytest
 pip install pytest pytest-asyncio httpx
+```
 
-# Créer des tests
-mkdir tests
-touch tests/test_auth.py tests/test_matieres.py
+### Structure des tests
 
-# Lancer les tests
+```
+tests/
+├── conftest.py                 # Configuration pytest et fixtures partagées
+├── pytest.ini                 # Configuration des markers et options
+├── README.md                   # Documentation détaillée des tests
+├── test_api_status.py          # Tests d'état de l'API (15 tests)
+├── test_auth_api.py            # Tests d'authentification (8 tests)
+├── test_matieres_api.py        # Tests de gestion des matières (12 tests)
+├── test_documents_api.py       # Tests de gestion des documents
+├── test_questions_api.py       # Tests du système RAG
+├── test_challenges_api.py      # Tests des challenges
+├── test_evaluations_api.py     # Tests d'évaluation
+└── test_leaderboard_api.py     # Tests du leaderboard
+```
+
+### Lancement des tests
+
+#### Tous les tests
+```bash
 pytest
+```
+
+#### Tests par catégorie
+```bash
+# Tests d'authentification uniquement
+pytest tests/test_auth_api.py
+
+# Tests par marker
+pytest -m auth                    # Tests d'authentification
+pytest -m documents              # Tests de documents
+pytest -m permissions            # Tests de permissions
+pytest -m integration            # Tests d'intégration
+
+# Tests avec sortie détaillée
+pytest -v -s
+```
+
+#### Tests spécifiques
+```bash
+# Un test particulier
+pytest tests/test_auth_api.py::TestUserRegistration::test_register_user_success
+
+# Une classe de tests
+pytest tests/test_auth_api.py::TestUserRegistration
+```
+
+### Résultats actuels
+
+| Module | Tests | Statut | Taux de réussite |
+|--------|-------|--------|------------------|
+| **API Status** | 15 | ✅ Passent tous | 100% |
+| **Auth** | 8 | ✅ Passent tous | 100% |
+| **Matières** | 12 | ✅ 8/12 passent | 67% |
+| **Documents** | - | 🔄 En cours | - |
+| **Questions** | - | 🔄 En cours | - |
+| **Challenges** | - | 🔄 En cours | - |
+| **Evaluations** | - | 🔄 En cours | - |
+| **Leaderboard** | - | 🔄 En cours | - |
+
+### Fonctionnalités testées
+
+#### ✅ Tests d'état de l'API (`test_api_status.py`)
+- Accessibilité des endpoints principaux
+- Documentation Swagger/ReDoc
+- Headers CORS
+- Gestion d'erreurs
+- Format des réponses
+- Performance et concurrence
+
+#### ✅ Tests d'authentification (`test_auth_api.py`)
+- Inscription d'utilisateurs
+- Gestion des emails uniques
+- Gestion des abonnements
+- Validation des données
+- Gestion des erreurs (utilisateur inexistant, etc.)
+
+#### ✅ Tests des matières (`test_matieres_api.py`)
+- Récupération des matières par rôle
+- Création de matières (enseignant/admin)
+- Mise à jour d'index
+- Contrôle des permissions (étudiants interdits)
+- Validation des données
+
+### Isolation de base de données
+
+Les tests utilisent un système d'isolation complet :
+
+- **Base fraîche** : Chaque test démarre avec une base SQLite vide
+- **Tables créées** : Schéma recréé automatiquement
+- **Utilisateurs de test** : Fixtures pour créer des utilisateurs avec différents rôles
+- **Nettoyage** : Base supprimée après chaque test
+
+### Fixtures disponibles
+
+```python
+# Dans vos tests, utilisez ces fixtures :
+def test_something(clean_database, test_users, test_client):
+    # clean_database : Base de données propre
+    # test_users : Utilisateurs pré-créés {"student": {...}, "teacher": {...}, "admin": {...}}
+    # test_client : Client FastAPI pour les requêtes
+    
+    student_id = test_users["student"]["id"]
+    response = test_client.get(f"/api/endpoint?user_id={student_id}")
+    assert response.status_code == 200
+```
+
+### Tests manuels avec Swagger
+
+1. **Lancer l'API** : `uvicorn app.main:app --reload`
+2. **Accéder à Swagger** : http://localhost:8000/api/docs
+3. **S'authentifier** :
+   - Utiliser un token de test (ex: `teacher_token_789`)
+   - Cliquer sur "🔒 Authorize"
+   - Entrer : `Bearer YOUR_JWT_TOKEN`
+4. **Tester les endpoints** selon votre rôle
+
+### Développement de nouveaux tests
+
+#### Modèle de test
+```python
+"""Tests pour [fonctionnalité]."""
+import pytest
+from fastapi.testclient import TestClient
+from app.main import app
+
+client = TestClient(app)
+
+class TestNouvelleFonctionnalite:
+    """Test de la nouvelle fonctionnalité."""
+
+    def test_cas_nominal(self, test_users):
+        """Test du cas normal."""
+        user_id = test_users["student"]["id"]
+        response = client.get(f"/api/endpoint?user_id={user_id}")
+        
+        assert response.status_code == 200
+        data = response.json()
+        assert data["success"] is True
+
+    def test_permissions_denied(self, test_users):
+        """Test des permissions refusées."""
+        student_id = test_users["student"]["id"]
+        response = client.post(f"/api/admin-endpoint?user_id={student_id}")
+        
+        assert response.status_code == 403
+```
+
+#### Markers disponibles
+- `@pytest.mark.auth` - Tests d'authentification
+- `@pytest.mark.documents` - Tests de documents  
+- `@pytest.mark.permissions` - Tests de permissions
+- `@pytest.mark.integration` - Tests d'intégration
+- `@pytest.mark.slow` - Tests lents
+
+### Débogage des tests
+
+```bash
+# Tests avec logs détaillés
+pytest -v -s --log-cli-level=INFO
+
+# Arrêt au premier échec
+pytest -x
+
+# Tests en parallèle (après installation de pytest-xdist)
+pip install pytest-xdist
+pytest -n auto
+```
+
+### Couverture de code
+
+```bash
+# Installation
+pip install pytest-cov
+
+# Lancement avec couverture
+pytest --cov=app --cov-report=html
+
+# Résultat dans htmlcov/index.html
 ```
 
 ## 🚀 Déploiement
