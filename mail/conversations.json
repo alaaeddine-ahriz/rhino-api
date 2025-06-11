@@ -888,5 +888,47 @@
     },
     "feedback_sent": true,
     "feedback_sent_to": "alaaeddine.ahriz@insa-lyon.fr"
+  },
+  "IDQ-20250611093805-4f4ac7": {
+    "student": "alaaeddine.ahriz@insa-lyon.fr",
+    "question": "Décrivez le protocole TCP et ses caractéristiques principales.",
+    "matiere": "TCP",
+    "challenge_ref": "TCP-002",
+    "api_challenge_id": 2,
+    "response": "toz cest de la merde \r\n\r\n\r\nDe: \"lerhinoo\" <lerhinoo@gmail.com> \r\nÀ: \"Alaaeddine Ahriz\" <alaaeddine.ahriz@insa-lyon.fr> \r\nEnvoyé: Mercredi 11 Juin 2025 09:38:05 \r\nObjet: 🧠 Question du jour - TCP - IDQ-20250611093805-4f4ac7 \r\n\r\nBonjour, \r\n\r\nVoici ta question du jour en TCP : \r\n\r\n❓ Décrivez le protocole TCP et ses caractéristiques principales. \r\n\r\n\\uD83D\\uDCDA Matière : TCP \r\n\\uD83D\\uDD16 Référence : TCP-002 \r\n\r\n[ID de suivi : IDQ-20250611093805-4f4ac7] \r\n[ID Challenge API : 2] \r\n\r\nBonne chance ! \\uD83C\\uDF40",
+    "evaluated": true,
+    "user_id": 8,
+    "response_date": "Wed, 11 Jun 2025 09:38:20 +0200 (CEST)",
+    "response_from": "alaaeddine.ahriz@insa-lyon.fr",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière TCP",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le protocole TCP ou ses caractéristiques principales. L'étudiant n'a pas démontré de maîtrise des connaissances requises pour cette question.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "La réponse doit être pertinente et répondre directement à la question posée.",
+            "L'étudiant doit démontrer une compréhension des concepts de base du protocole TCP.",
+            "Il est important de structurer la réponse de manière claire et logique."
+          ],
+          "justification_note": "La réponse de l'étudiant ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le protocole TCP ou ses caractéristiques principales. L'étudiant n'a pas démontré de maîtrise des connaissances requises pour cette question.",
+          "suggestions": [
+            "Prenez le temps de revoir les concepts de base du protocole TCP et assurez-vous de répondre directement à la question posée dans vos examens."
+          ],
+          "reponse_modele": "Le protocole TCP (Transmission Control Protocol) est un protocole de communication qui permet l'échange de données de manière fiable entre deux ordinateurs sur un réseau. Ses caractéristiques principales incluent l'établissement d'une connexion, le contrôle de flux, la gestion des erreurs, et l'acheminement des paquets dans le bon ordre. TCP assure que les données sont transmises sans erreurs et dans l'ordre correct, grâce à un système de numérotation des segments et d'accusés de réception.",
+          "base_sur_examen": false,
+          "matiere": "TCP",
+          "evaluated_at": "2025-06-11T09:38:37.517431"
+        },
+        "timestamp": "2025-06-11T09:34:08.888227"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaeddine.ahriz@insa-lyon.fr"
   }
 }
