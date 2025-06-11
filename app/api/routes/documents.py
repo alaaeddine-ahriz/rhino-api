@@ -3,6 +3,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile, Form, Path, Query
 from typing import List, Optional
 from datetime import datetime
+from fastapi.responses import FileResponse
+import os
 
 from app.models.base import ApiResponse
 from app.models.auth import UserInDB
@@ -19,6 +21,7 @@ from app.services.documents import lister_documents, upload_document_with_tracki
 from app.services.rag.embeddings import delete_documents
 from app.services.rag.core import initialize_pinecone
 from app.db.session import get_session
+from app.core.config import settings
 
 # Configuration du logger
 logging.basicConfig(level=logging.INFO)
@@ -120,7 +123,7 @@ async def upload_document(
         try:
             # Map database document format to expected format for indexing
             indexing_document_info = {
-                "file_hash": document_info["id"],  # Database uses 'id' for hash  
+                "file_hash": document_info["file_hash"],
                 "filename": document_info["filename"],
                 "file_path": document_info["file_path"],
                 "document_type": document_info["document_type"],
@@ -140,7 +143,7 @@ async def upload_document(
                 # If indexing was successful, mark document as indexed in database
                 try:
                     with next(get_session()) as db_session:
-                        mark_document_as_indexed(db_session, document_info["id"])
+                        mark_document_as_indexed(db_session, document_info["file_hash"])
                 except Exception as db_error:
                     logger.warning(f"Document indexed but failed to update database: {db_error}")
             else:
@@ -201,13 +204,25 @@ async def delete_document(
         
         documents = result["data"]
         target_document = None
+        resolved_file_hash = None
         for doc in documents:
-            if doc["id"] == document_id:
+            if str(doc["id"]) == str(document_id):
                 target_document = doc
+                resolved_file_hash = doc["file_hash"]
+                break
+            if doc.get("file_hash") == document_id:
+                target_document = doc
+                resolved_file_hash = doc["file_hash"]
                 break
         
+        # If we resolved a file hash via numeric id, use it for deletion
+        if resolved_file_hash:
+            document_id_for_deletion = resolved_file_hash
+        else:
+            document_id_for_deletion = document_id
+        
         # Delete the document from filesystem
-        success, message = delete_document_from_subject(matiere, document_id)
+        success, message = delete_document_from_subject(matiere, document_id_for_deletion)
         
         if not success:
             if "not found" in message.lower():
@@ -256,52 +271,68 @@ async def delete_document(
             detail=f"Error deleting document: {str(e)}"
         )
 
-@router.get("/matieres/{matiere}/documents/{document_id}/content", response_model=ApiResponse)
-async def get_document_content_endpoint(
+@router.get("/matieres/{matiere}/documents/{document_id}/content", response_class=FileResponse)
+async def get_document_file_endpoint(
     user_id: int = Query(..., description="User ID for authentication"),
     matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
-    document_id: str = Path(..., description="Document ID"),
+    document_id: str = Path(..., description="Document ID (numeric id or file hash)"),
     session=Depends(get_session)
 ):
     """
-    Get the content of a specific document.
+    Serve the **raw file** for the requested document so the caller can download it.
+    The caller may supply either the numeric `id` stored in the database or the
+    `file_hash`. The function resolves the hash and then returns a `FileResponse`.
     """
     try:
         current_user = await get_current_user_simple(user_id, session)
-        logger.info(f"User {current_user.username} is getting content for document {document_id} in subject {matiere}")
-        
-        # Get document content
-        success, message, content = get_document_content(matiere, document_id)
-        
-        if not success:
-            if "not found" in message.lower():
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=message
-                )
-            else:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=message
-                )
-        
-        return {
-            "success": True,
-            "message": message,
-            "data": {
-                "document_id": document_id,
-                "matiere": matiere,
-                "content": content
-            }
-        }
-        
+        logger.info(
+            f"User {current_user.username} is downloading document {document_id} in subject {matiere}"
+        )
+
+        # Resolve numeric id → file_hash if necessary
+        file_hash_param = str(document_id)
+        try:
+            list_result = lister_documents(matiere)
+            if list_result.get("success"):
+                for d in list_result["data"]:
+                    if str(d["id"]) == str(document_id):
+                        file_hash_param = d["file_hash"]
+                        break
+        except Exception:
+            pass
+
+        # Find document data
+        doc_path = None
+        filename = None
+        list_result = lister_documents(matiere)
+        if not list_result.get("success"):
+            raise HTTPException(status_code=500, detail="Unable to list documents")
+
+        for d in list_result["data"]:
+            if d["file_hash"] == file_hash_param:
+                doc_path = os.path.join(settings.COURS_DIR, d["file_path"])
+                filename = d["filename"]
+                break
+
+        if not doc_path or not os.path.exists(doc_path):
+            raise HTTPException(status_code=404, detail="Document not found")
+
+        # Return the file as attachment
+        return FileResponse(
+            path=doc_path,
+            filename=filename,
+            media_type="application/octet-stream",
+        )
+
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error getting content for document {document_id} in subject {matiere}: {str(e)}")
+        logger.error(
+            f"Error sending file for document {document_id} in subject {matiere}: {str(e)}"
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error getting document content: {str(e)}"
+            detail=f"Error retrieving document file: {str(e)}",
         )
 
 @router.post("/matieres/{matiere}/documents/reindex", response_model=ApiResponse)
@@ -359,7 +390,7 @@ async def reindex_subject_documents(
                 
                 # Map database document format to expected format for indexing
                 document_info = {
-                    "file_hash": document["id"],  # Database uses 'id' for hash
+                    "file_hash": document["file_hash"],
                     "filename": document["filename"],
                     "file_path": document["file_path"],
                     "document_type": document["document_type"],
@@ -377,7 +408,7 @@ async def reindex_subject_documents(
                 if index_success:
                     try:
                         with next(get_session()) as db_session:
-                            mark_document_as_indexed(db_session, document["id"])
+                            mark_document_as_indexed(db_session, document["file_hash"])
                     except Exception as db_error:
                         logger.warning(f"Document indexed but failed to update database: {db_error}")
                 

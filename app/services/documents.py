@@ -145,7 +145,8 @@ def upload_document_with_tracking(
             
             # Return enhanced document info with database data
             document_info = {
-                "id": doc.file_hash,
+                "id": doc.id,
+                "file_hash": doc.file_hash,
                 "filename": doc.filename,
                 "matiere": doc.matiere,
                 "document_type": doc.document_type,
@@ -330,7 +331,8 @@ def lister_documents(matiere: str) -> Dict[str, Any]:
             document_list = []
             for doc in documents:
                 document_list.append({
-                    "id": doc.file_hash,
+                    "id": doc.id,
+                    "file_hash": doc.file_hash,
                     "filename": doc.filename,
                     "matiere": doc.matiere,
                     "document_type": doc.document_type,

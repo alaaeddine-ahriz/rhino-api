@@ -393,8 +393,23 @@ def get_documents_for_subject(matiere: str) -> List[Dict[str, Any]]:
                 # Check if document is in exams folder
                 is_exam = "examens" in relative_path
                 
+                # Attempt to retrieve numeric DB id if exists
+                db_id = None
+                try:
+                    from sqlmodel import select
+                    from app.db.session import get_session as _get_session
+                    from app.db.models import Document as _Document
+
+                    with next(_get_session()) as _session:
+                        db_doc = _session.exec(select(_Document).where(_Document.file_hash == file_hash)).first()
+                        if db_doc:
+                            db_id = db_doc.id
+                except Exception:
+                    pass
+                
                 document_info = {
-                    "id": file_hash,  # Using file hash as unique ID
+                    "id": db_id,
+                    "file_hash": file_hash,
                     "filename": os.path.basename(file_path),
                     "matiere": matiere,
                     "document_type": os.path.splitext(file_path)[1].lower().lstrip('.'),
@@ -403,7 +418,6 @@ def get_documents_for_subject(matiere: str) -> List[Dict[str, Any]]:
                     "file_size": file_stats.st_size,
                     "upload_date": datetime.fromtimestamp(file_stats.st_ctime).isoformat(),
                     "last_modified": datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
-                    "file_hash": file_hash
                 }
                 
                 documents.append(document_info)
@@ -472,6 +486,7 @@ def upload_document_to_subject(
         
         document_info = {
             "id": file_hash,
+            "file_hash": file_hash,
             "filename": filename,
             "matiere": matiere,
             "document_type": file_extension.lstrip('.'),
@@ -480,7 +495,6 @@ def upload_document_to_subject(
             "file_size": file_stats.st_size,
             "upload_date": datetime.fromtimestamp(file_stats.st_ctime).isoformat(),
             "last_modified": datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
-            "file_hash": file_hash
         }
         
         return True, f"Document {filename} uploaded successfully", document_info
@@ -505,7 +519,7 @@ def delete_document_from_subject(matiere: str, document_id: str) -> Tuple[bool, 
         target_document = None
         
         for doc in documents:
-            if doc["id"] == document_id:
+            if doc.get("file_hash") == document_id:
                 target_document = doc
                 break
         
@@ -543,7 +557,7 @@ def get_document_content(matiere: str, document_id: str) -> Tuple[bool, str, Opt
         target_document = None
         
         for doc in documents:
-            if doc["id"] == document_id:
+            if doc.get("file_hash") == document_id:
                 target_document = doc
                 break
         
