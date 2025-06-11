@@ -48,7 +48,7 @@ TCP est un protocole de transport fiable qui assure la livraison ordonnée des d
 👍 Bon travail ! Continuez vos efforts, vous êtes sur la bonne voie.
 
 Cordialement,
-Le système d'évaluation automatique 🤖
+Le Rhino 🤖
 
 ---
 

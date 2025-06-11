@@ -123,18 +123,159 @@ async def submit_challenge_response(
     """
     current_user = await get_current_user_simple(user_id, session)
     logger.info(f"Soumission de réponse pour le challenge {challenge_id} par utilisateur {response_data.user_id}")
-    return {
-        "success": True,
-        "message": "Réponse soumise avec succès",
-        "data": {
-            "submission": {
-                "challenge_id": challenge_id,
-                "user_id": response_data.user_id,
-                "submitted_at": datetime.now().isoformat(),
-                "evaluated": False
+    
+    try:
+        # Generate a unique question ID for this response
+        import uuid
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        short_uuid = str(uuid.uuid4())[:6]
+        question_id = f"IDQ-{timestamp}-{short_uuid}"
+        
+        # Get the challenge details
+        from sqlmodel import select
+        from app.db.models import Challenge
+        challenge = session.exec(select(Challenge).where(Challenge.id == int(challenge_id))).first()
+        
+        if not challenge:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Challenge with ID {challenge_id} not found"
+            )
+        
+        # Try to save to database first, fallback to JSON
+        try:
+            from app.services.student_response_service import StudentResponseService
+            service = StudentResponseService()
+            
+            # Save the question first (creates the record)
+            question_saved = service.save_question(
+                question_id=question_id,
+                student_email=current_user.email or f"user{current_user.id}@example.com",
+                user_id=int(current_user.id),
+                api_challenge_id=int(challenge_id)
+            )
+            
+            if question_saved:
+                # Save the response
+                response_saved = service.save_response(
+                    question_id=question_id,
+                    response=response_data.response,
+                    response_date=datetime.now().isoformat(),
+                    response_from=current_user.email or f"user{current_user.id}@example.com"
+                )
+                
+                if response_saved:
+                    logger.info(f"✅ Response saved to database for challenge {challenge_id}")
+                    db_saved = True
+                else:
+                    logger.warning("Failed to save response to database, falling back to JSON")
+                    db_saved = False
+            else:
+                logger.warning("Failed to save question to database, falling back to JSON")
+                db_saved = False
+                
+        except Exception as db_error:
+            logger.warning(f"Database error, falling back to JSON: {db_error}")
+            db_saved = False
+        
+        # Fallback to JSON if database failed
+        if not db_saved:
+            logger.info("📝 Using JSON fallback for response storage")
+            
+            # Import the mail utilities for JSON handling
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'mail'))
+            
+            from utils import load_conversations, save_conversations
+            
+            conversations = load_conversations()
+            conversations[question_id] = {
+                "student": current_user.email or f"user{current_user.id}@example.com",
+                "question": challenge.question,
+                "matiere": challenge.matiere,
+                "challenge_ref": challenge.ref,
+                "api_challenge_id": int(challenge_id),
+                "response": response_data.response,
+                "response_date": datetime.now().isoformat(),
+                "response_from": current_user.email or f"user{current_user.id}@example.com",
+                "evaluated": False,
+                "user_id": int(current_user.id)
+            }
+            save_conversations(conversations)
+            logger.info(f"✅ Response saved to JSON for challenge {challenge_id}")
+        
+        # Trigger automatic evaluation (try both systems)
+        evaluation_result = None
+        try:
+            # Import the evaluation system
+            import sys
+            import os
+            sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'mail'))
+            from evaluator import evaluate_and_display
+            
+            # Evaluate the response
+            evaluation_result = evaluate_and_display(
+                question=challenge.question,
+                response=response_data.response,
+                matiere=challenge.matiere,
+                user_id=int(current_user.id)
+            )
+            
+            if evaluation_result:
+                logger.info(f"✅ Response evaluated for question {question_id}")
+                
+                # Try to save evaluation to database first
+                if db_saved:
+                    try:
+                        evaluation_saved = service.save_evaluation(question_id, evaluation_result)
+                        if evaluation_saved:
+                            logger.info(f"✅ Evaluation saved to database for question {question_id}")
+                        else:
+                            logger.warning("Failed to save evaluation to database")
+                    except Exception as eval_db_error:
+                        logger.warning(f"Failed to save evaluation to database: {eval_db_error}")
+                
+                # Update JSON with evaluation
+                conversations = load_conversations()
+                if question_id in conversations:
+                    conversations[question_id]['evaluation'] = evaluation_result
+                    conversations[question_id]['evaluated'] = True
+                    save_conversations(conversations)
+                    logger.info(f"✅ Evaluation saved to JSON for question {question_id}")
+                
+            else:
+                logger.warning(f"Failed to evaluate response for question {question_id}")
+                
+        except Exception as eval_error:
+            logger.warning(f"Evaluation process failed (non-blocking): {eval_error}")
+        
+        return {
+            "success": True,
+            "message": "Réponse soumise et sauvegardée avec succès",
+            "data": {
+                "submission": {
+                    "question_id": question_id,
+                    "challenge_id": challenge_id,
+                    "user_id": response_data.user_id,
+                    "response": response_data.response,
+                    "submitted_at": datetime.now().isoformat(),
+                    "evaluated": evaluation_result is not None,
+                    "storage_method": "database" if db_saved else "json",
+                    "evaluation_score": evaluation_result.get('score') if evaluation_result else None
+                }
             }
         }
-    }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error submitting challenge response: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error submitting response: {str(e)}"
+        )
 
 @router.get("/challenges/{challenge_id}/leaderboard", response_model=ApiResponse)
 async def get_challenge_leaderboard(

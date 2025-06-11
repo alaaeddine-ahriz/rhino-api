@@ -150,16 +150,24 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         score = api_data.get('score', 'N/A')
         note = api_data.get('note', 'N/A')
         
-        # Préparer le sujet en réponse à l'email original
-        if original_email and original_email.get('subject'):
-            original_subject = original_email['subject']
-            # Supprimer les "Re: " existants pour éviter "Re: Re: ..."
-            clean_subject = original_subject
-            while clean_subject.startswith('Re: ') or clean_subject.startswith('RE: '):
-                clean_subject = clean_subject[4:]
-            subject = f"Re: {clean_subject} - Évaluation : {score}/20 (Note: {note})"
+        # Créer un sujet simple et propre basé sur les données JSON
+        import re
+        
+        # Extraire l'ID de question depuis l'email original si disponible
+        question_id = None
+        if original_email and original_email.get('question_id'):
+            question_id = original_email['question_id']
+        elif original_email and original_email.get('subject'):
+            # Essayer d'extraire l'ID depuis le sujet
+            match = re.search(r'(IDQ-\d{14}-[a-f0-9]{6})', str(original_email['subject']))
+            if match:
+                question_id = match.group(1)
+        
+        # Créer un sujet propre et simple
+        if question_id:
+            subject = f"📊 Évaluation - {question_id} - Score: {score}/20 (Note: {note})"
         else:
-            subject = f"Évaluation de votre réponse : {score}/20 (Note: {note})"
+            subject = f"📊 Évaluation de votre réponse - Score: {score}/20 (Note: {note})"
         
         # Extraire les données de l'API
         api_data = evaluation.get('raw_api_response', {}).get('data', {})
@@ -204,29 +212,16 @@ SUGGESTIONS
 {f"RÉPONSE MODÈLE{chr(10)}{reponse_modele}" if reponse_modele else ""}
 
 Cordialement,
-Le système d'évaluation automatique
+Le Rhino
 """
         
-        # Envoi de l'email avec en-têtes de réponse si disponibles
+        # Envoi simple de l'email (sans threading complexe)
         logger.info(f"Envoi du feedback à {to_email}")
+        logger.info(f"Sujet: {subject}")
         yag = yagmail.SMTP(EMAIL, PASSWORD)
         
-        # Préparer les en-têtes pour créer une réponse dans le même thread
-        headers = {}
-        if original_email:
-            # Extraire le Message-ID de l'email original
-            original_message_id = original_email.get('message_id')
-            if original_message_id:
-                headers['In-Reply-To'] = original_message_id
-                headers['References'] = original_message_id
-                logger.info(f"Envoi en réponse au message ID: {original_message_id}")
-        
-        if headers:
-            # Envoyer avec en-têtes personnalisés pour créer une réponse
-            yag.send(to=to_email, subject=subject, contents=body, headers=headers)
-        else:
-            # Envoi normal si pas d'informations pour la réponse
-            yag.send(to=to_email, subject=subject, contents=body)
+        # Envoi normal - simple et fiable
+        yag.send(to=to_email, subject=subject, contents=body)
         
         logger.info(f"✅ Feedback envoyé avec succès à {to_email}")
         return True

@@ -100,8 +100,12 @@ app.include_router(leaderboard.router, prefix="/api")
 async def startup_event():
     """Initialize resources at startup."""
     try:
+        # Initialize database tables
+        from app.db.init_db import init_db
+        init_db()
+        print("✅ Database initialized successfully!")
+        
         # Initialize Pinecone and other resources will be implemented here
-        # for now just print a message
         print("Initializing API resources...")
     except Exception as e:
         print(f"Error during startup: {e}")

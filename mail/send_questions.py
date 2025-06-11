@@ -38,7 +38,7 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
     try:
         if user_id:
             # Récupération du challenge du jour pour un utilisateur
-            url = f"{API_BASE_URL}/challenges/today/simple"
+            url = f"{API_BASE_URL}/challenges/today"
             params = {"user_id": user_id}
             logger.info(f"Récupération du challenge du jour pour l'utilisateur {user_id}")
             
@@ -140,6 +140,8 @@ Bonne chance ! 🍀
         # Envoi de l'email
         logger.info(f"Envoi de la question à {to}")
         yag = yagmail.SMTP(EMAIL, PASSWORD)
+        
+        # Envoi simple et fiable
         yag.send(to=to, subject=subject, contents=body)
         
         logger.info(f"✅ Question envoyée à {to}")
@@ -233,7 +235,7 @@ def send_subject_challenge(email: str, matiere: str) -> bool:
 def test_api_connection() -> bool:
     """Teste la connexion à l'API"""
     try:
-        response = requests.get(f"{API_BASE_URL}/challenges/today/simple", timeout=5)
+        response = requests.get(f"{API_BASE_URL}/challenges/today", timeout=5)
         return response.status_code == 200
     except:
         return False

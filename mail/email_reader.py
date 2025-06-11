@@ -69,6 +69,10 @@ def read_new_replies() -> List[Dict]:
                 date = msg['Date']
                 message_id = msg['Message-ID'] or ""
                 
+                # Extraire les headers de threading pour les réponses
+                in_reply_to = msg.get('In-Reply-To', '')
+                references = msg.get('References', '')
+                
                 # Extraire le contenu
                 body = ""
                 if msg.is_multipart():
@@ -88,6 +92,8 @@ def read_new_replies() -> List[Dict]:
                     'body': body.strip(),
                     'date': date,
                     'message_id': message_id,
+                    'in_reply_to': in_reply_to,
+                    'references': references,
                     'question_id': question_id,
                     'email_id': email_id.decode()
                 }

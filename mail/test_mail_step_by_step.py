@@ -80,7 +80,7 @@ def test_step_3_api_challenge(user_id=8):
     
     try:
         # Test challenge du jour pour utilisateur
-        url = f"{API_BASE_URL}/challenges/today/simple"
+        url = f"{API_BASE_URL}/challenges/today"
         params = {"user_id": user_id}
         
         print(f"🔍 URL: {url}")
@@ -234,7 +234,7 @@ def test_step_8_evaluate_response(reply, challenge_data):
         print(f"🧠 Évaluation de la réponse en {matiere}...")
         
         # Évaluer la réponse
-        evaluation = evaluate_and_display(question, response_text, matiere, user_id=8)
+        evaluation = evaluate_and_display(question, response_text, matiere, user_id=1)
         
         # Sauvegarder l'évaluation
         question_id = reply.get('question_id')

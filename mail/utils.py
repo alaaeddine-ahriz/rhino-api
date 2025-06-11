@@ -11,7 +11,9 @@ sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 # Import conditionnel du service de base de données
 try:
     from app.services.student_response_service import StudentResponseService
-    DB_AVAILABLE = True
+    # Temporarily force JSON usage to avoid DB errors
+    DB_AVAILABLE = False  # Force to False to use JSON fallback
+    print("🔧 Forçage de l'utilisation du JSON (base de données temporairement désactivée)")
 except ImportError:
     DB_AVAILABLE = False
     print("Service de base de données non disponible, utilisation du JSON")
