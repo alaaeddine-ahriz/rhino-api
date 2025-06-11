@@ -1,13 +1,14 @@
 """Models for challenges management."""
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-from datetime import date as date_type
+from datetime import datetime
 
 
 class ChallengeBase(BaseModel):
     """Base model for a challenge."""
     matiere: str = Field(..., description="Subject involved in the challenge")
-    date: str = Field(..., description="Challenge date (YYYY-MM-DD)")
+    # If date is not provided, default to current date in ISO format
+    date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"), description="Challenge date (YYYY-MM-DD)")
 
 class ChallengeCreate(ChallengeBase):
     """Model for creating a new challenge."""

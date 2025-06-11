@@ -30,6 +30,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
     OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o")
     
+    # Tick scheduling
+    # Global reference date used to compute tick numbers for all matières
+    # Format ISO YYYY-MM-DD
+    TICK_REFERENCE_DATE: str = os.getenv("TICK_REFERENCE_DATE", "2024-01-01")
+    
     # Folders
     COURS_DIR: str = os.getenv("COURS_DIR", "cours")
     OUTPUTS_DIR: str = os.getenv("OUTPUTS_DIR", "outputs")

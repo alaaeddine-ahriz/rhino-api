@@ -4,6 +4,10 @@ from sqlmodel import select
 from fastapi import Depends
 from datetime import datetime
 from typing import Optional, Dict
+import logging
+from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 def generer_challenge_quotidien():
     """Génère le challenge du jour."""
@@ -51,8 +55,10 @@ def creer_challenge(challenge_data, session=None):
             return creer_challenge(challenge_data, session=session)
     
     try:
-        # Remove 'ref' from challenge_data if it exists since the column might not exist
-        challenge_data_clean = {k: v for k, v in challenge_data.items() if k != 'ref'}
+        from datetime import datetime
+        # Remove 'ref' and force date to today (creation time)
+        challenge_data_clean = {k: v for k, v in challenge_data.items() if k not in {'ref', 'date'}}
+        challenge_data_clean['date'] = datetime.now().strftime("%Y-%m-%d")
         
         # Créer l'objet Challenge without ref
         challenge = Challenge(**challenge_data_clean)
@@ -98,11 +104,19 @@ def get_challenge_for_current_tick(matiere: str, session, granularite: str = Non
         granularite = matiere_obj.granularite if matiere_obj else "semaine"
     
     # 2. Get all challenges for the subject, ordered by date and ID
-    challenges = session.exec(
+    challenges_raw = session.exec(
         select(Challenge.id, Challenge.question, Challenge.matiere, Challenge.date)
         .where(Challenge.matiere == matiere)
         .order_by(Challenge.date, Challenge.id)
     ).all()
+    
+    # Filter out rows with un-parsable dates to avoid blocking the whole service
+    challenges = []
+    for c in challenges_raw:
+        if _parse_date(c[3]) is None:
+            logger.warning(f"Challenge {c[0]} skipped due to invalid date format: {c[3]}")
+            continue
+        challenges.append(c)
     
     if not challenges:
         return None
@@ -126,8 +140,8 @@ def get_challenge_for_current_tick(matiere: str, session, granularite: str = Non
         })()
         challenge_objects.append(challenge_obj)
     
-    # 3. Calculate current tick
-    current_tick = compute_tick(granularite, challenge_objects[0].date)
+    # 3. Calculate current tick using global reference date
+    current_tick = compute_tick(granularite, settings.TICK_REFERENCE_DATE)
     
     # 4. Check if we already have a challenge served for this tick
     served_challenge = session.exec(
@@ -198,8 +212,22 @@ def get_next_challenge_for_matiere(matiere: str, session, granularite: str = Non
     """
     return get_challenge_for_current_tick(matiere, session, granularite)
 
+def _parse_date(date_str: str) -> Optional[datetime]:
+    """Try to parse a date string using several common patterns."""
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%d/%m/%y", "%Y/%m/%d"):
+        try:
+            return datetime.strptime(date_str, fmt)
+        except ValueError:
+            continue
+    return None
+
 def compute_tick(granularite, ref_date_str):
-    ref_date = datetime.strptime(ref_date_str, "%Y-%m-%d")
+    ref_date_parsed = _parse_date(ref_date_str)
+    if ref_date_parsed is None:
+        # If we cannot parse the date we skip by raising to be caught by caller
+        raise ValueError(f"Invalid date format: {ref_date_str}")
+
+    ref_date = ref_date_parsed
     now = datetime.now()
     if granularite == "jour":
         return (now.date() - ref_date.date()).days
@@ -252,12 +280,15 @@ def get_today_challenge_for_user(user_subscriptions: str, session) -> Optional[D
     if not today_challenges:
         return None
     
-    # For now, return the first available challenge
-    # In the future, this could implement more sophisticated logic like:
-    # - Rotating between subjects
-    # - Prioritizing subjects by user activity
-    # - Considering challenge difficulty progression
-    selected = today_challenges[0]
+    # ----------------------- ROUND-ROBIN SELECTION -----------------------
+    # Deterministically rotate through the list of subjects that have a
+    # challenge today.  We use the current Julian day (toordinal) so that a
+    # single subject is chosen per day and it cycles automatically.
+    from datetime import date as _date_mod
+
+    today_ordinal = _date_mod.today().toordinal()
+    selected_idx = today_ordinal % len(today_challenges)
+    selected = today_challenges[selected_idx]
     
     return {
         "challenge_id": selected["challenge"].id,
