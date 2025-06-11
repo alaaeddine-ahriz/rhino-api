@@ -175,21 +175,38 @@ def display_reply(reply: Dict):
     print("-" * 50)
 
 def save_reply_to_conversations(reply: Dict):
-    """Sauvegarde la réponse dans le fichier conversations"""
+    """Sauvegarde la réponse dans la base de données et en JSON en fallback"""
     question_id = reply.get('question_id')
     if not question_id:
         logger.warning("Impossible de sauvegarder - ID question non trouvé")
         return False
     
-    conversations = load_conversations()
+    # Essayer de sauvegarder en base de données d'abord
+    from utils import save_response_to_db, get_conversation_from_db
     
-    if question_id in conversations:
-        conversations[question_id]['response'] = reply['body']
-        conversations[question_id]['response_date'] = reply['date']
-        conversations[question_id]['response_from'] = reply['from']
-        save_conversations(conversations)
-        logger.info(f"✅ Réponse sauvegardée pour {question_id}")
+    db_saved = save_response_to_db(
+        question_id=question_id,
+        response=reply['body'],
+        response_date=reply['date'],
+        response_from=reply['from']
+    )
+    
+    if db_saved:
+        logger.info(f"✅ Réponse sauvegardée en base de données pour {question_id}")
         return True
     else:
-        logger.warning(f"Question ID {question_id} non trouvée dans les conversations")
-        return False 
+        logger.warning("Échec de la sauvegarde en base de données, utilisation du JSON")
+        
+        # Fallback vers JSON
+        conversations = load_conversations()
+        
+        if question_id in conversations:
+            conversations[question_id]['response'] = reply['body']
+            conversations[question_id]['response_date'] = reply['date']
+            conversations[question_id]['response_from'] = reply['from']
+            save_conversations(conversations)
+            logger.info(f"✅ Réponse sauvegardée en JSON pour {question_id}")
+            return True
+        else:
+            logger.warning(f"Question ID {question_id} non trouvée dans les conversations")
+            return False 

@@ -239,12 +239,22 @@ def test_step_8_evaluate_response(reply, challenge_data):
         # Sauvegarder l'évaluation
         question_id = reply.get('question_id')
         if question_id:
-            conversations = load_conversations()
-            if question_id in conversations:
-                conversations[question_id]['evaluation'] = evaluation
-                conversations[question_id]['evaluated'] = True
-                save_conversations(conversations)
-                print(f"✅ Évaluation sauvegardée pour {question_id}")
+            from utils import save_evaluation_to_db
+            
+            # Essayer de sauvegarder en base de données d'abord
+            db_saved = save_evaluation_to_db(question_id, evaluation)
+            
+            if db_saved:
+                print(f"✅ Évaluation sauvegardée en base de données pour {question_id}")
+            else:
+                print("⚠️ Échec de la sauvegarde en base de données, utilisation du JSON")
+                # Fallback vers JSON
+                conversations = load_conversations()
+                if question_id in conversations:
+                    conversations[question_id]['evaluation'] = evaluation
+                    conversations[question_id]['evaluated'] = True
+                    save_conversations(conversations)
+                    print(f"✅ Évaluation sauvegardée en JSON pour {question_id}")
         
         return True, evaluation
         
@@ -297,12 +307,38 @@ def test_step_9_send_feedback(reply, evaluation, challenge_data, student):
             # Sauvegarder l'envoi du feedback
             question_id = reply.get('question_id')
             if question_id:
-                conversations = load_conversations()
-                if question_id in conversations:
-                    conversations[question_id]['feedback_sent'] = True
-                    conversations[question_id]['feedback_sent_to'] = student_email
-                    save_conversations(conversations)
-                    print(f"✅ Envoi du feedback enregistré pour {question_id}")
+                from utils import DB_AVAILABLE
+                from app.services.student_response_service import StudentResponseService
+                
+                if DB_AVAILABLE:
+                    try:
+                        service = StudentResponseService()
+                        db_saved = service.mark_feedback_sent(question_id, student_email)
+                        if db_saved:
+                            print(f"✅ Envoi du feedback enregistré en base de données pour {question_id}")
+                        else:
+                            # Fallback vers JSON
+                            conversations = load_conversations()
+                            if question_id in conversations:
+                                conversations[question_id]['feedback_sent'] = True
+                                conversations[question_id]['feedback_sent_to'] = student_email
+                                save_conversations(conversations)
+                                print(f"✅ Envoi du feedback enregistré en JSON pour {question_id}")
+                    except Exception as e:
+                        print(f"Erreur base de données: {e}, utilisation du JSON")
+                        conversations = load_conversations()
+                        if question_id in conversations:
+                            conversations[question_id]['feedback_sent'] = True
+                            conversations[question_id]['feedback_sent_to'] = student_email
+                            save_conversations(conversations)
+                            print(f"✅ Envoi du feedback enregistré en JSON pour {question_id}")
+                else:
+                    conversations = load_conversations()
+                    if question_id in conversations:
+                        conversations[question_id]['feedback_sent'] = True
+                        conversations[question_id]['feedback_sent_to'] = student_email
+                        save_conversations(conversations)
+                        print(f"✅ Envoi du feedback enregistré en JSON pour {question_id}")
             
             return True
         else:

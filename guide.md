@@ -82,7 +82,7 @@ Le point d'entrée se situe dans `main.py`. Le code suit une architecture modula
 - `setup_embeddings()`: configuration du client OpenAI embeddings.
 - `create_or_get_index(...)`: création ou récupération de l'index Pinecone.
 - `initialiser_structure_dossiers()`: création des dossiers de cours.
-- `mettre_a_jour_matiere(...)`: indexation ou réindexation des documents d'une matière.
+
 - `interroger_matiere(...)`: recherche contextuelle dans une matière.
 - `generer_question_reflexion(...)`: génération d'une question de réflexion.
 - `evaluer_reponse(...)`: évaluation d'une réponse via IA/RAG et production d'un feedback détaillé.
@@ -139,7 +139,7 @@ Tous les chemins sont préfixés par `/api` et retournent un modèle `ApiRespons
 | --- | --- | --- | --- |
 | GET | `/challenges/today` | — | Récupère le challenge du jour selon la date serveur (`challengeId`, `date`, `question`, `matieres`). |
 | GET | `/challenges` | QueryParam facultatif `matiere` | Liste tous les challenges, filtrables par matière ou plage de dates. |
-| POST | `/challenges` | `{ "matieres": ["MATHS","PHYSIQUE"], "date": "YYYY-MM-DD" }` | Crée un nouveau challenge pour une ou plusieurs matières. |
+| POST | `/challenges` | `{ "question": "Question text", "matiere": "MATH" }` | Crée un nouveau challenge pour une matière (date automatiquement définie). |
 | POST | `/challenges/{challengeId}/response` | `{ "userId": "<id>", "response": "<texte>" }` | Soumet la réponse d'un utilisateur et l'enregistre ; peut déclencher une évaluation. |
 | GET | `/challenges/{challengeId}/leaderboard` | — | Récupère le classement pour un challenge spécifique (`userId`, `score`, `rang`). |
 

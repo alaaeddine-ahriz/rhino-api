@@ -171,44 +171,5 @@ async def delete_matiere(
                 detail=result["message"]
             )
 
-@router.post("/{matiere_name}/update", response_model=ApiResponse)
-async def update_matiere_index(
-    user_id: int = Query(..., description="User ID for authentication"),
-    matiere_name: str = Path(..., description="Subject name to update"),
-    session=Depends(get_session)
-):
-    """
-    Update/reindex documents for a specific subject (teacher or admin only).
-    """
-    current_user = await get_current_user_simple(user_id, session)
-    
-    # Check if user has teacher or admin role
-    if current_user.role not in ["teacher", "admin"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to access this resource. Teacher or admin role required.",
-        )
-    
-    logger.info(f"[{current_user.username}] Mise à jour de l'index de la matière '{matiere_name}'.")
-    
-    # Utiliser le service pour mettre à jour la matière
-    result = matieres.mettre_a_jour_matiere(matiere_name)
-    
-    if result["success"]:
-        return {
-            "success": True,
-            "message": result["message"],
-            "data": {"matiere_name": matiere_name}
-        }
-    else:
-        if "n'existe pas" in result["message"]:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=result["message"]
-            )
-        else:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=result["message"]
-            )
+
 

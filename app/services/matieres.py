@@ -95,34 +95,7 @@ def lister_matieres() -> Dict[str, Any]:
         logger.error(f"Erreur lors de la liste des matières: {e}")
         return {"success": False, "data": [], "message": f"Erreur: {str(e)}"}
 
-def mettre_a_jour_matiere(nom: str) -> Dict[str, Any]:
-    """
-    Met à jour l'index d'une matière.
-    
-    Args:
-        nom: Nom de la matière à mettre à jour
-        
-    Returns:
-        Dict avec le statut de la mise à jour
-    """
-    try:
-        # Vérifier que la matière existe
-        matiere_dir = os.path.join(settings.COURS_DIR, nom)
-        if not os.path.exists(matiere_dir):
-            return {
-                "success": False, 
-                "message": f"La matière {nom} n'existe pas"
-            }
-        
-        logger.info(f"Mise à jour de la matière {nom}")
-        return {"success": True, "message": f"Matière {nom} mise à jour avec succès"}
-        
-    except Exception as e:
-        logger.error(f"Erreur lors de la mise à jour de {nom}: {e}")
-        return {
-            "success": False, 
-            "message": f"Erreur lors de la mise à jour de {nom}: {str(e)}"
-        }
+
 
 def supprimer_matiere(nom: str) -> Dict[str, Any]:
     """

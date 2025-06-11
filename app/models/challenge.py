@@ -7,8 +7,6 @@ from datetime import datetime
 class ChallengeBase(BaseModel):
     """Base model for a challenge."""
     matiere: str = Field(..., description="Subject involved in the challenge")
-    # If date is not provided, default to current date in ISO format
-    date: str = Field(default_factory=lambda: datetime.now().strftime("%Y-%m-%d"), description="Challenge date (YYYY-MM-DD)")
 
 class ChallengeCreate(ChallengeBase):
     """Model for creating a new challenge."""
@@ -18,6 +16,7 @@ class ChallengeResponse(ChallengeBase):
     """Model for challenge response."""
     challenge_id: str = Field(..., description="Unique challenge ID")
     question: str = Field(..., description="Challenge question")
+    date: str = Field(..., description="Challenge date (YYYY-MM-DD)")
     
 class ChallengeUserResponse(BaseModel):
     """Model for a user's response to a challenge."""

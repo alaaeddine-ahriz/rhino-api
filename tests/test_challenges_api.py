@@ -80,25 +80,20 @@ class TestChallengesAPI:
     def test_create_challenge_as_teacher(self):
         """Test creating a new challenge as teacher."""
         response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "SYD-TEST-001",
             "question": "Explain the difference between a router and a switch in networking.",
-            "matiere": "SYD",
-            "date": "2024-06-10",
-            "type": "knowledge"
+            "matiere": "SYD"
         })
         assert response.status_code == 200
         data = response.json()
         assert data["success"] is True
         assert "challenge" in data["data"]
-        assert data["data"]["challenge"]["ref"] == "SYD-TEST-001"
+        assert "ref" in data["data"]["challenge"]
 
     def test_create_challenge_as_student_forbidden(self):
         """Test that students cannot create challenges."""
         response = client.post(f"/api/challenges?user_id={self.student_id}", json={
-            "ref": "FORBIDDEN-001",
             "question": "This should not be allowed",
-            "matiere": "SYD",
-            "date": "2024-06-10"
+            "matiere": "SYD"
         })
         assert response.status_code == 403
         data = response.json()
@@ -108,10 +103,8 @@ class TestChallengesAPI:
     def test_create_challenge_invalid_data(self):
         """Test creating challenge with invalid data."""
         response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "",  # Empty ref
-            "question": "Valid question",
-            "matiere": "SYD",
-            "date": "2024-06-10"
+            "question": "",  # Empty question
+            "matiere": "SYD"
         })
         # Should fail validation
         assert response.status_code != 200
@@ -120,10 +113,8 @@ class TestChallengesAPI:
         """Test submitting a challenge response as student."""
         # First create a challenge
         create_response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "SYD-RESPONSE-001",
             "question": "What is DHCP?",
-            "matiere": "SYD",
-            "date": "2024-06-10"
+            "matiere": "SYD"
         })
         
         if create_response.status_code == 200:
@@ -147,10 +138,8 @@ class TestChallengesAPI:
         """Test submitting a challenge response as teacher."""
         # First create a challenge
         create_response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "TCP-TEACHER-001",
             "question": "Explain TCP congestion control",
-            "matiere": "TCP",
-            "date": "2024-06-10"
+            "matiere": "TCP"
         })
         
         if create_response.status_code == 200:
@@ -195,10 +184,8 @@ class TestChallengesAPI:
         """Test submitting empty response."""
         # First create a challenge
         create_response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "SYD-EMPTY-001",
             "question": "Test question for empty response",
-            "matiere": "SYD",
-            "date": "2024-06-10"
+            "matiere": "SYD"
         })
         
         if create_response.status_code == 200:
@@ -219,10 +206,8 @@ class TestChallengesAPI:
         """Test getting challenge leaderboard."""
         # First create a challenge
         create_response = client.post(f"/api/challenges?user_id={self.teacher_id}", json={
-            "ref": "SYD-LEADERBOARD-001",
             "question": "Explain NAT (Network Address Translation)",
-            "matiere": "SYD",
-            "date": "2024-06-10"
+            "matiere": "SYD"
         })
         
         if create_response.status_code == 200:

@@ -148,19 +148,35 @@ Bonne chance ! 🍀
         logger.info(f"   - Matière: {matiere_name}")
         logger.info(f"   - Référence: {challenge_ref}")
         
-        # Sauvegarde dans les conversations
-        conversations = load_conversations()
-        conversations[local_question_id] = {
-            "student": to,
-            "question": question,
-            "matiere": matiere_name,
-            "challenge_ref": challenge_ref,
-            "api_challenge_id": api_challenge_id,
-            "response": None,
-            "evaluated": False,
-            "user_id": user_id
-        }
-        save_conversations(conversations)
+        # Sauvegarde dans la base de données
+        from utils import save_question_to_db
+        db_saved = save_question_to_db(
+            question_id=local_question_id,
+            student_email=to,
+            question=question,
+            matiere=matiere_name,
+            challenge_ref=challenge_ref,
+            api_challenge_id=api_challenge_id,
+            user_id=user_id
+        )
+        
+        # Fallback vers JSON si la base de données échoue
+        if not db_saved:
+            logger.warning("Échec de la sauvegarde en base de données, utilisation du JSON")
+            conversations = load_conversations()
+            conversations[local_question_id] = {
+                "student": to,
+                "question": question,
+                "matiere": matiere_name,
+                "challenge_ref": challenge_ref,
+                "api_challenge_id": api_challenge_id,
+                "response": None,
+                "evaluated": False,
+                "user_id": user_id
+            }
+            save_conversations(conversations)
+        else:
+            logger.info("✅ Question sauvegardée en base de données")
         
         return True
         

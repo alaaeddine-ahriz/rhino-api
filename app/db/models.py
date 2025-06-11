@@ -54,4 +54,37 @@ class Token(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int
     token: str
-    is_active: bool = True 
+    is_active: bool = True
+
+class StudentResponse(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    question_id: str = Field(unique=True, description="L'ID unique de la question (ex: IDQ-20250610152017-f30548)")
+    user_id: int = Field(foreign_key="user.id", description="ID de l'utilisateur")
+    challenge_id: Optional[int] = Field(default=None, foreign_key="challenge.id", description="ID du challenge")
+    response: Optional[str] = Field(default=None, description="Réponse de l'étudiant")
+    response_date: Optional[str] = Field(default=None, description="Date de réponse de l'étudiant")
+    created_at: datetime = Field(default_factory=datetime.now, description="Date de création de l'enregistrement")
+    updated_at: datetime = Field(default_factory=datetime.now, description="Date de dernière mise à jour")
+
+class Evaluation(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    student_response_id: int = Field(foreign_key="studentresponse.id", description="ID de la réponse de l'étudiant")
+    
+    # Résultats principaux de l'évaluation
+    score: Optional[int] = Field(default=None, description="Score obtenu")
+    grade: Optional[str] = Field(default=None, description="Note sous forme de lettre (A, B, C, etc.)")
+    feedback: Optional[str] = Field(default=None, description="Feedback général de l'évaluation")
+    
+    # Feedback détaillé (stocké en JSON)
+    points_forts: Optional[str] = Field(default=None, description="Points forts identifiés (JSON array)")
+    points_ameliorer: Optional[str] = Field(default=None, description="Points à améliorer (JSON array)")
+    
+    # Feedback envoyé
+    feedback_sent: Optional[bool] = Field(default=False, description="Si le feedback a été envoyé à l'étudiant")
+    feedback_sent_at: Optional[datetime] = Field(default=None, description="Date d'envoi du feedback")
+    
+    # Métadonnées de l'évaluation  
+    evaluated_at: Optional[str] = Field(default=None, description="Date d'évaluation par l'API")
+    raw_api_response: Optional[str] = Field(default=None, description="Réponse brute de l'API en JSON pour backup complet")
+    
+    created_at: datetime = Field(default_factory=datetime.now, description="Date de création de l'évaluation") 

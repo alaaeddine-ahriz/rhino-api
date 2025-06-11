@@ -164,22 +164,7 @@ class TestMatieresAPI:
         assert "detail" in data
         assert "permission" in data["detail"].lower()
 
-    def test_update_matiere_index(self, test_users):
-        """Test updating/reindexing a matiere."""
-        teacher_id = test_users["teacher"]["id"]
-        
-        response = client.post(f"/api/matieres/SYD/update?user_id={teacher_id}")
-        assert response.status_code == 200
-        data = response.json()
-        assert data["success"] is True
-        assert "mise à jour" in data["message"]
 
-    def test_update_nonexistent_matiere_index(self, test_users):
-        """Test updating a matiere that doesn't exist."""
-        teacher_id = test_users["teacher"]["id"]
-        
-        response = client.post(f"/api/matieres/NONEXISTENT/update?user_id={teacher_id}")
-        assert response.status_code == 404
 
     def test_create_matiere_as_student_forbidden(self, test_users):
         """Test that students cannot create matieres."""

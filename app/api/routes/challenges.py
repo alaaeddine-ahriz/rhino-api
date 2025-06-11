@@ -106,7 +106,7 @@ async def create_challenge(
         )
     
     logger.info(f"Création d'un challenge par {current_user.username} pour la matière : {challenge.matiere}")
-    result = creer_challenge(challenge.dict(), session=session)
+    result = creer_challenge(challenge.model_dump(), session=session)
     result["message"] = "Challenge créé avec succès"
     logger.info(f"Challenge créé avec succès : {result.get('data', {}).get('challenge_id', 'N/A')}")
     return result

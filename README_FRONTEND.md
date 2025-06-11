@@ -207,10 +207,16 @@ interface Document {
 interface Challenge {
   challenge_id: string;
   ref: string;
-  date: string;
+  date: string; // Automatically set to creation date
   question: string;
   matiere: string;
   matieres: string[];
+}
+
+interface ChallengeCreate {
+  question: string;
+  matiere: string;
+  // Note: date is automatically set to current date, no need to provide it
 }
 ```
 
