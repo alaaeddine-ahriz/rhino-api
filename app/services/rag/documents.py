@@ -20,32 +20,18 @@ from app.core.config import settings
 def initialiser_structure_dossiers():
     """
     Initialize the folder structure for courses if it doesn't exist.
-    Creates a folder per subject with an explanatory README file.
+    Creates the main courses folder. Individual subject folders are created dynamically 
+    when subjects are added through the API.
     """
     # Create main courses folder if it doesn't exist
     if not os.path.exists(settings.COURS_DIR):
         os.makedirs(settings.COURS_DIR)
         print(f"Main courses folder created: {settings.COURS_DIR}")
+    else:
+        print(f"Courses folder already exists: {settings.COURS_DIR}")
     
-    # List of subjects (to be adapted according to needs)
-    matieres = ["SYD", "TCP"]
-    
-    for matiere in matieres:
-        matiere_dir = os.path.join(settings.COURS_DIR, matiere)
-        if not os.path.exists(matiere_dir):
-            os.makedirs(matiere_dir)
-            
-            # Create an explanatory README file
-            readme_path = os.path.join(matiere_dir, "README.md")
-            with open(readme_path, "w") as f:
-                f.write(f"# Course documents for {matiere}\n\n")
-                f.write("Place your course documents for this subject here.\n")
-                f.write("Supported formats: .md, .txt\n\n")
-                f.write("Recommended structure for markdown files:\n")
-                f.write("- Use ## for main sections\n")
-                f.write("- Each file should cover one concept or topic\n")
-            
-            print(f"Folder for subject {matiere} created with explanatory README")
+    # Note: Individual subject folders are now created dynamically through the API
+    # when teachers/admins create new subjects using the /matieres endpoint
 
 def lire_fichiers_matiere(matiere: str) -> List[Dict[str, Any]]:
     """
