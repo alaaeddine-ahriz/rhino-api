@@ -97,74 +97,83 @@ L'API sera accessible sur : **http://localhost:8000**
 
 ## 🔐 Authentification
 
-Le système utilise des **tokens pré-générés** stockés en base de données.
+Le système d'authentification a évolué : les utilisateurs s'enregistrent désormais via l'endpoint `/api/users/register` puis passent leur `user_id` dans la query-string (`?user_id=<id>`) pour chaque appel nécessitant une identification. Aucun JWT n'est requis pour ce prototype.  
 
-### Tokens de test disponibles
+### Endpoints principaux
 
-| Rôle | Username | Token |
-|------|----------|-------|
-| 👨‍🎓 Étudiant | student1 | `student_token_123` |
-| 👨‍🎓 Étudiant | student2 | `student_token_456` |
-| 👨‍🏫 Enseignant | teacher1 | `teacher_token_789` |
-| 👨‍🏫 Enseignant | teacher2 | `teacher_token_101` |
-| 👨‍💼 Admin | admin1 | `admin_token_999` |
+- **POST `/api/users/register`** – inscription d'un nouvel utilisateur  
+  Corps JSON :  
+  ```json
+  {
+    "username": "alice",
+    "email": "alice@example.com",
+    "role": "student",
+    "subscriptions": ["MATH", "SYS"]
+  }
+  ```
+  Réponse :  
+  ```json
+  { "success": true, "data": { "user_id": 1 } }
+  ```
 
-### Comment s'authentifier
+- **PUT `/api/users/subscriptions`** – ajouter ou retirer des abonnements (`user_id` + `subscriptions`).
+- **PUT `/api/users/{user_id}`** – mettre à jour les informations de l'utilisateur.
 
-1. **Via Swagger UI :**
-   - Allez sur `/api/docs`
-   - Utilisez l'endpoint `POST /api/auth/token`
-   - Entrez un token (ex: `{"token": "teacher_token_789"}`)
-   - Copiez le JWT retourné
-   - Cliquez "🔒 Authorize" → `Bearer YOUR_JWT_TOKEN`
+Exemple d'appel :
 
-2. **Via curl :**
 ```bash
-# Obtenir un JWT
-curl -X POST "http://localhost:8000/api/auth/token" \
+# Création d'un utilisateur
+curl -X POST http://localhost:8000/api/users/register \
      -H "Content-Type: application/json" \
-     -d '{"token": "teacher_token_789"}'
+     -d '{"username":"bob","email":"bob@example.com","role":"student","subscriptions":["MATH"]}'
 
-# Utiliser le JWT
-curl -X GET "http://localhost:8000/api/matieres" \
-     -H "Authorization: Bearer YOUR_JWT_TOKEN"
+# Utilisation de l'API avec l'identifiant retourné
+curl http://localhost:8000/api/matieres?user_id=1
 ```
+
+> Le module JWT (variables `TOKEN_*`) reste présent et pourra être activé ultérieurement.
 
 ## 📖 Documentation API
 
 ### Endpoints principaux
 
-#### 🔐 Authentification
-- `POST /api/auth/token` - Obtenir un JWT avec un token pré-généré
-- `GET /api/auth/tokens` - Lister tous les tokens (admin seulement)
+#### 👤 Utilisateurs
+- `POST /api/users/register` – Inscription
+- `PUT /api/users/subscriptions` – Gestion des abonnements
+- `PUT /api/users/{user_id}` – Mise à jour des informations
 
 #### 📚 Matières
-- `GET /api/matieres` - Liste des matières
-- `POST /api/matieres` - Créer une matière (enseignant+)
-- `DELETE /api/matieres/{id}` - Supprimer une matière (enseignant+)
-- `POST /api/matieres/{matiere}/documents/reindex` - Réindexer les documents d'une matière (enseignant+)
+- `GET /api/matieres` – Liste des matières
+- `POST /api/matieres` – Créer une matière (enseignant/admin)
+- `GET /api/matieres/{name}` – Détails d'une matière
+- `DELETE /api/matieres/{name}` – Supprimer une matière (enseignant/admin)
+- `POST /api/matieres/{name}/update` – Réindexer les documents (enseignant/admin)
 
 #### 📄 Documents
-- `GET /api/matieres/{matiere}/documents` - Documents d'une matière
-- `POST /api/matieres/{matiere}/documents` - Upload document (enseignant+)
-- `DELETE /api/matieres/{matiere}/documents/{id}` - Supprimer document (enseignant+)
+- `GET /api/matieres/{matiere}/documents` – Liste des documents
+- `POST /api/matieres/{matiere}/documents` – Upload d'un document (enseignant/admin)
+- `GET /api/matieres/{matiere}/documents/{id}/content` – Télécharger le fichier
+- `DELETE /api/matieres/{matiere}/documents/{id}` – Supprimer un document (enseignant/admin)
+- `POST /api/matieres/{matiere}/documents/reindex` – Réindexer tous les documents
+- `GET /api/matieres/{matiere}/documents/changes` – Obtenir les modifications depuis le dernier index
 
 #### ❓ Questions
-- `POST /api/question` - Poser une question au système RAG
-- `POST /api/question/reflection` - Générer une question de réflexion
+- `POST /api/question` – Poser une question au système RAG
+- `POST /api/question/reflection` – Générer une question de réflexion
 
 #### 📝 Évaluations
-- `POST /api/evaluation/response` - Évaluer une réponse d'étudiant
+- `POST /api/evaluation/response` – Évaluer une réponse d'étudiant
 
 #### 🏆 Challenges
-- `GET /api/challenges/today` - Challenge du jour
-- `GET /api/challenges` - Liste des challenges
-- `POST /api/challenges` - Créer un challenge (enseignant+)
-- `POST /api/challenges/{id}/response` - Soumettre une réponse
-- `GET /api/challenges/{id}/leaderboard` - Classement d'un challenge
+- `GET /api/challenges/today` – Challenge du jour
+- `GET /api/challenges` – Liste des challenges
+- `POST /api/challenges` – Créer un challenge (enseignant/admin)
+- `POST /api/challenges/{id}/response` – Soumettre une réponse
+- `GET /api/challenges/{id}/leaderboard` – Classement d'un challenge
+- `GET /api/challenges/next?matiere=...` – Challenge suivant pour une matière
 
 #### 🏅 Leaderboard
-- `POST /api/leaderboard/calcule` - Calculer un classement (enseignant+)
+- `POST /api/leaderboard/calcule` – Calculer un classement (enseignant/admin)
 
 ### Permissions par rôle
 
@@ -172,186 +181,49 @@ curl -X GET "http://localhost:8000/api/matieres" \
 |----------|----------|------------|-------|
 | Questions/Évaluations | ✅ | ✅ | ✅ |
 | Gestion matières/docs | ❌ | ✅ | ✅ |
-| Gestion tokens | ❌ | ❌ | ✅ |
+| Gestion challenges | ✅ | ✅ | ✅ |
+| Gestion utilisateurs | ❌ | ❌ | ✅ |
 
 ## 🏗️ Architecture
 
 ```
 app/
-├── core/                  # Configuration et utilitaires
-│   ├── config.py         # Variables d'environnement
-│   ├── security.py       # JWT et sécurité
-│   └── exceptions.py     # Exceptions personnalisées
-├── models/               # Modèles Pydantic
-│   ├── auth.py          # Authentification
-│   ├── matiere.py       # Matières
-│   ├── document.py      # Documents
-│   ├── question.py      # Questions
-│   ├── evaluation.py    # Évaluations
-│   └── challenge.py     # Challenges
-├── api/                 # Routes et dépendances
-│   ├── deps.py          # Dépendances (auth, permissions)
-│   └── routes/          # Endpoints organisés par domaine
-│       ├── auth.py
+├── core/                  # Configuration & exceptions
+│   ├── config.py
+│   └── exceptions.py
+├── db/                    # SQLModel tables & session helpers
+│   ├── models.py
+│   └── session.py
+├── services/              # Logique métier (RAG, documents, challenges…)
+│   ├── rag/
+│   ├── matieres.py
+│   └── ...
+├── api/                   # Routes FastAPI
+│   ├── deps.py
+│   └── routes/
+│       ├── auth.py        # Gestion des utilisateurs
 │       ├── matieres.py
 │       ├── documents.py
 │       ├── questions.py
 │       ├── evaluations.py
 │       ├── challenges.py
 │       └── leaderboard.py
-└── main.py              # Point d'entrée de l'application
+├── models/                # Schémas Pydantic
+└── main.py                # Point d'entrée de l'application
 ```
 
-## 🔧 Implémentation des fonctionnalités
+## 🔧 Fonctionnalités clés
 
-La structure actuelle fournit les **endpoints et la validation**, mais les fonctionnalités métier restent à implémenter. Voici comment procéder :
+Toutes les fonctionnalités suivantes sont **entièrement implémentées** :
 
-### 1. 📚 Gestion des matières
-
-**Fichier :** `app/api/routes/matieres.py`
-
-```python
-# Remplacer les placeholders par les vraies fonctions
-from main import initialiser_structure_dossiers, mettre_a_jour_matiere
-
-@router.post("/", response_model=ApiResponse)
-async def create_matiere(matiere: MatiereCreate, current_user: UserInDB = Depends(get_teacher_user)):
-    try:
-        # Appeler la vraie fonction
-        initialiser_structure_dossiers(matiere.name)
-        return {"success": True, "message": f"Matière {matiere.name} créée"}
-    except Exception as e:
-        raise HTTPException(500, f"Erreur: {str(e)}")
-```
-
-### 2. 📄 Upload de documents
-
-**Fichier :** `app/api/routes/documents.py`
-
-```python
-import shutil
-from pathlib import Path
-
-@router.post("/matieres/{matiere}/documents", response_model=ApiResponse)
-async def upload_document(matiere: str, file: UploadFile = File(...), current_user: UserInDB = Depends(get_teacher_user)):
-    try:
-        # Créer le dossier de la matière
-        matiere_dir = Path(f"cours/{matiere}")
-        matiere_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Sauvegarder le fichier
-        file_path = matiere_dir / file.filename
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
-            
-        # Appeler la fonction d'indexation
-        from main import mettre_a_jour_matiere
-        mettre_a_jour_matiere(matiere)
-        
-        return {"success": True, "message": f"Document {file.filename} uploadé"}
-    except Exception as e:
-        raise HTTPException(500, f"Erreur: {str(e)}")
-```
-
-### 3. ❓ Questions RAG
-
-**Fichier :** `app/api/routes/questions.py`
-
-```python
-from main import interroger_matiere, generer_question_reflexion
-
-@router.post("/question", response_model=ApiResponse)
-async def ask_question(request: QuestionRequest, current_user: UserInDB = Depends(get_current_user)):
-    try:
-        # Appeler la vraie fonction RAG
-        result = interroger_matiere(
-            matiere=request.matiere,
-            query=request.query,
-            output_format=request.output_format,
-            save_output=request.save_output
-        )
-        return {"success": True, "message": "Réponse générée", "data": result}
-    except Exception as e:
-        raise HTTPException(500, f"Erreur: {str(e)}")
-```
-
-### 4. 📝 Évaluations
-
-**Fichier :** `app/api/routes/evaluations.py`
-
-```python
-from app.services.evaluations import evaluer_reponse
-from app.models.evaluation import EvaluationRequest
-
-@router.post("/evaluation/response", response_model=ApiResponse)
-async def evaluate_response(
-    user_id: int = Query(..., description="User ID for authentication"),
-    evaluation: EvaluationRequest = Body(...),
-    session=Depends(get_session)
-):
-    """Évalue la réponse d'un étudiant et retourne un feedback détaillé via IA/RAG."""
-    current_user = await get_current_user_simple(user_id, session)
-    
-    try:
-        # Call AI-powered evaluation service
-        result = evaluer_reponse(evaluation)
-        
-        result["user_info"] = {
-            "user_id": current_user.id,
-            "username": current_user.username
-        }
-        
-        return result
-    
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Erreur lors de l'évaluation: {str(e)}"
-        )
-```
-
-### 5. 🗄️ Base de données pour les challenges
-
-Créer un système de persistance simple :
-
-```python
-# app/services/challenge_service.py
-import json
-from pathlib import Path
-from datetime import date
-from typing import List, Dict
-
-CHALLENGES_DB = Path("challenges.json")
-
-def save_challenge(challenge_data: Dict):
-    """Sauvegarder un challenge."""
-    challenges = load_challenges()
-    challenges.append(challenge_data)
-    with open(CHALLENGES_DB, "w") as f:
-        json.dump(challenges, f, indent=2)
-
-def load_challenges() -> List[Dict]:
-    """Charger tous les challenges."""
-    if not CHALLENGES_DB.exists():
-        return []
-    with open(CHALLENGES_DB, "r") as f:
-        return json.load(f)
-
-def get_today_challenge() -> Dict:
-    """Récupérer le challenge du jour."""
-    today = date.today().isoformat()
-    challenges = load_challenges()
-    return next((c for c in challenges if c["date"] == today), None)
-```
-
-### 6. 🔧 Ajout des dépendances complètes
-
-Quand vous êtes prêt à implémenter les fonctionnalités complètes :
-
-```bash
-# Décommenter les dépendances dans requirements.txt
-pip install pinecone-client langchain langchain-openai openai pdfplumber python-docx
-```
+- Gestion des utilisateurs et de leurs abonnements
+- Création/gestion des matières et de leurs documents
+- Indexation vectorielle (Pinecone) et génération d'embeddings (OpenAI)
+- Système RAG pour répondre aux questions et générer des questions de réflexion
+- Évaluation automatisée des réponses avec feedback détaillé
+- Gestion des challenges, logique de tick et classement
+- Leaderboard calculé sur demande
+- Suite de tests couvrant l'ensemble de l'API
 
 ## 🧪 Tests
 
@@ -677,3 +549,30 @@ GET /challenges/next?matiere=SYD
 ---
 
 Pour toute question sur l'usage ou l'extension de l'API, consulte la documentation technique ou contacte l'équipe projet.
+
+## 🕑 Système de Tick
+
+Le moteur de distribution des défis repose sur un **tick global** calculé à partir d'une date de référence commune à toutes les matières.
+
+1. La date de référence se configure via la variable :`TICK_REFERENCE_DATE` (fichier `.env`, valeur par défaut `2024-01-01`).
+2. Pour chaque matière, on applique la granularité (`jour`, `semaine`, `3jours`, `mois`, …) pour obtenir le tick courant.
+3. L'algorithme garantit qu'un même défi est proposé à tous les utilisateurs pendant un tick donné, sans stocker le tick global.
+4. Si un utilisateur est abonné à plusieurs matières, un **round-robin** distribue équitablement les défis entre ces matières.
+
+Une description détaillée se trouve dans [`docs/systeme_tick.md`](docs/systeme_tick.md).
+
+## 🔧 Configuration supplémentaire
+
+Ajoutez dans `.env` :
+```env
+# Date de référence pour le système de tick (ISO YYYY-MM-DD)
+TICK_REFERENCE_DATE=2024-01-01
+```
+
+## ✅ Statut de l'implémentation
+
+Tous les endpoints listés ci-dessus sont opérationnels ; les sections de « code à compléter » ont été implémentées dans la base de code. Vous pouvez démarrer l'API, envoyer des requêtes et exécuter la suite de tests :
+
+```bash
+pytest -q
+```

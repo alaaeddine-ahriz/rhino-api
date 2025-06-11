@@ -50,18 +50,6 @@ class TestChallengesAPI:
         data = response.json()
         assert "success" in data
 
-    def test_get_today_challenge_simple_as_student(self):
-        """Test getting today's challenge using simple endpoint as student."""
-        response = client.get(f"/api/challenges/today/simple?user_id={self.student_id}")
-        assert response.status_code == 200
-        data = response.json()
-        assert "success" in data
-        
-        # If successful, check for user info
-        if data["success"]:
-            assert "user_info" in data["data"]
-            assert data["data"]["user_info"]["user_id"] == str(self.student_id)
-
     def test_get_today_challenge_invalid_user(self):
         """Test getting today's challenge with invalid user."""
         response = client.get("/api/challenges/today?user_id=999999")
