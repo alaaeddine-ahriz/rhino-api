@@ -10,13 +10,12 @@ from app.models.document import DocumentCreate, DocumentResponse, DocumentList
 from app.api.deps import get_current_user_simple
 from app.core.exceptions import NotFoundError
 from app.services.rag.documents import (
-    get_documents_for_subject, 
-    upload_document_to_subject, 
     delete_document_from_subject,
     get_document_content,
     process_and_index_new_document,
     initialiser_structure_dossiers
 )
+from app.services.documents import lister_documents, upload_document_with_tracking, get_document_changes_since_last_index, mark_document_as_indexed
 from app.services.rag.embeddings import delete_documents
 from app.services.rag.core import initialize_pinecone
 from app.db.session import get_session
@@ -43,17 +42,23 @@ async def get_documents(
         # Ensure folder structure exists
         initialiser_structure_dossiers()
         
-        # Get documents for the subject
-        documents = get_documents_for_subject(matiere)
+        # Get documents for the subject from database
+        result = lister_documents(matiere)
         
-        return {
-            "success": True,
-            "message": f"Documents for subject {matiere} retrieved successfully",
-            "data": {
-                "documents": documents,
-                "count": len(documents)
+        if result["success"]:
+            return {
+                "success": True,
+                "message": f"Documents for subject {matiere} retrieved successfully",
+                "data": {
+                    "documents": result["data"],
+                    "count": len(result["data"])
+                }
             }
-        }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.get("message", "Error retrieving documents")
+            )
         
     except Exception as e:
         logger.error(f"Error retrieving documents for subject {matiere}: {str(e)}")
@@ -97,8 +102,8 @@ async def upload_document(
                 detail="File is empty"
             )
         
-        # Upload the document
-        success, message, document_info = upload_document_to_subject(
+        # Upload the document with database tracking
+        success, message, document_info = upload_document_with_tracking(
             matiere=matiere,
             filename=file.filename,
             file_content=file_content,
@@ -121,6 +126,13 @@ async def upload_document(
             if index_success:
                 logger.info(f"Document {file.filename} successfully indexed into vector database")
                 message += f". Document indexed successfully: {index_message}"
+                
+                # If indexing was successful, mark document as indexed in database
+                try:
+                    with next(get_session()) as db_session:
+                        mark_document_as_indexed(db_session, document_info["id"])
+                except Exception as db_error:
+                    logger.warning(f"Document indexed but failed to update database: {db_error}")
             else:
                 logger.warning(f"Document uploaded but indexing failed: {index_message}")
                 message += f". Warning - indexing failed: {index_message}"
@@ -170,7 +182,14 @@ async def delete_document(
         logger.info(f"User {current_user.username} is deleting document {document_id} from subject {matiere}")
         
         # First, get document info before deletion (for vector database cleanup)
-        documents = get_documents_for_subject(matiere)
+        result = lister_documents(matiere)
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.get("message", "Error retrieving documents")
+            )
+        
+        documents = result["data"]
         target_document = None
         for doc in documents:
             if doc["id"] == document_id:
@@ -297,8 +316,16 @@ async def reindex_subject_documents(
         
         logger.info(f"User {current_user.username} is triggering re-indexing for subject {matiere}")
         
-        # Get all documents for the subject
-        documents = get_documents_for_subject(matiere)
+        # Get all documents for the subject from database
+        result = lister_documents(matiere)
+        
+        if not result["success"]:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.get("message", "Error retrieving documents")
+            )
+        
+        documents = result["data"]
         
         if not documents:
             return {
@@ -320,11 +347,29 @@ async def reindex_subject_documents(
             try:
                 logger.info(f"Re-indexing document: {document['filename']}")
                 
+                # Map database document format to expected format for indexing
+                document_info = {
+                    "file_hash": document["id"],  # Database uses 'id' for hash
+                    "filename": document["filename"],
+                    "file_path": document["file_path"],
+                    "document_type": document["document_type"],
+                    "is_exam": document["is_exam"],
+                    "upload_date": document["upload_date"]
+                }
+                
                 # Process and index the document
                 index_success, index_message = process_and_index_new_document(
                     matiere=matiere,
-                    document_info=document
+                    document_info=document_info
                 )
+                
+                # If indexing was successful, mark document as indexed in database
+                if index_success:
+                    try:
+                        with next(get_session()) as db_session:
+                            mark_document_as_indexed(db_session, document["id"])
+                    except Exception as db_error:
+                        logger.warning(f"Document indexed but failed to update database: {db_error}")
                 
                 result = {
                     "document_id": document["id"],
@@ -372,4 +417,39 @@ async def reindex_subject_documents(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error during re-indexing: {str(e)}"
+        )
+
+@router.get("/matieres/{matiere}/documents/changes", response_model=ApiResponse)
+async def get_document_changes(
+    user_id: int = Query(..., description="User ID for authentication"),
+    matiere: str = Path(..., description="Subject code (e.g. 'MATH')"),
+    session=Depends(get_session)
+):
+    """
+    Get documents that have changed since last indexing (new or modified).
+    """
+    try:
+        current_user = await get_current_user_simple(user_id, session)
+        logger.info(f"User {current_user.username} is checking document changes for subject {matiere}")
+        
+        # Get document changes
+        result = get_document_changes_since_last_index(matiere)
+        
+        if result["success"]:
+            return {
+                "success": True,
+                "message": f"Document changes for subject {matiere} retrieved successfully",
+                "data": result["data"]
+            }
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=result.get("message", "Error checking document changes")
+            )
+        
+    except Exception as e:
+        logger.error(f"Error checking document changes for subject {matiere}: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error checking document changes: {str(e)}"
         )

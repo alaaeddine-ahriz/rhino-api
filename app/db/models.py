@@ -1,5 +1,6 @@
 from sqlmodel import SQLModel, Field
 from typing import Optional
+from datetime import datetime
 
 class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -13,6 +14,20 @@ class Matiere(SQLModel, table=True):
     name: str
     description: Optional[str] = None
     granularite: str = Field(default="semaine", description="jour|semaine|mois|2jours...")
+
+class Document(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    file_hash: str = Field(unique=True, description="MD5 hash of the file content")
+    filename: str
+    matiere: str
+    file_path: str = Field(description="Relative path from cours directory")
+    document_type: str = Field(description="File extension without dot (md, pdf, etc.)")
+    is_exam: bool = Field(default=False, description="Whether this document is an exam")
+    file_size: int = Field(description="File size in bytes")
+    upload_date: datetime = Field(default_factory=datetime.now, description="When the document was first added")
+    last_modified: datetime = Field(default_factory=datetime.now, description="Last modification time of the file")
+    last_indexed: Optional[datetime] = Field(default=None, description="When this document was last indexed in the vector database")
+    is_indexed: bool = Field(default=False, description="Whether this document is currently in the vector index")
 
 class Challenge(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

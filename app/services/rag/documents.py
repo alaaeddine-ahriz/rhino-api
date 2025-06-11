@@ -654,6 +654,32 @@ def reindex_document_if_modified(
     except Exception as e:
         return False, f"Error reindexing document: {str(e)}"
 
+def mark_documents_as_indexed_in_db(file_hashes: List[str]) -> int:
+    """
+    Mark multiple documents as indexed in the database.
+    
+    Args:
+        file_hashes: List of MD5 file hashes to mark as indexed
+        
+    Returns:
+        Number of documents successfully marked as indexed
+    """
+    try:
+        from app.services.documents import mark_document_as_indexed
+        from app.db.session import get_session
+        
+        marked_count = 0
+        with next(get_session()) as session:
+            for file_hash in file_hashes:
+                if mark_document_as_indexed(session, file_hash):
+                    marked_count += 1
+        
+        return marked_count
+        
+    except Exception as e:
+        print(f"Error marking documents as indexed in database: {e}")
+        return 0
+
 if __name__ == "__main__":
     matiere = "SYD"
     documents = lire_fichiers_matiere(matiere)
