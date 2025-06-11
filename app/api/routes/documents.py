@@ -118,9 +118,19 @@ async def upload_document(
         
         # Automatically process and index the document into vector database
         try:
+            # Map database document format to expected format for indexing
+            indexing_document_info = {
+                "file_hash": document_info["id"],  # Database uses 'id' for hash  
+                "filename": document_info["filename"],
+                "file_path": document_info["file_path"],
+                "document_type": document_info["document_type"],
+                "is_exam": document_info["is_exam"],
+                "upload_date": document_info["upload_date"]
+            }
+            
             index_success, index_message = process_and_index_new_document(
                 matiere=matiere,
-                document_info=document_info
+                document_info=indexing_document_info
             )
             
             if index_success:
