@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - ./static:/app/static
+    environment:
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    restart: unless-stopped 
