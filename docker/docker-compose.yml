@@ -8,10 +8,10 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ../logs:/app/logs
-      - ../outputs:/app/outputs
-      - ../static:/app/static
-      - ../cours:/app/cours
+      - /Users/sirk8s/Documents/rhino-api/logs:/app/logs
+      - /Users/sirk8s/Documents/rhino-api/outputs:/app/outputs
+      - /Users/sirk8s/Documents/rhino-api/static:/app/static
+      - /Users/sirk8s/Documents/rhino-api/cours:/app/cours
       - type: bind
         source: /Users/sirk8s/Documents/rhino-api/data
         target: /app/data
@@ -21,6 +21,6 @@ services:
     environment:
       - PINECONE_API_KEY=${PINECONE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
-      - COURS_DIR=/Users/sirk8s/Documents/rhino-api/cours-test
+      - COURS_DIR=/app/cours
       - DB_PATH=/app/data/production.db
     restart: unless-stopped
