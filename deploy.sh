@@ -7,7 +7,8 @@ echo "🚀 Starting deployment process..."
 
 # Update system packages
 echo "📦 Updating system packages..."
-brew update
+cd "$(brew --prefix)" && brew update || echo "⚠️ Warning: brew update failed, continuing anyway..."
+cd - > /dev/null
 
 # Install Python if not already installed
 if ! command -v python3 &> /dev/null; then
