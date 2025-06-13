@@ -13,20 +13,14 @@ services:
       - ../static:/app/static
       - ../cours:/app/cours
       - type: bind
-        source: ${DB_PATH}
-        target: /app/data/production.db
-        consistency: delegated
-      - type: volume
-        source: app_data
+        source: /Users/sirk8s/Documents/rhino-api/data
         target: /app/data
+        consistency: delegated
     env_file:
       - ../.env
     environment:
       - PINECONE_API_KEY=${PINECONE_API_KEY}
       - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - COURS_DIR=/Users/sirk8s/Documents/rhino-api/cours-test
       - DB_PATH=/app/data/production.db
-      - COURS_DIR=${COURS_DIR}
     restart: unless-stopped
-
-volumes:
-  app_data: 
