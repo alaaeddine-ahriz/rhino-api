@@ -34,7 +34,8 @@ echo "⚙️ Setting up environment variables..."
 if [ ! -f .env ]; then
     echo "Creating .env file..."
     cat > .env << EOL
-# Insert your API keys here
+PINECONE_API_KEY = pcsk_7XdePS_SLdpRTXFHGoMv7UxJq8v5rnugAv4PHYhSQqkAp3sLkLmTTG8yp4mSud2kxhASkJ
+OPENAI_API_KEY = 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
 EOL
     echo "⚠️ Please edit the .env file with your actual API keys and configuration"
 fi
