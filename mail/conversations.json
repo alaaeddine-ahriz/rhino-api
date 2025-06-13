@@ -266,5 +266,221 @@
     },
     "feedback_sent": true,
     "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250611155111-932e5b": {
+    "student": "student66356@example.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 8
+  },
+  "IDQ-20250611155211-18a138": {
+    "student": "alaaahriz@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\n\r\nOn Wed, Jun 11, 2025 at 3:52 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ Comment le modèle pub/sub peut-il être utilisé pour améliorer la\r\n> cohérence et la coordination entre les processus dans un système distribué,\r\n> et quels sont les défis potentiels liés à son implémentation?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250611155211-18a138]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": true,
+    "user_id": 1,
+    "response_date": "Wed, 11 Jun 2025 15:52:27 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le modèle pub/sub, ni sur son utilisation pour améliorer la cohérence et la coordination dans un système distribué. De plus, elle ne mentionne aucun des défis potentiels liés à son implémentation. Par conséquent, elle ne démontre aucune maîtrise des connaissances requises pour cette question.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre directement à la question posée.",
+            "Inclure des concepts pertinents du cours sur le modèle pub/sub.",
+            "Développer une argumentation logique et structurée."
+          ],
+          "justification_note": "La réponse de l'étudiant ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le modèle pub/sub, ni sur son utilisation pour améliorer la cohérence et la coordination dans un système distribué. De plus, elle ne mentionne aucun des défis potentiels liés à son implémentation. Par conséquent, elle ne démontre aucune maîtrise des connaissances requises pour cette question.",
+          "suggestions": [
+            "Prenez le temps de bien comprendre la question et de vous référer aux concepts clés du cours pour formuler une réponse pertinente."
+          ],
+          "reponse_modele": "Le modèle pub/sub (publication/abonnement) peut être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué en permettant une communication asynchrone et découplée entre les producteurs (éditeurs) et les consommateurs (abonnés) de messages. Cela facilite la mise à jour en temps réel des données partagées et réduit les dépendances directes entre les composants du système. Cependant, l'implémentation du modèle pub/sub présente des défis tels que la gestion de la latence et de la bande passante, la garantie de la livraison des messages, et la gestion des abonnements dynamiques. De plus, il est crucial de s'assurer que le système peut évoluer pour gérer un grand nombre de messages et d'abonnés sans compromettre la performance.",
+          "base_sur_examen": false,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-11T15:53:00.120715"
+        },
+        "timestamp": "2025-06-11T15:50:47.833950"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250611160101-69cc0b": {
+    "student": "alaaahriz@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Merci pour ton retour !\r\n\r\nOn Wed, Jun 11, 2025 at 4:01 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ Comment le modèle pub/sub peut-il être utilisé pour améliorer la\r\n> cohérence et la coordination entre les processus dans un système distribué,\r\n> et quels sont les défis potentiels liés à son implémentation?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250611160101-69cc0b]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": true,
+    "user_id": 1,
+    "response_date": "Wed, 11 Jun 2025 16:01:10 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne contient aucune information pertinente ou liée à la question posée. Il semble que l'étudiant ait répondu par erreur à un email plutôt qu'à la question académique. Par conséquent, il n'y a pas de contenu à évaluer en termes de pertinence, argumentation, maîtrise des connaissances, originalité ou clarté.",
+          "note": 0,
+          "points_forts": [
+            "Aucun point fort identifiable dans la réponse fournie."
+          ],
+          "points_ameliorer": [
+            "Répondre directement à la question posée.",
+            "Inclure des concepts pertinents du cours, tels que le modèle pub/sub et ses applications.",
+            "Développer une argumentation logique et structurée."
+          ],
+          "justification_note": "La réponse de l'étudiant ne contient aucune information pertinente ou liée à la question posée. Il semble que l'étudiant ait répondu par erreur à un email plutôt qu'à la question académique. Par conséquent, il n'y a pas de contenu à évaluer en termes de pertinence, argumentation, maîtrise des connaissances, originalité ou clarté.",
+          "suggestions": [
+            "Assurez-vous de lire attentivement la question et de structurer votre réponse en utilisant des concepts appris en cours."
+          ],
+          "reponse_modele": "Le modèle pub/sub (publication/abonnement) peut améliorer la cohérence et la coordination dans un système distribué en permettant une communication asynchrone et découplée entre les processus. Les éditeurs publient des messages sur des sujets spécifiques, et les abonnés reçoivent ces messages en fonction de leur abonnement. Cela facilite la mise à jour en temps réel et la synchronisation des données entre les composants distribués. Cependant, des défis tels que la gestion de la latence, la garantie de la livraison des messages, et la gestion de la charge du réseau peuvent survenir lors de l'implémentation. Il est crucial de choisir une infrastructure de messagerie robuste et de concevoir des mécanismes de tolérance aux pannes pour surmonter ces défis.",
+          "base_sur_examen": false,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-11T17:13:29.462167"
+        },
+        "timestamp": "2025-06-11T15:59:39.336553"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250611171100-d62353": {
+    "student": "alaaahriz@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Bof j'aime pas SYD\r\n\r\nOn Wed, Jun 11, 2025 at 5:11 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ Comment le modèle pub/sub peut-il être utilisé pour améliorer la\r\n> cohérence et la coordination entre les processus dans un système distribué,\r\n> et quels sont les défis potentiels liés à son implémentation?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250611171100-d62353]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": true,
+    "user_id": 1,
+    "response_date": "Wed, 11 Jun 2025 17:13:00 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne répond pas à la question posée et ne démontre aucune maîtrise des concepts du cours. Aucune idée pertinente n'est présentée, et il n'y a pas d'argumentation ni de réflexion personnelle. La réponse manque de clarté et de structure.",
+          "note": 0,
+          "points_forts": [
+            "Aucun point fort identifiable dans la réponse fournie."
+          ],
+          "points_ameliorer": [
+            "Répondre directement à la question posée.",
+            "Démontrer une compréhension des concepts du cours.",
+            "Structurer la réponse de manière claire et logique."
+          ],
+          "justification_note": "La réponse de l'étudiant ne répond pas à la question posée et ne démontre aucune maîtrise des concepts du cours. Aucune idée pertinente n'est présentée, et il n'y a pas d'argumentation ni de réflexion personnelle. La réponse manque de clarté et de structure.",
+          "suggestions": [
+            "Il est important de se familiariser avec le contenu du cours et de structurer ses réponses pour aborder les questions de manière directe et pertinente."
+          ],
+          "reponse_modele": "Le modèle pub/sub (publication/souscription) est utilisé dans les systèmes distribués pour améliorer la cohérence et la coordination entre les processus en permettant une communication asynchrone et découplée. Les éditeurs publient des messages sur des sujets spécifiques, et les abonnés reçoivent ces messages en fonction de leur intérêt pour ces sujets. Cela permet de garantir que tous les processus concernés reçoivent les mêmes informations en temps réel, améliorant ainsi la cohérence des données. Cependant, des défis existent, tels que la gestion de la scalabilité, la garantie de la livraison des messages, et la gestion des échecs de réseau. Des mécanismes de tolérance aux pannes et de consensus, comme les horloges logiques de Lamport, peuvent être nécessaires pour assurer une coordination efficace.",
+          "base_sur_examen": false,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-11T17:16:09.891421"
+        },
+        "timestamp": "2025-06-11T15:59:39.336553"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250611171422-8652c8": {
+    "student": "alaaahriz@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Le modèle pub/sub améliore la coordination en diffusant les événements en\r\ntemps réel à tous les services abonnés, assurant une cohérence des données\r\nsans lier directement producteurs et consommateurs. Cela rend le système\r\nplus souple et réactif.\r\n\r\nCependant, les défis incluent la garantie de la livraison des messages, la\r\ngestion de l’ordre, et la tolérance aux pannes du broker.\r\n\r\nOn Wed, Jun 11, 2025 at 5:14 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ Comment le modèle pub/sub peut-il être utilisé pour améliorer la\r\n> cohérence et la coordination entre les processus dans un système distribué,\r\n> et quels sont les défis potentiels liés à son implémentation?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250611171422-8652c8]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": true,
+    "user_id": 1,
+    "response_date": "Wed, 11 Jun 2025 17:15:40 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 80,
+          "feedback": "L'étudiant a bien compris le rôle du modèle pub/sub dans la coordination et la cohérence des systèmes distribués, en soulignant sa capacité à diffuser des événements en temps réel et à découpler producteurs et consommateurs. Cependant, la réponse pourrait être améliorée en approfondissant les défis liés à l'implémentation, en particulier en ce qui concerne la gestion de l'ordre des messages et la tolérance aux pannes.",
+          "note": 16,
+          "points_forts": [
+            "Bonne compréhension du rôle du modèle pub/sub dans la coordination des systèmes distribués.",
+            "Identification correcte des défis liés à la livraison des messages et à la tolérance aux pannes.",
+            "Expression claire et structurée."
+          ],
+          "points_ameliorer": [
+            "Développer davantage l'argumentation sur la gestion de l'ordre des messages.",
+            "Inclure des exemples concrets pour illustrer les points discutés.",
+            "Explorer plus en profondeur les implications de la tolérance aux pannes."
+          ],
+          "justification_note": "L'étudiant a bien compris le rôle du modèle pub/sub dans la coordination et la cohérence des systèmes distribués, en soulignant sa capacité à diffuser des événements en temps réel et à découpler producteurs et consommateurs. Cependant, la réponse pourrait être améliorée en approfondissant les défis liés à l'implémentation, en particulier en ce qui concerne la gestion de l'ordre des messages et la tolérance aux pannes.",
+          "suggestions": [
+            "Pour améliorer, essayez d'inclure des exemples concrets et d'approfondir les aspects techniques des défis mentionnés."
+          ],
+          "reponse_modele": "Le modèle pub/sub améliore la cohérence et la coordination dans un système distribué en permettant aux producteurs de publier des événements qui sont ensuite diffusés à tous les consommateurs abonnés. Cela assure une mise à jour en temps réel des données et une flexibilité accrue, car les producteurs et les consommateurs ne sont pas directement liés. Cependant, des défis subsistent, notamment la garantie de la livraison fiable des messages, la gestion de l'ordre des messages pour maintenir la cohérence, et la mise en place de mécanismes de tolérance aux pannes pour le broker central qui gère la distribution des messages.",
+          "base_sur_examen": false,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-11T17:16:55.823940"
+        },
+        "timestamp": "2025-06-11T15:59:39.336553"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250611171632-876329": {
+    "student": "alaaahriz@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 1
+  },
+  "IDQ-20250611172444-53c88c": {
+    "student": "sfrenot@gmail.com",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 9
+  },
+  "IDQ-20250611172837-07c90a": {
+    "student": "stephane.frenot@insa-lyon.fr",
+    "question": "Comment le modèle pub/sub peut-il être utilisé pour améliorer la cohérence et la coordination entre les processus dans un système distribué, et quels sont les défis potentiels liés à son implémentation?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 9
   }
 }

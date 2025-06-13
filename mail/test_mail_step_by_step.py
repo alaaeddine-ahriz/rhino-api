@@ -233,8 +233,19 @@ def test_step_8_evaluate_response(reply, challenge_data):
         
         print(f"🧠 Évaluation de la réponse en {matiere}...")
         
-        # Évaluer la réponse
-        evaluation = evaluate_and_display(question, response_text, matiere, user_id=1)
+        # Récupérer le user_id dynamiquement depuis les données de conversation
+        question_id = reply.get('question_id')
+        user_id = 1  # Valeur par défaut
+        
+        if question_id:
+            from utils import load_conversations
+            conversations = load_conversations()
+            if question_id in conversations:
+                user_id = conversations[question_id].get('user_id', 1)
+                print(f"🆔 User ID récupéré depuis conversation: {user_id}")
+        
+        # Évaluer la réponse avec le user_id correct
+        evaluation = evaluate_and_display(question, response_text, matiere, user_id=user_id)
         
         # Sauvegarder l'évaluation
         question_id = reply.get('question_id')
