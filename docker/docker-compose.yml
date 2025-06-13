@@ -16,6 +16,9 @@ services:
         source: ${DB_PATH}
         target: /app/data/production.db
         consistency: delegated
+      - type: volume
+        source: app_data
+        target: /app/data
     env_file:
       - ../.env
     environment:
@@ -23,4 +26,7 @@ services:
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - DB_PATH=/app/data/production.db
       - COURS_DIR=${COURS_DIR}
-    restart: unless-stopped 
+    restart: unless-stopped
+
+volumes:
+  app_data: 
