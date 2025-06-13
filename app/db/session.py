@@ -1,20 +1,31 @@
 from sqlmodel import create_engine, Session
+from app.core.config import settings
+import logging
 
-DATABASE_URL = "sqlite:///./prod.db"  # Modifier pour PostgreSQL en prod
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# Configure SQLite engine with no pooling to avoid connection reuse issues
+# Get database path from settings
+db_path = settings.DB_PATH
+logger.info(f"Initializing database at: {db_path}")
+
+# Create database URL
+DATABASE_URL = f"sqlite:///{db_path}"
+logger.info(f"Database URL: {DATABASE_URL}")
+
+# Create engine
 engine = create_engine(
-    DATABASE_URL, 
+    DATABASE_URL,
     echo=True,
-    poolclass=None,  # Disable connection pooling
+    poolclass=None,
     connect_args={
         "check_same_thread": False,
         "timeout": 30,
-        # Use immediate isolation level
         "isolation_level": "IMMEDIATE"
     }
 )
- 
+
 def get_session():
     with Session(engine) as session:
         yield session 

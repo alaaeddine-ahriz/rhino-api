@@ -1,11 +1,17 @@
 from sqlmodel import SQLModel, Session, text
 from app.db.session import engine
 import app.db.models  # Assure l'import des modèles
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def init_db():
-    """Initialize database tables and handle migrations."""
+    """Initialize database tables."""
+    logger.info("Creating database tables...")
     SQLModel.metadata.create_all(engine)
-    migrate_database()
+    logger.info("Database tables created successfully")
 
 def migrate_database():
     """Handle database migrations for missing columns."""
@@ -16,7 +22,7 @@ def migrate_database():
             columns = [column[1] for column in result]
             
             if 'ref' not in columns:
-                print("Adding missing 'ref' column to challenge table...")
+                logger.info("Adding missing 'ref' column to challenge table...")
                 
                 # Add the ref column
                 session.exec(text("ALTER TABLE challenge ADD COLUMN ref TEXT"))
@@ -29,10 +35,10 @@ def migrate_database():
                                {"ref": ref, "id": challenge_id})
                 
                 session.commit()
-                print("Successfully added 'ref' column and updated existing challenges.")
+                logger.info("Successfully added 'ref' column and updated existing challenges.")
                 
         except Exception as e:
-            print(f"Migration error: {e}")
+            logger.error(f"Migration error: {e}")
             session.rollback()
 
 def reset_database():

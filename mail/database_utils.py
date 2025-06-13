@@ -4,6 +4,7 @@ Utilitaires pour interagir avec la base de données
 import sqlite3
 import logging
 from typing import Optional, Dict, Any, List
+from app.core.config import settings
 
 # Configuration du logging
 logging.basicConfig(
@@ -14,11 +15,11 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Chemin vers la base de données (ajuster selon votre configuration)
-DATABASE_PATH = "../prod.db"  # Ou "../sample_data.db" selon votre environnement
+DATABASE_PATH = settings.DB_PATH
 
 def get_database_connection():
     """
-    Établit une connexion à la base de données
+    Crée une connexion à la base de données SQLite.
     
     Returns:
         sqlite3.Connection: Connexion à la base de données

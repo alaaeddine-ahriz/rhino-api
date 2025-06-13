@@ -14,4 +14,5 @@ venv/
 .benchmarks
 .vscode
 .idea
-*.db 
+# Keep prod.db
+# *.db 
