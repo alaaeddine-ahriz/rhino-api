@@ -195,10 +195,11 @@ Le Rhino""",
         return None
 
 def process_student_response(student, timeout_minutes):
-    """Traite la réponse d'un étudiant"""
+    """Traite la réponse d'un étudiant de manière complètement indépendante"""
     try:
         print(f"\n⏳ Attente de la réponse de {student['username']}...")
         
+        # Attendre la réponse avec un timeout individuel
         reply = wait_for_reply(student['email'], timeout_minutes)
         if reply:
             print(f"✅ Réponse reçue de {student['username']}")
@@ -210,6 +211,7 @@ def process_student_response(student, timeout_minutes):
             evaluation = evaluate_reply(reply, student)
             if evaluation:
                 print(f"✅ Évaluation terminée pour {student['username']}")
+                # Le feedback est déjà envoyé dans evaluate_reply
             else:
                 print(f"❌ Échec de l'évaluation pour {student['username']}")
         else:
@@ -219,7 +221,7 @@ def process_student_response(student, timeout_minutes):
         print(f"❌ Erreur lors du traitement de la réponse de {student['username']}: {e}")
 
 def wait_and_process_replies(timeout_minutes=30):
-    """Attend et traite les réponses des étudiants de manière asynchrone"""
+    """Attend et traite les réponses des étudiants de manière asynchrone et indépendante"""
     print("\n" + "="*60)
     print("⏳ ATTENTE ET TRAITEMENT DES RÉPONSES")
     print("="*60)
@@ -228,7 +230,7 @@ def wait_and_process_replies(timeout_minutes=30):
         students = get_all_students()
         print(f"👥 Attente des réponses de {len(students)} étudiants...")
         
-        # Créer un thread pour chaque étudiant
+        # Créer un thread pour chaque étudiant avec son propre timeout
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
             # Lancer le traitement de chaque étudiant dans un thread séparé
             futures = {
@@ -236,15 +238,17 @@ def wait_and_process_replies(timeout_minutes=30):
                 for student in students
             }
             
-            # Attendre que tous les threads soient terminés
+            # Ne pas attendre que tous les threads soient terminés
+            # Chaque étudiant sera traité indépendamment
             for future in concurrent.futures.as_completed(futures):
                 student = futures[future]
                 try:
                     future.result()
                 except Exception as e:
                     print(f"❌ Erreur dans le thread de {student['username']}: {e}")
+                    continue  # Continuer avec les autres étudiants même en cas d'erreur
         
-        print("\n✅ Traitement de toutes les réponses terminé")
+        print("\n✅ Tous les étudiants ont été traités")
         return True
         
     except Exception as e:

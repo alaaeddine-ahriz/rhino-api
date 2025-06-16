@@ -1281,5 +1281,469 @@
     },
     "feedback_sent": true,
     "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616173151-e69686": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 2
+  },
+  "IDQ-20250616173609-5e54a8": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 5:36 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616173609-5e54a8]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 17:36:20 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "suggestions": [
+            "Assurez-vous de lire attentivement la question et de fournir une réponse qui démontre votre compréhension du sujet."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication asynchrone dans lequel les éditeurs envoient des messages sans savoir qui les recevra, et les abonnés reçoivent uniquement les messages qui les intéressent. Ce modèle est couramment utilisé dans les systèmes distribués pour découpler les producteurs et les consommateurs de messages.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T17:36:51.346297"
+        },
+        "timestamp": "2025-06-16T17:35:46.776947"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616173851-b9775c": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 5:38 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616173851-b9775c]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 17:38:59 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub', qui est un modèle de communication dans les systèmes distribués. De plus, la réponse est simplement une expression de gratitude et n'apporte aucune valeur académique.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub', qui est un modèle de communication dans les systèmes distribués. De plus, la réponse est simplement une expression de gratitude et n'apporte aucune valeur académique.",
+          "suggestions": [
+            "Assurez-vous de répondre directement à la question posée et de fournir des informations pertinentes basées sur le contenu du cours."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication asynchrone où les émetteurs de messages (éditeurs) ne programment pas les messages à envoyer directement aux destinataires spécifiques (abonnés). Au lieu de cela, les messages sont classés en catégories sans connaissance des abonnés. Les abonnés expriment leur intérêt pour une ou plusieurs catégories et reçoivent uniquement les messages qui les concernent, sans connaissance des éditeurs.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T17:39:33.143284"
+        },
+        "timestamp": "2025-06-16T17:38:17.140148"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616174055-64943a": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 5:40 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616174055-64943a]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 17:41:04 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est complètement hors sujet et ne contient aucune information pertinente concernant le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est complètement hors sujet et ne contient aucune information pertinente concernant le concept de 'pub sub'.",
+          "suggestions": [
+            "Assurez-vous de lire attentivement la question et de fournir une réponse qui traite directement du sujet demandé. Familiarisez-vous avec les concepts clés du cours pour pouvoir répondre de manière pertinente."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication dans lequel les expéditeurs de messages, appelés 'éditeurs', ne programment pas les messages à envoyer directement aux destinataires spécifiques, appelés 'abonnés'. Au lieu de cela, les messages sont classés en catégories ou 'sujets', et les abonnés reçoivent uniquement les messages des sujets auxquels ils se sont inscrits.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T17:41:36.179664"
+        },
+        "timestamp": "2025-06-16T17:40:27.980221"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616220142-865d0f": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Bien reçu, merci !\r\n\r\nOn Mon, Jun 16, 2025 at 10:01 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616220142-865d0f]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": true,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:01:53 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub', qui est un modèle de communication dans les systèmes distribués. De plus, la réponse semble être un message d'accusé de réception d'un email, ce qui n'est pas pertinent pour la question académique posée.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub', qui est un modèle de communication dans les systèmes distribués. De plus, la réponse semble être un message d'accusé de réception d'un email, ce qui n'est pas pertinent pour la question académique posée.",
+          "suggestions": [
+            "Assurez-vous de bien comprendre la question posée et de fournir une réponse qui utilise les concepts appris dans le cours."
+          ],
+          "reponse_modele": "Le modèle 'pub sub', ou publication-abonnement, est un modèle de communication dans lequel les émetteurs de messages (les 'éditeurs') ne programment pas les messages à envoyer directement à des destinataires spécifiques (les 'abonnés'). Au lieu de cela, les messages sont classés en catégories connues sous le nom de 'sujets', et les abonnés reçoivent uniquement les messages des sujets auxquels ils se sont inscrits. Ce modèle est couramment utilisé dans les systèmes distribués pour découpler les producteurs d'information des consommateurs.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:02:25.877139"
+        },
+        "timestamp": "2025-06-16T22:01:05.621467"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616221109-c010dc": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "bof c'est nul\r\n\r\nOn Mon, Jun 16, 2025 at 10:11 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616221109-c010dc]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:11:31 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est trop courte, vide de sens et utilise un langage non académique. L'étudiant n'a pas démontré de compréhension du concept de 'pub sub' ni fourni une réflexion pertinente.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre directement à la question posée",
+            "Utiliser un langage académique et approprié",
+            "Développer des idées de manière logique et structurée"
+          ],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est trop courte, vide de sens et utilise un langage non académique. L'étudiant n'a pas démontré de compréhension du concept de 'pub sub' ni fourni une réflexion pertinente.",
+          "suggestions": [
+            "Prenez le temps de comprendre le concept de 'pub sub' et essayez de l'expliquer avec vos propres mots en utilisant des exemples concrets."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication asynchrone utilisé dans les systèmes distribués. Dans ce modèle, les éditeurs envoient des messages à des sujets spécifiques sans connaître les abonnés. Les abonnés reçoivent les messages des sujets auxquels ils se sont inscrits, sans connaître les éditeurs. Cela permet une communication découplée et flexible entre les composants du système.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:12:11.493662"
+        },
+        "timestamp": "2025-06-16T22:09:41.925127"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616221424-13486a": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 10:14 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616221424-13486a]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:15:26 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle est hors sujet et ne contient aucune information pertinente ou académique concernant le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas du tout à la question posée. Elle est hors sujet et ne contient aucune information pertinente ou académique concernant le concept de 'pub sub'.",
+          "suggestions": [
+            "Pour améliorer, l'étudiant devrait se concentrer sur la compréhension des concepts clés du cours et fournir des réponses qui démontrent cette compréhension."
+          ],
+          "reponse_modele": "Le modèle 'pub sub', ou publication-abonnement, est un modèle de communication asynchrone utilisé dans les systèmes distribués. Dans ce modèle, les éditeurs envoient des messages sans connaître les abonnés, et les abonnés reçoivent les messages sans connaître les éditeurs. Cela permet une communication découplée entre les composants du système.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:15:51.333035"
+        },
+        "timestamp": "2025-06-16T22:14:06.351025"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": null
+  },
+  "IDQ-20250616221837-e7cb8c": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 2
+  },
+  "IDQ-20250616225246-53516d": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "nuuuul\r\n\r\nOn Mon, Jun 16, 2025 at 10:52 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616225246-53516d]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:52:58 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est trop courte, vide de sens et utilise un langage non académique. Il est important de fournir une réponse construite et pertinente qui démontre une compréhension du sujet.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre de manière pertinente à la question posée.",
+            "Éviter l'utilisation de langage non académique.",
+            "Développer une réponse structurée et argumentée."
+          ],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est trop courte, vide de sens et utilise un langage non académique. Il est important de fournir une réponse construite et pertinente qui démontre une compréhension du sujet.",
+          "suggestions": [
+            "Prenez le temps de comprendre la question et d'élaborer une réponse complète et réfléchie."
+          ],
+          "reponse_modele": "Le modèle 'pub/sub' (publication/souscription) est un modèle de communication asynchrone utilisé dans les systèmes distribués. Dans ce modèle, les éditeurs envoient des messages à des canaux sans connaître les abonnés. Les abonnés reçoivent les messages des canaux auxquels ils se sont inscrits, sans connaître les éditeurs. Ce modèle permet de découpler les producteurs et les consommateurs de messages, facilitant ainsi la scalabilité et la flexibilité des systèmes.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:53:29.995867"
+        },
+        "timestamp": "2025-06-16T22:51:31.605291"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616225444-40f52a": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 10:54 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616225444-40f52a]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:54:56 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre directement à la question posée",
+            "Fournir des informations pertinentes et précises",
+            "Utiliser un langage académique approprié"
+          ],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "suggestions": [
+            "Prenez le temps de comprendre la question et d'y répondre de manière détaillée et pertinente."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication asynchrone dans lequel les émetteurs de messages (éditeurs) ne programment pas directement les messages à envoyer aux récepteurs spécifiques (abonnés). Au lieu de cela, les messages sont classés en catégories sans connaître les abonnés. Les abonnés expriment leur intérêt pour une ou plusieurs catégories et reçoivent les messages pertinents sans connaître les éditeurs.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:55:25.300954"
+        },
+        "timestamp": "2025-06-16T22:54:26.423980"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616225640-7c9be4": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "toz toz\r\n\r\nOn Mon, Jun 16, 2025 at 10:56 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616225640-7c9be4]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:56:53 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est vide de sens et utilise un langage non académique. Il est important de fournir une réponse réfléchie et pertinente qui démontre une compréhension du sujet.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre directement à la question posée",
+            "Utiliser un langage académique approprié",
+            "Démontrer une compréhension des concepts du cours"
+          ],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle est vide de sens et utilise un langage non académique. Il est important de fournir une réponse réfléchie et pertinente qui démontre une compréhension du sujet.",
+          "suggestions": [
+            "Prenez le temps de comprendre la question et de formuler une réponse qui montre votre compréhension du sujet."
+          ],
+          "reponse_modele": "Le modèle 'pub/sub' (publication/souscription) est un modèle de communication dans lequel les expéditeurs de messages, appelés éditeurs, ne programment pas les messages à envoyer directement à des destinataires spécifiques, appelés abonnés. Au lieu de cela, les messages sont classés en catégories et les abonnés reçoivent uniquement les messages des catégories auxquelles ils se sont abonnés. Ce modèle est souvent utilisé dans les systèmes distribués pour permettre une communication asynchrone et découplée entre les composants.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:57:33.301072"
+        },
+        "timestamp": "2025-06-16T22:56:13.699697"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616225906-8acf95": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 10:59 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616225906-8acf95]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 22:59:18 +0200",
+    "response_from": "alaaahriz@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [],
+          "points_ameliorer": [
+            "Répondre directement à la question posée.",
+            "Fournir des informations pertinentes et précises sur le sujet.",
+            "Utiliser un langage académique et structuré."
+          ],
+          "justification_note": "La réponse de l'étudiant est inappropriée car elle ne répond pas à la question posée. Elle ne contient aucune information pertinente sur le concept de 'pub sub'.",
+          "suggestions": [
+            "Prenez le temps de comprendre la question et de structurer votre réponse en utilisant les concepts appris en cours."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-abonnement) est un modèle de communication asynchrone où les expéditeurs de messages (éditeurs) ne programment pas les messages à envoyer directement aux destinataires spécifiques (abonnés). Au lieu de cela, les messages sont classés en catégories sans savoir quels abonnés, s'il y en a, existent. Les abonnés s'abonnent à des catégories spécifiques de messages et reçoivent tous les messages de cette catégorie.",
+          "base_sur_examen": false,
+          "merdique": true,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T22:59:48.120673"
+        },
+        "timestamp": "2025-06-16T22:58:49.452387"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616230143-a1a9ae": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 2
+  },
+  "IDQ-20250616230512-74384b": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "MERCI BEAUCOUP !\r\n\r\nOn Mon, Jun 16, 2025 at 11:05 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616230512-74384b]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:05:22 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616230715-f1d9f2": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Bien reçu, merci !\r\n\r\nOn Mon, Jun 16, 2025 at 11:07 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616230715-f1d9f2]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🍀\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:07:25 +0200",
+    "response_from": "alaaahriz@gmail.com"
   }
 }
