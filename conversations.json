@@ -1745,5 +1745,87 @@
     "user_id": 2,
     "response_date": "Mon, 16 Jun 2025 23:07:25 +0200",
     "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616231127-36ff01": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "Le modèle *pub/sub* (publish/subscribe) est un système de communication\r\nasynchrone où les producteurs de messages (les *publishers*) envoient des\r\ninformations sans connaître les consommateurs (les *subscribers*).\r\n\r\n\r\nConcrètement, les messages sont envoyés à un *broker* (intermédiaire), qui\r\nles transmet uniquement aux abonnés intéressés par un certain type de\r\nmessage ou un certain “sujet” (*topic*). Cela permet de *découpler* les\r\ncomposants du système : le producteur et le consommateur n’ont pas besoin\r\nde se connaître.\r\n\r\n\r\nPar exemple, dans un système de capteurs, un capteur (publisher) envoie les\r\ndonnées météo à un topic “météo”, et plusieurs applications (subscribers)\r\npeuvent s’y abonner pour recevoir les données en temps réel.\r\n\r\n\r\nC’est un modèle très utilisé en systèmes distribués, IoT, ou microservices\r\n(ex. : Kafka, MQTT, Redis pub/sub).\r\n\r\nOn Mon, Jun 16, 2025 at 11:11 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616231127-36ff01]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:13:27 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616232115-2741a4": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "null nuuul\r\n\r\nOn Mon, Jun 16, 2025 at 11:21 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616232115-2741a4]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:21:29 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616232255-361c75": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "nul nul nul\r\n\r\nOn Mon, Jun 16, 2025 at 11:22 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616232255-361c75]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:23:07 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616232502-f6eb50": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": null,
+    "evaluated": false,
+    "user_id": 2
+  },
+  "IDQ-20250616232717-87cf10": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "salam, c'est nul\r\n\r\nOn Mon, Jun 16, 2025 at 11:27 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616232717-87cf10]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:27:29 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616232859-7ad1ab": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "nul nul nul\r\n\r\nOn Mon, Jun 16, 2025 at 11:29 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616232859-7ad1ab]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:29:09 +0200",
+    "response_from": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616233103-933905": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "response": "nul nul nul\r\n\r\nOn Mon, Jun 16, 2025 at 11:31 PM lerhinoo@gmail.com <lerhinoo@gmail.com>\r\nwrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD : C'est quoi pub sub ?\r\n>\r\n> Matière : SYD\r\n> Référence : SYD-001\r\n>\r\n> Bonne chance !\r\n> Le Rhino\r\n>\r\n> [ID de suivi : IDQ-20250616233103-933905]\r\n> [ID Challenge API : 1]\r\n>",
+    "evaluated": false,
+    "user_id": 2,
+    "response_date": "Mon, 16 Jun 2025 23:31:13 +0200",
+    "response_from": "alaaahriz@gmail.com"
   }
 }

@@ -91,16 +91,78 @@ def process_student(student, timeout_minutes=5):
             if evaluation:
                 print(f"✅ Évaluation terminée pour {student['username']}")
                 
-                # Envoyer le feedback en réponse au mail de l'étudiant
-                print(f"📧 Envoi du feedback en réponse à {student['email']}...")
-                feedback_sent = send_feedback_email(
-                    to_email=student['email'],
-                    evaluation=evaluation,
-                    question=challenge_data.get('question', ''),
-                    response=reply['body'],
-                    student_name=student['username'],
-                    original_email=reply  # Important pour le threading
-                )
+                # Vérifier si la réponse est marquée comme "merdique"
+                raw_response = evaluation.get('raw_api_response', {})
+                data = raw_response.get('data', {})
+                is_merdique = data.get('merdique', False)
+                
+                print(f"\n🔍 Vérification du statut 'merdique':")
+                print(f"   - Raw API Response: {raw_response}")
+                print(f"   - Data: {data}")
+                print(f"   - Is merdique: {is_merdique}")
+                
+                if is_merdique:
+                    print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
+                    # Créer un message spécial pour les réponses inappropriées
+                    inappropriate_response = {
+                        'body': """Votre réponse ne respecte pas les règles de base de la communication académique.
+
+⚠️ ATTENTION
+• Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
+• Chaque question mérite une réponse sérieuse et réfléchie
+• Le respect mutuel est essentiel dans un environnement d'apprentissage
+
+📝 RAPPEL
+• Lisez attentivement la question avant de répondre
+• Utilisez les concepts du cours pour structurer votre réponse
+• Prenez le temps de réfléchir et de formuler une réponse pertinente
+
+Nous vous invitons à reformuler votre réponse de manière appropriée et constructive.
+
+Cordialement,
+Le Rhino""",
+                        'from': reply['from'],
+                        'question_id': reply.get('question_id')
+                    }
+                    
+                    # Créer une évaluation spéciale pour le cas merdique
+                    merdique_evaluation = {
+                        'raw_api_response': {
+                            'success': True,
+                            'message': 'Réponse inappropriée détectée',
+                            'data': {
+                                'score': 0,
+                                'note': 0,
+                                'feedback': inappropriate_response['body'],
+                                'points_forts': [],
+                                'points_ameliorer': [],
+                                'suggestions': [],
+                                'merdique': True
+                            }
+                        },
+                        'api_status': 'success',
+                        'status_code': 200
+                    }
+                    
+                    # Envoyer le feedback spécial avec l'évaluation merdique
+                    feedback_sent = send_feedback_email(
+                        to_email=student['email'],
+                        evaluation=merdique_evaluation,
+                        question=challenge_data.get('question', ''),
+                        response=inappropriate_response['body'],
+                        student_name=student['username'],
+                        original_email=reply  # Important pour le threading
+                    )
+                else:
+                    # Envoyer le feedback normal
+                    feedback_sent = send_feedback_email(
+                        to_email=student['email'],
+                        evaluation=evaluation,
+                        question=challenge_data.get('question', ''),
+                        response=reply['body'],
+                        student_name=student['username'],
+                        original_email=reply  # Important pour le threading
+                    )
                 
                 if feedback_sent:
                     print(f"✅ Feedback envoyé avec succès à {student['username']}")

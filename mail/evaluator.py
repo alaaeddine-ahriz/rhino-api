@@ -124,9 +124,6 @@ def clean_student_response(response: str) -> str:
     
     return cleaned
 
-# Les fonctions d'évaluation locales ont été supprimées car l'évaluation
-# se fait maintenant via l'API /api/evaluation/response
-
 def display_evaluation(evaluation: Dict, question: str, response: str):
     """Affiche l'évaluation de manière formatée"""
     import json
@@ -191,9 +188,6 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         body = f"""{student_greeting},
 
 Voici l'évaluation de votre réponse :
-
-QUESTION POSÉE
-{question}
 
 RÉSULTAT
 Note : {note}/20

@@ -158,6 +158,7 @@ def evaluate_reply(reply, student):
             print(f"   - Raw API Response: {raw_response}")
             print(f"   - Data: {data}")
             print(f"   - Is merdique: {is_merdique}")
+            print(f"   - Merdique value type: {type(data.get('merdique'))}")
             
             if is_merdique:
                 print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")

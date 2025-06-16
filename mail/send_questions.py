@@ -124,17 +124,16 @@ def send_question_from_api(to: str, user_id: Optional[int] = None, matiere: Opti
         subject = f"🧠 Question du jour - {matiere_name} - {local_question_id}"
         body = f"""Bonjour,
 
-Voici ta question du jour en {matiere_name} :
+Voici ta question du jour en {matiere_name} : {question}
 
-❓ {question}
+Matière : {matiere_name}
+Référence : {challenge_ref}
 
-📚 Matière : {matiere_name}
-🔖 Référence : {challenge_ref}
+Bonne chance !
+Le Rhino
 
 [ID de suivi : {local_question_id}]
 [ID Challenge API : {api_challenge_id}]
-
-Bonne chance ! 🍀
 """
         
         # Envoi de l'email
