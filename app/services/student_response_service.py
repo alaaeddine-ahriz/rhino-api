@@ -41,7 +41,7 @@ class StudentResponseService:
         return challenge.id if challenge else None
     
     def save_question(self, question_id: str, student_email: str, user_id: int = None, 
-                     api_challenge_id: int = None) -> bool:
+                     api_challenge_id: int = None, sent_message_id: str = None) -> bool:
         """Sauvegarde une question posée à un étudiant."""
         try:
             with Session(engine) as session:
@@ -64,6 +64,7 @@ class StudentResponseService:
                     challenge_id=challenge_id,
                     response=None,
                     response_date=None,
+                    sent_message_id=sent_message_id,
                     created_at=datetime.now(),
                     updated_at=datetime.now()
                 )

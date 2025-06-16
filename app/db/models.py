@@ -63,6 +63,7 @@ class StudentResponse(SQLModel, table=True):
     challenge_id: Optional[int] = Field(default=None, foreign_key="challenge.id", description="ID du challenge")
     response: Optional[str] = Field(default=None, description="Réponse de l'étudiant")
     response_date: Optional[str] = Field(default=None, description="Date de réponse de l'étudiant")
+    sent_message_id: Optional[str] = Field(default=None, description="Message ID de l'email original")
     created_at: datetime = Field(default_factory=datetime.now, description="Date de création de l'enregistrement")
     updated_at: datetime = Field(default_factory=datetime.now, description="Date de dernière mise à jour")
 

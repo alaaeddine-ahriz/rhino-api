@@ -55,51 +55,57 @@ def process_reply(reply: Dict) -> bool:
         student_email = reply['from']
         response_text = reply['body']
         
+        # Extraire les headers de threading
+        original_message_id = conversation.get('sent_message_id')
+        student_message_id = reply.get('message_id')
+        in_reply_to = reply.get('in_reply_to')
+        references = reply.get('references')
+        
         logger.info(f"🔄 Traitement de la réponse {question_id} de {student_email}")
+        logger.info(f"Message-ID original: {original_message_id}")
+        logger.info(f"Message-ID étudiant: {student_message_id}")
+        logger.info(f"In-Reply-To: {in_reply_to}")
+        logger.info(f"References: {references}")
         
-        # Créer un objet simple pour l'email original (basé sur JSON)
-        original_email_info = {
-            'question_id': question_id,
-            'subject': f"🧠 Question du jour - {matiere} - {question_id}"
-        }
-        
-        logger.info(f"Feedback sera envoyé pour la question {question_id}")
-        
-        # Évaluer et envoyer le feedback
-        evaluation, feedback_sent = evaluate_display_and_send_feedback(
-            question=question,
-            response=response_text,
-            matiere=matiere,
-            student_email=student_email,
-            student_name=None,  # On ne connaît pas le nom depuis l'email
-            original_email=original_email_info,
-            user_id=conversation.get('user_id', 1)
-        )
+        # Évaluer la réponse
+        evaluation = evaluate_and_display(question, response_text, matiere, conversation.get('user_id', 1))
         
         if evaluation:
-            # Sauvegarder l'évaluation dans la conversation
-            conversations[question_id].update({
-                'response': response_text,
-                'response_date': reply['date'],
-                'response_from': reply['from'],
-                'evaluated': True,
-                'evaluation': evaluation,
-                'feedback_sent': feedback_sent,
-                'feedback_sent_to': student_email if feedback_sent else None
-            })
-            
-            save_conversations(conversations)
+            # Envoyer le feedback avec threading
+            from send_questions import send_evaluation_response
+            feedback_sent = send_evaluation_response(
+                to=student_email,
+                question_id=question_id,
+                evaluation=evaluation,
+                original_message_id=original_message_id,
+                student_message_id=student_message_id
+            )
             
             if feedback_sent:
-                logger.info(f"✅ Feedback envoyé avec succès pour {question_id}")
-            else:
-                logger.warning(f"⚠️ Échec de l'envoi du feedback pour {question_id}")
+                # Mettre à jour la conversation
+                conversations[question_id].update({
+                    'response': response_text,
+                    'response_date': reply['date'],
+                    'response_from': reply['from'],
+                    'evaluated': True,
+                    'evaluation': evaluation,
+                    'feedback_sent': True,
+                    'feedback_sent_to': student_email,
+                    'student_message_id': student_message_id,
+                    'student_in_reply_to': in_reply_to,
+                    'student_references': references
+                })
                 
+                save_conversations(conversations)
+                logger.info(f"✅ Feedback envoyé avec succès pour {question_id}")
+                return True
+            else:
+                logger.error(f"❌ Échec de l'envoi du feedback pour {question_id}")
+                return False
         else:
             logger.error(f"❌ Échec de l'évaluation pour {question_id}")
+            return False
             
-        return evaluation is not None
-        
     except Exception as e:
         logger.error(f"❌ Erreur lors du traitement de la réponse: {e}")
         import traceback

@@ -153,21 +153,28 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         # Créer un sujet simple et propre basé sur les données JSON
         import re
         
-        # Extraire l'ID de question depuis l'email original si disponible
+        # Extraire l'ID de question et la matière depuis l'email original si disponible
         question_id = None
-        if original_email and original_email.get('question_id'):
-            question_id = original_email['question_id']
-        elif original_email and original_email.get('subject'):
-            # Essayer d'extraire l'ID depuis le sujet
-            match = re.search(r'(IDQ-\d{14}-[a-f0-9]{6})', str(original_email['subject']))
-            if match:
-                question_id = match.group(1)
+        matiere = "Général"  # Valeur par défaut
         
-        # Créer un sujet propre et simple
+        if original_email:
+            # Utiliser la matière directement depuis original_email
+            matiere = original_email.get('matiere', 'Général')
+            
+            if original_email.get('question_id'):
+                question_id = original_email['question_id']
+            elif original_email.get('subject'):
+                # Essayer d'extraire l'ID depuis le sujet
+                match = re.search(r'(IDQ-\d{14}-[a-f0-9]{6})', str(original_email['subject']))
+                if match:
+                    question_id = match.group(1)
+        
+        # Créer un sujet qui correspond exactement au format de la question originale
         if question_id:
-            subject = f"📊 Évaluation - {question_id} - Score: {score}/20 (Note: {note})"
+            # Utiliser exactement le même format que l'email original
+            subject = f"🧠 Question du jour - {matiere} - {question_id}"
         else:
-            subject = f"📊 Évaluation de votre réponse - Score: {score}/20 (Note: {note})"
+            subject = "🧠 Question du jour"
         
         # Extraire les données de l'API
         api_data = evaluation.get('raw_api_response', {}).get('data', {})
@@ -215,12 +222,12 @@ Cordialement,
 Le Rhino
 """
         
-        # Envoi simple de l'email (sans threading complexe)
+        # Envoi de l'email
         logger.info(f"Envoi du feedback à {to_email}")
         logger.info(f"Sujet: {subject}")
         yag = yagmail.SMTP(EMAIL, PASSWORD)
         
-        # Envoi normal - simple et fiable
+        # Envoi simple sans headers de threading
         yag.send(to=to_email, subject=subject, contents=body)
         
         logger.info(f"✅ Feedback envoyé avec succès à {to_email}")
@@ -337,6 +344,12 @@ def evaluate_display_and_send_feedback(question: str, response: str, matiere: st
     try:
         # Évaluer et afficher
         evaluation = evaluate_and_display(question, response, matiere, user_id)
+        
+        # S'assurer que original_email contient la matière
+        if original_email is None:
+            original_email = {}
+        if 'matiere' not in original_email:
+            original_email['matiere'] = matiere
         
         # Envoyer le feedback
         feedback_sent = send_feedback_email(student_email, evaluation, question, response, student_name, original_email)
