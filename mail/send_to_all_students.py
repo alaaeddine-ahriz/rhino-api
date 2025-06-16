@@ -122,23 +122,6 @@ def send_feedback_to_student(reply, evaluation, student):
         print(f"❌ Erreur lors de l'envoi du feedback: {e}")
         return False
 
-def feedback_worker():
-    """Worker thread pour envoyer les feedbacks de manière asynchrone"""
-    while True:
-        try:
-            # Récupérer un feedback de la file d'attente
-            feedback_data = feedback_queue.get()
-            if feedback_data is None:  # Signal de fin
-                break
-                
-            reply, evaluation, student = feedback_data
-            send_feedback_to_student(reply, evaluation, student)
-            
-        except Exception as e:
-            print(f"❌ Erreur dans le worker de feedback: {e}")
-        finally:
-            feedback_queue.task_done()
-
 def evaluate_reply(reply, student):
     """Évalue une réponse individuelle et met en file d'attente le feedback"""
     try:
@@ -199,11 +182,11 @@ Le Rhino""",
                     'from': reply['from'],
                     'question_id': question_id
                 }
-                # Mettre en file d'attente le feedback spécial
-                feedback_queue.put((inappropriate_response, evaluation, student))
+                # Envoyer immédiatement le feedback spécial
+                send_feedback_to_student(inappropriate_response, evaluation, student)
             else:
-                # Mettre en file d'attente le feedback normal
-                feedback_queue.put((reply, evaluation, student))
+                # Envoyer immédiatement le feedback normal
+                send_feedback_to_student(reply, evaluation, student)
         
         return evaluation
         
@@ -211,7 +194,7 @@ Le Rhino""",
         print(f"❌ Erreur lors de l'évaluation de la réponse: {e}")
         return None
 
-def process_student_response(student, timeout_minutes, response_queue):
+def process_student_response(student, timeout_minutes):
     """Traite la réponse d'un étudiant"""
     try:
         print(f"\n⏳ Attente de la réponse de {student['username']}...")
@@ -226,34 +209,7 @@ def process_student_response(student, timeout_minutes, response_queue):
             print(f"🧠 Évaluation immédiate de la réponse de {student['username']}...")
             evaluation = evaluate_reply(reply, student)
             if evaluation:
-                # Envoyer le feedback immédiatement sans passer par la file d'attente
-                if evaluation.get('raw_api_response', {}).get('data', {}).get('merdique', False):
-                    print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
-                    inappropriate_response = {
-                        'body': """Votre réponse ne respecte pas les règles de base de la communication académique.
-
-⚠️ ATTENTION
-• Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
-• Chaque question mérite une réponse sérieuse et réfléchie
-• Le respect mutuel est essentiel dans un environnement d'apprentissage
-
-📝 RAPPEL
-• Lisez attentivement la question avant de répondre
-• Utilisez les concepts du cours pour structurer votre réponse
-• Prenez le temps de réfléchir et de formuler une réponse pertinente
-
-Nous vous invitons à reformuler votre réponse de manière appropriée et constructive.
-
-Cordialement,
-Le Rhino""",
-                        'from': reply['from'],
-                        'question_id': reply.get('question_id')
-                    }
-                    send_feedback_to_student(inappropriate_response, evaluation, student)
-                else:
-                    send_feedback_to_student(reply, evaluation, student)
-                print(f"✅ Feedback envoyé immédiatement à {student['username']}")
-                response_queue.put((student['id'], evaluation))
+                print(f"✅ Évaluation terminée pour {student['username']}")
             else:
                 print(f"❌ Échec de l'évaluation pour {student['username']}")
         else:
@@ -272,14 +228,11 @@ def wait_and_process_replies(timeout_minutes=30):
         students = get_all_students()
         print(f"👥 Attente des réponses de {len(students)} étudiants...")
         
-        # File d'attente pour stocker les évaluations
-        response_queue = Queue()
-        
         # Créer un thread pour chaque étudiant
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
             # Lancer le traitement de chaque étudiant dans un thread séparé
             futures = {
-                executor.submit(process_student_response, student, timeout_minutes, response_queue): student
+                executor.submit(process_student_response, student, timeout_minutes): student
                 for student in students
             }
             
