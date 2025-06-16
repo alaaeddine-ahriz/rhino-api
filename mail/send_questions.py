@@ -22,13 +22,12 @@ class APIError(Exception):
     """Exception levée en cas d'erreur avec l'API"""
     pass
 
-def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str] = None) -> Dict[str, Any]:
+def get_challenge_from_api(user_id: Optional[int] = None) -> Dict[str, Any]:
     """
     Récupère un challenge depuis l'API.
     
     Args:
         user_id: ID de l'utilisateur pour récupérer son challenge du jour
-        matiere: Matière pour récupérer le challenge du jour (utilisé pour filtrer)
     
     Returns:
         Dict contenant les informations du challenge
@@ -59,16 +58,12 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
         if not challenge:
             raise APIError("Aucun challenge disponible pour cet utilisateur")
             
-        # Si une matière est spécifiée, vérifier que le challenge correspond
-        if matiere and challenge.get("matiere") != matiere:
-            raise APIError(f"Aucun challenge disponible pour la matière {matiere}")
-            
         return {
             "question": challenge.get("question"),
             "matiere": challenge.get("matiere"),
             "challenge_id": challenge.get("challenge_id"),
             "ref": challenge.get("ref"),
-            "user_info": challenge_data.get("user_info", {})
+            "user_subscriptions": challenge_data.get("user_subscriptions", [])
         }
             
     except requests.exceptions.RequestException as e:
@@ -78,30 +73,29 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
         logger.error(f"Erreur lors de la récupération du challenge: {e}")
         raise APIError(f"Erreur inattendue: {e}")
 
-def send_question_from_api(to: str, user_id: int = 1, matiere: str = None) -> bool:
+def send_question_from_api(to: str, user_id: int = 1) -> bool:
     """
     Envoie une question à un étudiant en utilisant l'API
     
     Args:
         to: Email de l'étudiant
         user_id: ID de l'utilisateur
-        matiere: Matière spécifique (optionnel)
         
     Returns:
         bool: True si envoyé avec succès
     """
     try:
         # Récupérer les données du challenge depuis l'API
-        challenge_data = get_challenge_from_api(user_id, matiere)
+        challenge_data = get_challenge_from_api(user_id)
         if not challenge_data:
             logger.error("❌ Impossible de récupérer les données du challenge")
             return False
             
         # Extraire les données nécessaires
-        question = challenge_data.get('data', {}).get('challenge', {}).get('question', '')
-        matiere = challenge_data.get('data', {}).get('challenge', {}).get('matiere', 'Général')
-        challenge_ref = challenge_data.get('data', {}).get('challenge', {}).get('reference', '')
-        api_challenge_id = challenge_data.get('data', {}).get('challenge', {}).get('id')
+        question = challenge_data.get('question', '')
+        matiere = challenge_data.get('matiere', 'Général')
+        challenge_ref = challenge_data.get('ref', '')
+        api_challenge_id = challenge_data.get('challenge_id')
         
         # Générer un ID local pour le suivi
         local_question_id = generate_question_id()
@@ -123,7 +117,7 @@ Bonne chance ! 🌸
 """
         
         # Préparer le sujet
-        subject = f"🧠 Question du jour - {matiere} - {local_question_id}"
+        subject = f"🧠 Question du jour - {local_question_id}"
         
         # Envoyer l'email avec threading
         success, message_id = send_threaded_email(
@@ -312,7 +306,7 @@ def send_evaluation_response(to: str, question_id: str, evaluation: Dict, origin
         
         # Préparer le sujet et le corps
         matiere = conversation.get('matiere', 'Général')
-        subject = f"🧠 Question du jour - {matiere} - {question_id}"
+        subject = f"🧠 Question du jour - {question_id}"
         
         # Extraire les données de l'évaluation
         api_data = evaluation.get('raw_api_response', {}).get('data', {})

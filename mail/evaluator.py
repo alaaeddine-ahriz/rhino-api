@@ -6,6 +6,7 @@ Simple response evaluation functionality
 import logging
 import requests
 from typing import Dict, Optional
+import re
 
 # Configuration du logging
 logging.basicConfig(
@@ -62,35 +63,66 @@ def evaluate_response_simple(question: str, response: str, matiere: str, user_id
 
 def clean_student_response(response: str) -> str:
     """
-    Nettoie la réponse de l'étudiant en supprimant le contenu de l'email original quoté
-    """
-    # Diviser en lignes
-    lines = response.split('\n')
-    clean_lines = []
+    Nettoie la réponse de l'étudiant en enlevant les parties non pertinentes
     
-    # Chercher les marqueurs d'email quoté
-    for line in lines:
-        line_stripped = line.strip()
+    Args:
+        response: Réponse brute de l'étudiant
         
-        # Arrêter si on trouve des marqueurs d'email quoté
-        if (line_stripped.startswith('De:') or 
-            line_stripped.startswith('À:') or 
-            line_stripped.startswith('Envoyé:') or 
-            line_stripped.startswith('Objet:') or
-            line.startswith('>')  # Citation email
-        ):
-            break
+    Returns:
+        str: Réponse nettoyée
+    """
+    if not response:
+        return ""
+        
+    # Convertir en string si ce n'est pas déjà le cas
+    response = str(response)
+    
+    # Enlever les parties de l'email original
+    lines = response.split('\n')
+    cleaned_lines = []
+    skip_line = False
+    
+    for line in lines:
+        # Ignorer les lignes de citation d'email
+        if any(pattern in line.lower() for pattern in [
+            'wrote:', 'écrit :', 'de :', 'from:', 'envoyé :', 'sent:',
+            'objet :', 'subject:', 'date :', 'date:', 'à :', 'to:',
+            'cc :', 'cc:', 'bcc :', 'bcc:', 'répondre à :', 'reply-to:'
+        ]):
+            skip_line = True
+            continue
             
-        clean_lines.append(line)
+        # Ignorer les lignes de séparation d'email
+        if line.strip().startswith('---') or line.strip().startswith('==='):
+            skip_line = True
+            continue
+            
+        # Ignorer les lignes de formatage d'email
+        if line.strip().startswith('>'):
+            skip_line = True
+            continue
+            
+        # Réinitialiser skip_line si on trouve une ligne vide
+        if not line.strip():
+            skip_line = False
+            
+        # Ajouter la ligne si on ne doit pas la sauter
+        if not skip_line:
+            cleaned_lines.append(line)
     
-    # Rejoindre et nettoyer
-    clean_response = '\n'.join(clean_lines).strip()
+    # Rejoindre les lignes et nettoyer
+    cleaned = '\n'.join(cleaned_lines)
     
-    # Si la réponse est vide après nettoyage, retourner un message approprié
-    if not clean_response:
-        return "[Aucune réponse fournie]"
+    # Enlever les espaces multiples
+    cleaned = ' '.join(cleaned.split())
     
-    return clean_response
+    # Enlever les retours à la ligne multiples
+    cleaned = re.sub(r'\n\s*\n', '\n', cleaned)
+    
+    # Enlever les espaces au début et à la fin
+    cleaned = cleaned.strip()
+    
+    return cleaned
 
 # Les fonctions d'évaluation locales ont été supprimées car l'évaluation
 # se fait maintenant via l'API /api/evaluation/response
@@ -172,7 +204,7 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         # Créer un sujet qui correspond exactement au format de la question originale
         if question_id:
             # Utiliser exactement le même format que l'email original
-            subject = f"🧠 Question du jour - {matiere} - {question_id}"
+            subject = f"🧠 Question du jour - {question_id}"
         else:
             subject = "🧠 Question du jour"
         
@@ -186,9 +218,6 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         suggestions = api_data.get('suggestions', [])
         reponse_modele = api_data.get('reponse_modele', '')
 
-        # Nettoyer la réponse de l'étudiant
-        clean_response = clean_student_response(response)
-        
         # Corps du message avec évaluation formatée
         body = f"""{student_greeting},
 
@@ -196,9 +225,6 @@ Voici l'évaluation de votre réponse :
 
 QUESTION POSÉE
 {question}
-
-VOTRE RÉPONSE
-{clean_response[:300]}{'...' if len(clean_response) > 300 else ''}
 
 RÉSULTAT
 Score : {score}/20
