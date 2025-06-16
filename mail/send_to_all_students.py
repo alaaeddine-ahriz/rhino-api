@@ -167,7 +167,16 @@ def evaluate_reply(reply, student):
             save_conversations(conversations)
             
             # Vérifier si la réponse est marquée comme "merdique"
-            if evaluation.get('raw_api_response', {}).get('data', {}).get('merdique', False):
+            raw_response = evaluation.get('raw_api_response', {})
+            data = raw_response.get('data', {})
+            is_merdique = data.get('merdique', False)
+            
+            print(f"\n🔍 Vérification du statut 'merdique':")
+            print(f"   - Raw API Response: {raw_response}")
+            print(f"   - Data: {data}")
+            print(f"   - Is merdique: {is_merdique}")
+            
+            if is_merdique:
                 print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
                 # Créer un message spécial pour les réponses inappropriées
                 inappropriate_response = {

@@ -989,5 +989,80 @@
     },
     "feedback_sent": true,
     "feedback_sent_to": "alaaahriz@gmail.com"
+  },
+  "IDQ-20250616163103-443a83": {
+    "student": "t.salehmahamat@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "user_id": 1,
+    "sent_message_id": "<1750084264-1ba067e9@lerhinoo.gmail.com>",
+    "sent_at": "2025-06-16T16:31:04.593856",
+    "response": "Nul germain\r\n\r\nOn Mon, Jun 16, 2025, 4:31 PM lerhinoo@gmail.com <lerhinoo@gmail.com> wrote:\r\n\r\n> Bonjour,\r\n>\r\n> Voici ta question du jour en SYD :\r\n>\r\n> ❓ C'est quoi pub sub ?\r\n>\r\n> 📚 Matière : SYD\r\n> 🔖 Référence : SYD-001\r\n>\r\n> [ID de suivi : IDQ-20250616163103-443a83]\r\n> [ID Challenge API : 1]\r\n>\r\n> Bonne chance ! 🌸\r\n>",
+    "response_date": "Mon, 16 Jun 2025 16:31:45 +0200",
+    "response_from": "t.salehmahamat@gmail.com",
+    "evaluation": {
+      "raw_api_response": {
+        "success": true,
+        "message": "Évaluation IA terminée avec succès pour la matière SYD",
+        "data": {
+          "score": 0,
+          "feedback": "La réponse de l'étudiant ne répond pas à la question posée. Elle ne contient aucune information pertinente ni argumentation sur le concept de 'pub sub'.",
+          "note": 0,
+          "points_forts": [
+            "Aucun point fort identifiable dans la réponse fournie."
+          ],
+          "points_ameliorer": [
+            "La réponse doit aborder le concept de 'pub sub' (publication-souscription) en lien avec les systèmes distribués.",
+            "L'étudiant doit développer une argumentation logique et structurée.",
+            "Il est nécessaire d'utiliser correctement les concepts du cours pour démontrer une maîtrise des connaissances."
+          ],
+          "justification_note": "La réponse de l'étudiant ne répond pas à la question posée. Elle ne contient aucune information pertinente ni argumentation sur le concept de 'pub sub'.",
+          "suggestions": [
+            "Je recommande à l'étudiant de revoir les concepts de base du modèle de publication-souscription et de s'exercer à rédiger des réponses structurées et argumentées."
+          ],
+          "reponse_modele": "Le modèle 'pub sub' (publication-souscription) est un modèle de communication asynchrone dans lequel les émetteurs de messages (les éditeurs) ne communiquent pas directement avec les récepteurs (les abonnés). Les messages sont plutôt envoyés à des canaux intermédiaires, et les abonnés reçoivent les messages de ces canaux en fonction de leur abonnement. Ce modèle est souvent utilisé dans les systèmes distribués pour permettre une communication efficace et découplée entre différents composants.",
+          "base_sur_examen": false,
+          "matiere": "SYD",
+          "evaluated_at": "2025-06-16T16:32:13.057132"
+        },
+        "timestamp": "2025-06-16T16:28:24.249273"
+      },
+      "api_status": "success",
+      "status_code": 200
+    },
+    "feedback_sent": true,
+    "feedback_sent_to": "t.salehmahamat@gmail.com"
+  },
+  "IDQ-20250616163106-772348": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "user_id": 2,
+    "sent_message_id": "<1750084267-73ff1037@lerhinoo.gmail.com>",
+    "sent_at": "2025-06-16T16:31:07.831448"
+  },
+  "IDQ-20250616164220-95e74f": {
+    "student": "t.salehmahamat@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "user_id": 1,
+    "sent_message_id": "<1750084941-ab9d393d@lerhinoo.gmail.com>",
+    "sent_at": "2025-06-16T16:42:21.892871"
+  },
+  "IDQ-20250616164223-011dbb": {
+    "student": "alaaahriz@gmail.com",
+    "question": "C'est quoi pub sub ?",
+    "matiere": "SYD",
+    "challenge_ref": "SYD-001",
+    "api_challenge_id": 1,
+    "user_id": 2,
+    "sent_message_id": "<1750084945-f4f6cf14@lerhinoo.gmail.com>",
+    "sent_at": "2025-06-16T16:42:25.038022"
   }
 }

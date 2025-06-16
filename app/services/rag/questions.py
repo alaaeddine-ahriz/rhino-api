@@ -467,6 +467,19 @@ def evaluer_reponse_etudiant(
         2. Appliquer des standards d'évaluation similaires à ceux qu'un professeur utiliserait pour cette matière
         3. Tenir compte du niveau de difficulté et de précision attendu dans les examens officiels
         
+        DÉTECTION DES RÉPONSES INAPPROPRIÉES:
+        Avant de procéder à l'évaluation, vous devez d'abord vérifier si la réponse est appropriée. Une réponse est considérée comme inappropriée si:
+        1. Elle contient du contenu offensant, vulgaire ou irrespectueux
+        2. Elle est complètement hors sujet ou ne répond pas à la question
+        3. Elle est trop courte ou vide de sens
+        4. Elle contient des insultes ou des propos discriminatoires
+        5. Elle est écrite dans un langage non académique ou inapproprié
+        
+        Si la réponse est inappropriée, vous devez:
+        1. Marquer le champ "merdique" comme true
+        2. Fournir un feedback expliquant pourquoi la réponse est inappropriée
+        3. Ne pas procéder à l'évaluation détaillée
+        
         Procédez de façon rigoureuse, pédagogique et structurée selon les étapes suivantes:
         
         1. Évaluez la réponse en considérant:
@@ -501,10 +514,13 @@ def evaluer_reponse_etudiant(
             ],
             "suggestions": ["Un conseil spécifique pour aider l'étudiant à progresser"],
             "model_answer": "Une réponse modèle concise mais complète",
-            "basé_sur_examen": true
+            "basé_sur_examen": true,
+            "merdique": false
         }}
         
         IMPORTANT:
+        - Le champ "merdique" doit être true si la réponse est inappropriée, false sinon
+        - Si "merdique" est true, le feedback doit expliquer pourquoi la réponse est inappropriée
         - Le champ "basé_sur_examen" doit être true si des documents d'examen ont influencé l'évaluation, false sinon
         - Ne mentionnez pas et n'ajoutez pas de sources dans votre réponse
         - N'incluez aucun autre champ que ceux spécifiés ci-dessus
