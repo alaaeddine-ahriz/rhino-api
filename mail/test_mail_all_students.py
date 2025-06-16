@@ -103,9 +103,16 @@ def process_student(student, timeout_minutes=5):
                 
                 if is_merdique:
                     print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
-                    # Créer un message spécial pour les réponses inappropriées
-                    inappropriate_response = {
-                        'body': """Votre réponse ne respecte pas les règles de base de la communication académique.
+                    
+                    # Créer une évaluation spéciale pour le cas merdique
+                    merdique_evaluation = {
+                        'raw_api_response': {
+                            'success': True,
+                            'message': 'Réponse inappropriée détectée',
+                            'data': {
+                                'score': 0,
+                                'note': 0,
+                                'feedback': """Votre réponse ne respecte pas les règles de base de la communication académique.
 
 ⚠️ ATTENTION
 • Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
@@ -121,19 +128,6 @@ Nous vous invitons à reformuler votre réponse de manière appropriée et const
 
 Cordialement,
 Le Rhino""",
-                        'from': reply['from'],
-                        'question_id': reply.get('question_id')
-                    }
-                    
-                    # Créer une évaluation spéciale pour le cas merdique
-                    merdique_evaluation = {
-                        'raw_api_response': {
-                            'success': True,
-                            'message': 'Réponse inappropriée détectée',
-                            'data': {
-                                'score': 0,
-                                'note': 0,
-                                'feedback': inappropriate_response['body'],
                                 'points_forts': [],
                                 'points_ameliorer': [],
                                 'suggestions': [],
@@ -149,9 +143,10 @@ Le Rhino""",
                         to_email=student['email'],
                         evaluation=merdique_evaluation,
                         question=challenge_data.get('question', ''),
-                        response=inappropriate_response['body'],
+                        response=merdique_evaluation['raw_api_response']['data']['feedback'],
                         student_name=student['username'],
-                        original_email=reply  # Important pour le threading
+                        original_email=reply,  # Important pour le threading
+                        is_merdique=True  # Nouveau paramètre pour indiquer que c'est une réponse merdique
                     )
                 else:
                     # Envoyer le feedback normal

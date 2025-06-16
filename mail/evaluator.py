@@ -151,7 +151,7 @@ def evaluate_and_display(question: str, response: str, matiere: str, user_id: in
     display_evaluation(evaluation, question, response)
     return evaluation
 
-def send_feedback_email(to_email: str, evaluation: Dict, question: str, response: str, student_name: str = None, original_email: Dict = None) -> bool:
+def send_feedback_email(to_email: str, evaluation: Dict, question: str, response: str, student_name: str = None, original_email: Dict = None, is_merdique: bool = False) -> bool:
     """
     Envoie un email de feedback avec l'évaluation à l'étudiant en réponse à son email
     
@@ -162,6 +162,7 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         response: Réponse de l'étudiant
         student_name: Nom de l'étudiant (optionnel)
         original_email: Dict contenant les infos de l'email original pour créer une réponse
+        is_merdique: Indique si c'est une réponse inappropriée
     
     Returns:
         bool: True si envoyé avec succès
@@ -179,13 +180,24 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         score = api_data.get('score', 'N/A')
         note = api_data.get('note', 'N/A')
         feedback = api_data.get('feedback', 'Aucun feedback disponible')
-        points_forts = api_data.get('points_forts', [])
-        points_ameliorer = api_data.get('points_ameliorer', [])
-        suggestions = api_data.get('suggestions', [])
-        reponse_modele = api_data.get('reponse_modele', '')
+        
+        if is_merdique:
+            # Format simplifié pour les réponses inappropriées
+            body = f"""{student_greeting},
 
-        # Corps du message avec évaluation formatée
-        body = f"""{student_greeting},
+RÉSULTAT
+Note : {note}/20
+
+FEEDBACK GÉNÉRAL
+{feedback}"""
+        else:
+            # Format normal pour les autres réponses
+            points_forts = api_data.get('points_forts', [])
+            points_ameliorer = api_data.get('points_ameliorer', [])
+            suggestions = api_data.get('suggestions', [])
+            reponse_modele = api_data.get('reponse_modele', '')
+
+            body = f"""{student_greeting},
 
 Voici l'évaluation de votre réponse :
 
@@ -207,9 +219,8 @@ SUGGESTIONS
 {f"RÉPONSE MODÈLE{chr(10)}{reponse_modele}" if reponse_modele else ""}
 
 Cordialement,
-Le Rhino
-"""
-        
+Le Rhino"""
+
         # Envoi de l'email
         logger.info(f"Envoi du feedback à {to_email}")
         yag = yagmail.SMTP(EMAIL, PASSWORD)
@@ -222,7 +233,7 @@ Le Rhino
             # Conserver le sujet original
             original_subject = original_email.get('subject', '')
             if original_subject:
-                # Si le sujet ne commence pas déjà par "Re:", l'ajouter
+                # Si le sujet ne commence pas déjà par "Re: "
                 if not original_subject.lower().startswith('re:'):
                     subject = f"Re: {original_subject}"
                 else:
