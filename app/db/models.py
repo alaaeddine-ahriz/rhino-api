@@ -87,5 +87,6 @@ class Evaluation(SQLModel, table=True):
     # Métadonnées de l'évaluation  
     evaluated_at: Optional[str] = Field(default=None, description="Date d'évaluation par l'API")
     raw_api_response: Optional[str] = Field(default=None, description="Réponse brute de l'API en JSON pour backup complet")
+    merdique: Optional[bool] = Field(default=False, description="Si la réponse est inappropriée ou complètement hors sujet")
     
     created_at: datetime = Field(default_factory=datetime.now, description="Date de création de l'évaluation") 

@@ -65,6 +65,7 @@ def evaluer_reponse(evaluation):
                 "suggestions": result.get("suggestions", []),
                 "reponse_modele": result.get("model_answer", ""),
                 "base_sur_examen": result.get("basé_sur_examen", False),
+                "merdique": result.get("merdique", False),
                 "matiere": matiere,
                 "evaluated_at": result.get("evaluated_at", datetime.now().isoformat())
             }
