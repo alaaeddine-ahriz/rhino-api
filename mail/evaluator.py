@@ -7,6 +7,11 @@ import logging
 import requests
 from typing import Dict, Optional
 import re
+import json
+from datetime import datetime
+from config import EMAIL, PASSWORD
+import yagmail
+from utils import load_conversations, save_conversations
 
 # Configuration du logging
 logging.basicConfig(
@@ -15,6 +20,27 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+# Réponse prédéfinie pour les réponses inappropriées
+MERDIQUE_RESPONSE = """{student_greeting},
+
+Votre réponse ne respecte pas les règles de base de la communication académique. 
+
+⚠️ ATTENTION
+• Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
+• Chaque question mérite une réponse sérieuse et réfléchie
+• Le respect mutuel est essentiel dans un environnement d'apprentissage
+
+📝 RAPPEL
+• Lisez attentivement la question avant de répondre
+• Utilisez les concepts du cours pour structurer votre réponse
+• Prenez le temps de réfléchir et de formuler une réponse pertinente
+
+Nous vous invitons à reformuler votre réponse de manière appropriée et constructive.
+
+Cordialement,
+Le Rhino
+"""
 
 def evaluate_response_simple(question: str, response: str, matiere: str, user_id: int = 1) -> Dict:
     """
@@ -217,9 +243,13 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         points_ameliorer = api_data.get('points_ameliorer', [])
         suggestions = api_data.get('suggestions', [])
         reponse_modele = api_data.get('reponse_modele', '')
+        merdique = api_data.get('merdique', False)
 
         # Corps du message avec évaluation formatée
-        body = f"""{student_greeting},
+        if merdique:
+            body = MERDIQUE_RESPONSE.format(student_greeting=student_greeting)
+        else:
+            body = f"""{student_greeting},
 
 Voici l'évaluation de votre réponse :
 
