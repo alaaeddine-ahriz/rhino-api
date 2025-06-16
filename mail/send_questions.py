@@ -117,12 +117,21 @@ def send_question_from_api(to: str, user_id: Optional[int] = None, matiere: Opti
             logger.error("Question vide récupérée depuis l'API")
             return False
         
+        # Récupérer le nom de l'utilisateur si user_id est fourni
+        student_name = None
+        if user_id:
+            from database_utils import get_student_by_id
+            student = get_student_by_id(user_id)
+            if student:
+                student_name = student.get('username')
+        
         # Génération de l'ID local pour le suivi email
         local_question_id = generate_question_id()
         
         # Préparation de l'email
         subject = f"🧠 Question du jour - {matiere_name} - {local_question_id}"
-        body = f"""Bonjour,
+        greeting = f"Bonjour {student_name}" if student_name else "Bonjour"
+        body = f"""{greeting},
 
 Voici ta question du jour en {matiere_name} : {question}
 
