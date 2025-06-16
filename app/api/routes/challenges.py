@@ -300,19 +300,3 @@ async def get_challenge_leaderboard(
             "challenge_id": challenge_id
         }
     }
-
-@router.get("/challenges/next", response_model=ApiResponse)
-async def get_next_challenge(
-    user_id: int = Query(..., description="User ID for authentication"),
-    matiere: str = Query(..., description="Subject to get challenge for"),
-    session=Depends(get_session)
-):
-    current_user = await get_current_user_simple(user_id, session)
-    logger.info(f"Recherche du prochain challenge pour la matière : {matiere}")
-    challenge = get_next_challenge_for_matiere(matiere, session)
-    if not challenge:
-        logger.warning(f"Aucun challenge trouvé pour la matière {matiere}")
-        return {"success": False, "message": "Aucun challenge disponible", "data": None}
-    
-    logger.info(f"Challenge trouvé pour la matière {matiere} : {challenge.id}")
-    return {"success": True, "message": "Challenge servi", "data": {"challenge": challenge.dict()}}

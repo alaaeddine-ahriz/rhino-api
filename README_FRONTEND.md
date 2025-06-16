@@ -150,13 +150,11 @@ const response = await fetch('/api/matieres?user_id=1', {
 ### 🏆 Challenges
 | Méthode | Endpoint | Permissions | Description |
 |---------|----------|-------------|-------------|
-| `GET` | `/api/challenges/today?user_id={id}` | Tous | Challenge du jour pour l'utilisateur |
 | `GET` | `/api/challenges/today?user_id={id}` | Tous | Version simplifiée du challenge du jour |
 | `GET` | `/api/challenges?user_id={id}&matiere={opt}` | Tous | Liste tous les challenges (filtrable) |
 | `POST` | `/api/challenges?user_id={id}` | Enseignant+ | Créer un nouveau challenge |
 | `POST` | `/api/challenges/{id}/response?user_id={id}` | Tous | Soumettre une réponse à un challenge |
 | `GET` | `/api/challenges/{id}/leaderboard?user_id={id}` | Tous | Classement d'un challenge |
-| `GET` | `/api/challenges/next?user_id={id}&matiere={name}` | Tous | Prochain challenge pour une matière |
 
 ### 🏅 Classements
 | Méthode | Endpoint | Permissions | Description |
