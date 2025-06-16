@@ -1,21 +1,9 @@
-def interroger_matiere(matiere: str, query: str):
-    """Interroge la matière via RAG."""
-    return {"success": True, "data": {"response": f"Réponse simulée pour {matiere} : {query}"}}
- 
+from datetime import datetime
+import json
+
 def generer_question_reflexion(matiere: str, concept_cle: str):
     """Génère une question de réflexion sur un concept clé."""
     return {"success": True, "data": {"question": f"Expliquez l'importance de {concept_cle} en {matiere}"}}
-
-def repondre_question(question_data):
-    """Traite une réponse à une question."""
-    return {
-        "success": True, 
-        "data": {
-            "score": 85,
-            "feedback": "Bonne réponse! Vous avez bien saisi les concepts clés.",
-            "correct": True
-        }
-    }
 
 def generer_question_qcm(matiere: str):
     """Génère une question QCM pour une matière."""

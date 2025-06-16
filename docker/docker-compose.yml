@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - /Users/sirk8s/Documents/rhino-api/logs:/app/logs
+      - /Users/sirk8s/Documents/rhino-api/outputs:/app/outputs
+      - /Users/sirk8s/Documents/rhino-api/static:/app/static
+      - /Users/sirk8s/Documents/rhino-api/cours:/app/cours
+      - type: bind
+        source: /Users/sirk8s/Documents/rhino-api/data
+        target: /app/data
+        consistency: delegated
+    env_file:
+      - ../.env
+    environment:
+      - PINECONE_API_KEY=${PINECONE_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - COURS_DIR=/app/cours
+      - DB_PATH=/app/data/production.db
+    restart: unless-stopped

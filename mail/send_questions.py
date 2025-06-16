@@ -27,7 +27,7 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
     
     Args:
         user_id: ID de l'utilisateur pour récupérer son challenge du jour
-        matiere: Matière pour récupérer le prochain challenge disponible
+        matiere: Matière pour récupérer le challenge du jour (utilisé pour filtrer)
     
     Returns:
         Dict contenant les informations du challenge
@@ -36,20 +36,13 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
         APIError: En cas d'erreur lors de la récupération
     """
     try:
-        if user_id:
-            # Récupération du challenge du jour pour un utilisateur
-            url = f"{API_BASE_URL}/challenges/today"
-            params = {"user_id": user_id}
-            logger.info(f"Récupération du challenge du jour pour l'utilisateur {user_id}")
+        if not user_id:
+            raise APIError("user_id doit être spécifié")
             
-        elif matiere:
-            # Récupération du prochain challenge pour une matière
-            url = f"{API_BASE_URL}/challenges/next"
-            params = {"matiere": matiere}
-            logger.info(f"Récupération du prochain challenge pour la matière {matiere}")
-            
-        else:
-            raise APIError("user_id ou matiere doit être spécifié")
+        # Récupération du challenge du jour pour un utilisateur
+        url = f"{API_BASE_URL}/challenges/today"
+        params = {"user_id": user_id}
+        logger.info(f"Récupération du challenge du jour pour l'utilisateur {user_id}")
         
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -60,29 +53,22 @@ def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str]
             raise APIError(f"API Error: {data.get('message', 'Erreur inconnue')}")
         
         challenge_data = data.get("data", {})
+        challenge = challenge_data.get("challenge")
         
-        # Extraction des informations du challenge selon le format de réponse
-        if user_id:
-            challenge = challenge_data.get("challenge")
-            if not challenge:
-                raise APIError("Aucun challenge disponible pour cet utilisateur")
-            return {
-                "question": challenge.get("question"),
-                "matiere": challenge.get("matiere"),
-                "challenge_id": challenge.get("challenge_id"),
-                "ref": challenge.get("ref"),
-                "user_info": challenge_data.get("user_info", {})
-            }
-        else:
-            challenge = challenge_data.get("challenge")
-            if not challenge:
-                raise APIError("Aucun challenge disponible pour cette matière")
-            return {
-                "question": challenge.get("question"),
-                "matiere": challenge.get("matiere"),
-                "challenge_id": challenge.get("id"),
-                "ref": challenge.get("ref")
-            }
+        if not challenge:
+            raise APIError("Aucun challenge disponible pour cet utilisateur")
+            
+        # Si une matière est spécifiée, vérifier que le challenge correspond
+        if matiere and challenge.get("matiere") != matiere:
+            raise APIError(f"Aucun challenge disponible pour la matière {matiere}")
+            
+        return {
+            "question": challenge.get("question"),
+            "matiere": challenge.get("matiere"),
+            "challenge_id": challenge.get("challenge_id"),
+            "ref": challenge.get("ref"),
+            "user_info": challenge_data.get("user_info", {})
+        }
             
     except requests.exceptions.RequestException as e:
         logger.error(f"Erreur de connexion à l'API: {e}")

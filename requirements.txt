@@ -9,6 +9,7 @@ python-multipart>=0.0.6
 # RAG and AI dependencies
 pinecone[grpc]==5.1.0
 langchain==0.2.15
+langchain-community>=0.0.10
 langchain-pinecone==0.1.2
 langchain-openai==0.1.23
 langchain-text-splitters>=0.0.1

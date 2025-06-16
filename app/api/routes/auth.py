@@ -117,3 +117,26 @@ async def update_user_info(
     else:
         logger.info(f"Aucune modification pour l'utilisateur {user.username} (ID: {user.id})")
         return {"success": True, "message": "Aucune modification apportée"}
+
+@router.get("/", response_model=ApiResponse)
+async def list_users(session=Depends(get_session)):
+    """List all users."""
+    logger.info("Fetching all users")
+    users = session.exec(select(User)).all()
+    
+    return {
+        "success": True,
+        "message": "Users retrieved successfully",
+        "data": {
+            "users": [
+                {
+                    "id": user.id,
+                    "username": user.username,
+                    "email": user.email,
+                    "role": user.role,
+                    "subscriptions": user.subscriptions.split(",") if user.subscriptions else []
+                }
+                for user in users
+            ]
+        }
+    }

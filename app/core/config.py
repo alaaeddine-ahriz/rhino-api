@@ -2,9 +2,27 @@
 from pydantic_settings import BaseSettings
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+import logging
 
-# Chargement des variables d'environnement depuis .env
-load_dotenv()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Get the root directory of the project
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
+
+# Load environment variables from .env file
+env_path = ROOT_DIR / ".env"
+if not env_path.exists():
+    raise FileNotFoundError(f".env file not found at {env_path}")
+
+load_dotenv(env_path)
+logger.info(f"Loaded .env file from: {env_path}")
+
+# Debug: Print raw environment variable
+raw_db_path = os.environ.get("DB_PATH", "")
+logger.info(f"Raw DB_PATH from environment: '{raw_db_path}'")
 
 class Settings(BaseSettings):
     """Application settings."""
@@ -37,12 +55,13 @@ class Settings(BaseSettings):
     
     # Folders
     COURS_DIR: str = os.getenv("COURS_DIR", "cours")
-    OUTPUTS_DIR: str = os.getenv("OUTPUTS_DIR", "outputs")
+    DB_PATH: str = os.environ["DB_PATH"]  # Strip any whitespace or special characters
     
     class Config:
         """Pydantic config class."""
         case_sensitive = True
-        env_file = ".env"
+        env_file = str(env_path)
 
 # Create settings object
-settings = Settings() 
+settings = Settings()
+logger.info(f"Database path configured: '{settings.DB_PATH}'") 

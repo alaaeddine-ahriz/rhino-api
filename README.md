@@ -521,27 +521,28 @@ Le Rhino API est une plateforme d'entraînement et d'évaluation pour étudiants
 - `POST /users/register` : Inscription d'un utilisateur
 - `PUT /users/subscriptions` : Gestion des abonnements
 - `POST /challenges` : Ajout d'un challenge (enseignant/admin)
-- `GET /challenges/next?matiere=...` : Récupérer le challenge du moment pour une matière
+- `GET /challenges/today?user_id={id}` : Récupérer le challenge du jour pour un utilisateur
 
-## Exemple d'appel pour récupérer le challenge du moment
+## Exemple d'appel pour récupérer le challenge du jour
 
 ```http
-GET /challenges/next?matiere=SYD
+GET /challenges/today?user_id=123
 ```
 
 **Réponse :**
 ```json
 {
   "success": true,
-  "message": "Challenge servi",
+  "message": "Challenge du jour récupéré avec succès",
   "data": {
     "challenge": {
-      "id": 1,
+      "challenge_id": "1",
       "ref": "SYD-001",
       "question": "Expliquez le modèle OSI.",
       "matiere": "SYD",
       "date": "2024-05-01"
-    }
+    },
+    "user_subscriptions": ["SYD", "TCP"]
   }
 }
 ```

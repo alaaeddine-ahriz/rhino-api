@@ -1,18 +1,12 @@
 """Models for questions management."""
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any
-
-class QuestionRequest(BaseModel):
-    """Model for asking a general question to the RAG system."""
-    matiere: str = Field(..., description="Subject to query (e.g. 'MATH')")
-    query: str = Field(..., description="The question to ask")
-    # output_format: str = Field("text", description="Response format ('text' or 'json')")
-    # save_output: bool = Field(True, description="Whether to save the output")
+from datetime import datetime
 
 class ReflectionQuestionRequest(BaseModel):
-    """Model for generating a reflection question."""
-    matiere: str = Field(..., description="Subject for the question (e.g. 'MATH')")
-    concept_cle: Optional[str] = Field("", description="Key concept to focus on")
+    """Model for requesting a reflection question."""
+    matiere: str = Field(..., description="Subject to generate question for")
+    concept_cle: str = Field(..., description="Key concept to generate question about")
 
 class Source(BaseModel):
     """Model for a document source in a response."""
@@ -23,11 +17,12 @@ class Source(BaseModel):
     is_exam: bool = False
 
 class QuestionResponse(BaseModel):
-    """Model for a question response."""
+    """Model for RAG system response."""
     response: str = Field(..., description="The answer to the question")
-    sources: Optional[List[Source]] = Field(None, description="Sources used for the response")
-    matiere: str = Field(..., description="Subject of the question")
-    query: Optional[str] = Field(None, description="The original query")
+    confidence_level: float = Field(0.0, description="Confidence level of the answer (0.0 to 1.0)")
+    key_concepts: List[str] = Field(default_factory=list, description="Key concepts identified in the answer")
+    timestamp: str = Field(..., description="When the response was generated (ISO format)")
+    user_info: Dict[str, Any] = Field(..., description="Information about the user who asked the question")
 
 class ReflectionQuestion(BaseModel):
     """Model for a generated reflection question."""
@@ -37,4 +32,10 @@ class ReflectionQuestion(BaseModel):
     competences_visees: Optional[List[str]] = Field(None, description="Skills targeted by the question")
     elements_reponse: Optional[List[str]] = Field(None, description="Expected elements in an answer")
     base_sur_examen: Optional[bool] = Field(None, description="Whether based on examination materials")
-    originalite: Optional[str] = Field(None, description="Explanation of question's originality") 
+    originalite: Optional[str] = Field(None, description="Explanation of question's originality")
+
+class ApiResponse(BaseModel):
+    """Model for API response wrapper."""
+    success: bool = Field(..., description="Whether the request was successful")
+    data: Optional[QuestionResponse] = Field(None, description="Response data if successful")
+    error: Optional[str] = Field(None, description="Error message if unsuccessful") 

@@ -19,9 +19,9 @@ from app.db.session import engine
 
 def backup_current_db():
     """Sauvegarde la base de données actuelle."""
-    if os.path.exists("prod.db"):
+    if os.path.exists("production.db"):
         backup_name = f"prod_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db"
-        shutil.copy("prod.db", backup_name)
+        shutil.copy("production.db", backup_name)
         print(f"✅ Base de données sauvegardée : {backup_name}")
         return backup_name
     return None
