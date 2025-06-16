@@ -16,4 +16,5 @@ class EvaluationResponse(BaseModel):
     reponse_modele: str = Field(..., description="Model answer")
     justification_note: str = Field(..., description="Explanation of the score")
     conseil_personnalise: str = Field(..., description="Personalized advice")
-    base_sur_examen: bool = Field(False, description="Whether based on exam materials") 
+    base_sur_examen: bool = Field(False, description="Whether based on exam materials")
+    merdique: bool = Field(False, description="Whether the response is inappropriate or completely off-topic") 

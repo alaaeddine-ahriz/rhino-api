@@ -147,6 +147,7 @@ class StudentResponseService:
             points_ameliorer = json.dumps(api_data.get('points_ameliorer', []))
             evaluated_at = api_data.get('evaluated_at')
             raw_response = json.dumps(evaluation_data['raw_api_response'])
+            merdique = api_data.get('merdique', False)
         else:
             # Format simple
             score = evaluation_data.get('score')
@@ -157,6 +158,7 @@ class StudentResponseService:
             points_ameliorer = None
             evaluated_at = None
             raw_response = json.dumps(evaluation_data)
+            merdique = evaluation_data.get('merdique', False)
         
         return Evaluation(
             student_response_id=student_response_id,
@@ -168,6 +170,7 @@ class StudentResponseService:
             feedback_sent=False,
             evaluated_at=evaluated_at,
             raw_api_response=raw_response,
+            merdique=merdique,
             created_at=datetime.now()
         )
     
@@ -182,6 +185,7 @@ class StudentResponseService:
             evaluation.points_ameliorer = json.dumps(api_data.get('points_ameliorer', []))
             evaluation.evaluated_at = api_data.get('evaluated_at')
             evaluation.raw_api_response = json.dumps(evaluation_data['raw_api_response'])
+            evaluation.merdique = api_data.get('merdique', False)
         else:
             evaluation.score = evaluation_data.get('score')
             feedback = evaluation_data.get('feedback')
@@ -189,6 +193,7 @@ class StudentResponseService:
                 feedback = json.dumps(feedback)
             evaluation.feedback = feedback
             evaluation.raw_api_response = json.dumps(evaluation_data)
+            evaluation.merdique = evaluation_data.get('merdique', False)
         
         evaluation.grade = evaluation_data.get('grade')
     

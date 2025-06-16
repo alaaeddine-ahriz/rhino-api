@@ -469,43 +469,52 @@ def evaluer_reponse_etudiant(
         
         Procédez de façon rigoureuse, pédagogique et structurée selon les étapes suivantes:
         
-        1. Évaluez la réponse en considérant:
+        1. Évaluez d'abord si la réponse est inappropriée ou totalement hors sujet:
+           - La réponse contient-elle des insultes, du langage grossier ou irrespectueux?
+           - La réponse est-elle complètement hors sujet (ex: simple remerciement, réponse à un email)?
+           - La réponse est-elle vide ou ne contient-elle aucune information pertinente?
+           Si l'une de ces conditions est vraie, marquez "merdique": true et donnez un feedback ferme.
+        
+        2. Si la réponse est appropriée, évaluez-la en considérant:
            - Pertinence des idées: Les arguments répondent-ils à la question?
            - Qualité de l'argumentation: Les idées sont-elles développées et logiques?
            - Maîtrise des connaissances: L'étudiant utilise-t-il correctement les concepts du cours?
            - Originalité et pensée critique: La réponse montre-t-elle une réflexion personnelle?
            - Clarté et structure: L'expression est-elle compréhensible et organisée?
         
-        2. Rédigez une réponse modèle concise mais complète
+        3. Rédigez une réponse modèle concise mais complète
         
-        3. Identifiez 3 points forts et 3 points à améliorer
+        4. Identifiez 3 points forts et 3 points à améliorer
         
-        4. Attribuez une note sur 100 et justifiez-la. Elle doit avoir une granularité de 5 points
+        5. Attribuez une note sur 100 et justifiez-la. Elle doit avoir une granularité de 5 points
         
-        5. Proposez un conseil personnalisé pour améliorer
+        6. Proposez un conseil personnalisé pour améliorer
         
         Votre évaluation DOIT être retournée strictement au format JSON suivant:
         
         {{
             "score": 85,
             "feedback": "Explication détaillée de la note attribuée",
-            "strengths": [
+            "points_forts": [
                 "Point fort 1",
                 "Point fort 2",
                 "Point fort 3"
             ],
-            "areas_for_improvement": [
+            "points_ameliorer": [
                 "Point à améliorer 1",
                 "Point à améliorer 2",
                 "Point à améliorer 3"
             ],
             "suggestions": ["Un conseil spécifique pour aider l'étudiant à progresser"],
-            "model_answer": "Une réponse modèle concise mais complète",
-            "basé_sur_examen": true
+            "reponse_modele": "Une réponse modèle concise mais complète",
+            "base_sur_examen": true,
+            "merdique": false
         }}
         
         IMPORTANT:
-        - Le champ "basé_sur_examen" doit être true si des documents d'examen ont influencé l'évaluation, false sinon
+        - Le champ "merdique" doit être true si la réponse est inappropriée ou totalement hors sujet
+        - Si "merdique" est true, le feedback doit être ferme et direct, soulignant l'inadéquation de la réponse
+        - Le champ "base_sur_examen" doit être true si des documents d'examen ont influencé l'évaluation, false sinon
         - Ne mentionnez pas et n'ajoutez pas de sources dans votre réponse
         - N'incluez aucun autre champ que ceux spécifiés ci-dessus
         - Soyez rigoureux mais juste dans votre évaluation
