@@ -97,6 +97,8 @@ def generer_question_reflexion(matiere: str, concept_cle: str) -> Dict[str, Any]
         3. Être formulée de manière claire, concise et précise, avec un vocabulaire académique adapté
         4. Favoriser une réponse argumentée plutôt qu'une simple définition
         5. Suivre le style et le niveau des questions d'examen si des documents d'examen font partie des sources
+        6. Ne doit pas dépasser 200 caractères
+        7. Comprendre une seule et unique question
 
         Votre réponse DOIT être strictement au format JSON suivant:
 
