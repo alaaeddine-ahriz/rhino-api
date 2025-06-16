@@ -91,7 +91,8 @@ def save_conversations(conversations):
 
 def save_question_to_db(question_id: str, student_email: str, question: str, 
                        matiere: str = None, challenge_ref: str = None, 
-                       api_challenge_id: int = None, user_id: int = None) -> bool:
+                       api_challenge_id: int = None, user_id: int = None,
+                       sent_message_id: str = None) -> bool:
     """Nouvelle fonction pour sauvegarder directement en base de données."""
     if not DB_AVAILABLE:
         return False
@@ -105,7 +106,8 @@ def save_question_to_db(question_id: str, student_email: str, question: str,
             matiere=matiere,
             challenge_ref=challenge_ref,
             api_challenge_id=api_challenge_id,
-            user_id=user_id
+            user_id=user_id,
+            sent_message_id=sent_message_id
         )
     except Exception as e:
         print(f"Erreur lors de la sauvegarde de la question: {e}")
