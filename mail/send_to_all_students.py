@@ -146,8 +146,35 @@ def evaluate_reply(reply, student):
             conversations[question_id]['evaluation'] = evaluation
             save_conversations(conversations)
             
-            # Envoyer le feedback immédiatement
-            send_feedback_to_student(reply, evaluation, student)
+            # Vérifier si la réponse est marquée comme "merdique"
+            if evaluation.get('raw_api_response', {}).get('data', {}).get('merdique', False):
+                print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
+                # Créer un message spécial pour les réponses inappropriées
+                inappropriate_response = {
+                    'body': """Votre réponse ne respecte pas les règles de base de la communication académique.
+
+⚠️ ATTENTION
+• Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
+• Chaque question mérite une réponse sérieuse et réfléchie
+• Le respect mutuel est essentiel dans un environnement d'apprentissage
+
+📝 RAPPEL
+• Lisez attentivement la question avant de répondre
+• Utilisez les concepts du cours pour structurer votre réponse
+• Prenez le temps de réfléchir et de formuler une réponse pertinente
+
+Nous vous invitons à reformuler votre réponse de manière appropriée et constructive.
+
+Cordialement,
+Le Rhino""",
+                    'from': reply['from'],
+                    'question_id': question_id
+                }
+                # Envoyer le message spécial
+                send_feedback_to_student(inappropriate_response, evaluation, student)
+            else:
+                # Envoyer le feedback normal
+                send_feedback_to_student(reply, evaluation, student)
         
         return evaluation
         
