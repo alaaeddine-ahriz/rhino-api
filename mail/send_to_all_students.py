@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 # Configuration de l'API
 API_BASE_URL = "http://localhost:8000/api"
 
+# File d'attente pour les feedbacks à envoyer
+feedback_queue = Queue()
+
 def send_challenge_to_all_students():
     """Envoie le challenge à tous les étudiants"""
     print("\n" + "="*60)
@@ -119,8 +122,25 @@ def send_feedback_to_student(reply, evaluation, student):
         print(f"❌ Erreur lors de l'envoi du feedback: {e}")
         return False
 
+def feedback_worker():
+    """Worker thread pour envoyer les feedbacks de manière asynchrone"""
+    while True:
+        try:
+            # Récupérer un feedback de la file d'attente
+            feedback_data = feedback_queue.get()
+            if feedback_data is None:  # Signal de fin
+                break
+                
+            reply, evaluation, student = feedback_data
+            send_feedback_to_student(reply, evaluation, student)
+            
+        except Exception as e:
+            print(f"❌ Erreur dans le worker de feedback: {e}")
+        finally:
+            feedback_queue.task_done()
+
 def evaluate_reply(reply, student):
-    """Évalue une réponse individuelle et envoie le feedback"""
+    """Évalue une réponse individuelle et met en file d'attente le feedback"""
     try:
         # Récupérer les données du challenge
         question_id = reply.get('question_id')
@@ -170,11 +190,11 @@ Le Rhino""",
                     'from': reply['from'],
                     'question_id': question_id
                 }
-                # Envoyer le message spécial
-                send_feedback_to_student(inappropriate_response, evaluation, student)
+                # Mettre en file d'attente le feedback spécial
+                feedback_queue.put((inappropriate_response, evaluation, student))
             else:
-                # Envoyer le feedback normal
-                send_feedback_to_student(reply, evaluation, student)
+                # Mettre en file d'attente le feedback normal
+                feedback_queue.put((reply, evaluation, student))
         
         return evaluation
         
@@ -193,12 +213,12 @@ def process_student_response(student, timeout_minutes, response_queue):
             display_reply(reply)
             save_reply_to_conversations(reply)
             
-            # Évaluer immédiatement la réponse et envoyer le feedback
+            # Évaluer immédiatement la réponse et mettre en file d'attente le feedback
             print(f"🧠 Évaluation de la réponse de {student['username']}...")
             evaluation = evaluate_reply(reply, student)
             if evaluation:
                 response_queue.put((student['id'], evaluation))
-                print(f"✅ Évaluation et feedback terminés pour {student['username']}")
+                print(f"✅ Évaluation terminée pour {student['username']}")
             else:
                 print(f"❌ Échec de l'évaluation pour {student['username']}")
         else:
@@ -220,6 +240,10 @@ def wait_and_process_replies(timeout_minutes=30):
         # File d'attente pour stocker les évaluations
         response_queue = Queue()
         
+        # Démarrer le worker de feedback dans un thread séparé
+        feedback_thread = threading.Thread(target=feedback_worker, daemon=True)
+        feedback_thread.start()
+        
         # Créer un pool de threads pour traiter les réponses
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
             # Lancer le traitement de chaque étudiant dans un thread séparé
@@ -230,6 +254,10 @@ def wait_and_process_replies(timeout_minutes=30):
             
             # Attendre que tous les threads soient terminés
             concurrent.futures.wait(futures)
+        
+        # Signal de fin pour le worker de feedback
+        feedback_queue.put(None)
+        feedback_thread.join()
         
         # Récupérer toutes les évaluations de la file d'attente
         evaluations = {}
