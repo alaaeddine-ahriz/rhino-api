@@ -227,7 +227,6 @@ QUESTION POSÉE
 {question}
 
 RÉSULTAT
-Score : {score}/20
 Note : {note}/20
 
 FEEDBACK GÉNÉRAL

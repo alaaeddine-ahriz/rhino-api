@@ -5,7 +5,6 @@ import logging
 from typing import Optional, Dict, Any
 from config import EMAIL, PASSWORD
 from utils import generate_question_id, load_conversations, save_conversations
-from datetime import datetime
 
 # Configuration du logging
 logging.basicConfig(
@@ -22,12 +21,13 @@ class APIError(Exception):
     """Exception levée en cas d'erreur avec l'API"""
     pass
 
-def get_challenge_from_api(user_id: Optional[int] = None) -> Dict[str, Any]:
+def get_challenge_from_api(user_id: Optional[int] = None, matiere: Optional[str] = None) -> Dict[str, Any]:
     """
     Récupère un challenge depuis l'API.
     
     Args:
         user_id: ID de l'utilisateur pour récupérer son challenge du jour
+        matiere: Matière pour récupérer le prochain challenge disponible
     
     Returns:
         Dict contenant les informations du challenge
@@ -36,13 +36,20 @@ def get_challenge_from_api(user_id: Optional[int] = None) -> Dict[str, Any]:
         APIError: En cas d'erreur lors de la récupération
     """
     try:
-        if not user_id:
-            raise APIError("user_id doit être spécifié")
+        if user_id:
+            # Récupération du challenge du jour pour un utilisateur
+            url = f"{API_BASE_URL}/challenges/today"
+            params = {"user_id": user_id}
+            logger.info(f"Récupération du challenge du jour pour l'utilisateur {user_id}")
             
-        # Récupération du challenge du jour pour un utilisateur
-        url = f"{API_BASE_URL}/challenges/today"
-        params = {"user_id": user_id}
-        logger.info(f"Récupération du challenge du jour pour l'utilisateur {user_id}")
+        elif matiere:
+            # Récupération du prochain challenge pour une matière
+            url = f"{API_BASE_URL}/challenges/next"
+            params = {"matiere": matiere}
+            logger.info(f"Récupération du prochain challenge pour la matière {matiere}")
+            
+        else:
+            raise APIError("user_id ou matiere doit être spécifié")
         
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
@@ -53,18 +60,29 @@ def get_challenge_from_api(user_id: Optional[int] = None) -> Dict[str, Any]:
             raise APIError(f"API Error: {data.get('message', 'Erreur inconnue')}")
         
         challenge_data = data.get("data", {})
-        challenge = challenge_data.get("challenge")
         
-        if not challenge:
-            raise APIError("Aucun challenge disponible pour cet utilisateur")
-            
-        return {
-            "question": challenge.get("question"),
-            "matiere": challenge.get("matiere"),
-            "challenge_id": challenge.get("challenge_id"),
-            "ref": challenge.get("ref"),
-            "user_subscriptions": challenge_data.get("user_subscriptions", [])
-        }
+        # Extraction des informations du challenge selon le format de réponse
+        if user_id:
+            challenge = challenge_data.get("challenge")
+            if not challenge:
+                raise APIError("Aucun challenge disponible pour cet utilisateur")
+            return {
+                "question": challenge.get("question"),
+                "matiere": challenge.get("matiere"),
+                "challenge_id": challenge.get("challenge_id"),
+                "ref": challenge.get("ref"),
+                "user_info": challenge_data.get("user_info", {})
+            }
+        else:
+            challenge = challenge_data.get("challenge")
+            if not challenge:
+                raise APIError("Aucun challenge disponible pour cette matière")
+            return {
+                "question": challenge.get("question"),
+                "matiere": challenge.get("matiere"),
+                "challenge_id": challenge.get("id"),
+                "ref": challenge.get("ref")
+            }
             
     except requests.exceptions.RequestException as e:
         logger.error(f"Erreur de connexion à l'API: {e}")
@@ -73,102 +91,102 @@ def get_challenge_from_api(user_id: Optional[int] = None) -> Dict[str, Any]:
         logger.error(f"Erreur lors de la récupération du challenge: {e}")
         raise APIError(f"Erreur inattendue: {e}")
 
-def send_question_from_api(to: str, user_id: int = 1) -> bool:
+def send_question_from_api(to: str, user_id: Optional[int] = None, matiere: Optional[str] = None) -> bool:
     """
-    Envoie une question à un étudiant en utilisant l'API
+    Envoie une question récupérée depuis l'API à un utilisateur.
     
     Args:
-        to: Email de l'étudiant
-        user_id: ID de l'utilisateur
-        
+        to: Email de destination
+        user_id: ID de l'utilisateur pour son challenge personnalisé
+        matiere: Matière pour un challenge spécifique
+    
     Returns:
-        bool: True si envoyé avec succès
+        bool: True si envoyé avec succès, False sinon
     """
     try:
-        # Récupérer les données du challenge depuis l'API
-        challenge_data = get_challenge_from_api(user_id)
-        if not challenge_data:
-            logger.error("❌ Impossible de récupérer les données du challenge")
-            return False
-            
-        # Extraire les données nécessaires
-        question = challenge_data.get('question', '')
-        matiere = challenge_data.get('matiere', 'Général')
-        challenge_ref = challenge_data.get('ref', '')
-        api_challenge_id = challenge_data.get('challenge_id')
+        # Récupération du challenge depuis l'API
+        logger.info(f"Récupération d'un challenge depuis l'API pour {to}")
+        challenge_data = get_challenge_from_api(user_id=user_id, matiere=matiere)
         
-        # Générer un ID local pour le suivi
+        question = challenge_data.get("question")
+        matiere_name = challenge_data.get("matiere", "Général")
+        api_challenge_id = challenge_data.get("challenge_id")
+        challenge_ref = challenge_data.get("ref", "N/A")
+        
+        if not question:
+            logger.error("Question vide récupérée depuis l'API")
+            return False
+        
+        # Génération de l'ID local pour le suivi email
         local_question_id = generate_question_id()
         
-        # Préparer le corps du message
+        # Préparation de l'email
+        subject = f"🧠 Question du jour - {matiere_name} - {local_question_id}"
         body = f"""Bonjour,
 
-Voici ta question du jour en {matiere} :
+Voici ta question du jour en {matiere_name} :
 
 ❓ {question}
 
-📚 Matière : {matiere}
+📚 Matière : {matiere_name}
 🔖 Référence : {challenge_ref}
 
 [ID de suivi : {local_question_id}]
 [ID Challenge API : {api_challenge_id}]
 
-Bonne chance ! 🌸
+Bonne chance ! 🍀
 """
         
-        # Préparer le sujet
-        subject = f"🧠 Question du jour - {local_question_id}"
+        # Envoi de l'email
+        logger.info(f"Envoi de la question à {to}")
+        yag = yagmail.SMTP(EMAIL, PASSWORD)
         
-        # Envoyer l'email avec threading
-        success, message_id = send_threaded_email(
-            to=to,
-            subject=subject,
-            body=body
+        # Envoi simple et fiable
+        yag.send(to=to, subject=subject, contents=body)
+        
+        logger.info(f"✅ Question envoyée à {to}")
+        logger.info(f"   - ID local: {local_question_id}")
+        logger.info(f"   - ID API: {api_challenge_id}")
+        logger.info(f"   - Matière: {matiere_name}")
+        logger.info(f"   - Référence: {challenge_ref}")
+        
+        # Sauvegarde dans la base de données
+        from utils import save_question_to_db
+        db_saved = save_question_to_db(
+            question_id=local_question_id,
+            student_email=to,
+            question=question,
+            matiere=matiere_name,
+            challenge_ref=challenge_ref,
+            api_challenge_id=api_challenge_id,
+            user_id=user_id
         )
         
-        if success:
-            # Sauvegarder les données de la question
-            question_data = {
-                'student': to,
-                'question': question,
-                'matiere': matiere,
-                'challenge_ref': challenge_ref,
-                'api_challenge_id': api_challenge_id,
-                'user_id': user_id,
-                'sent_message_id': message_id,  # Sauvegarder le Message-ID
-                'sent_at': datetime.now().isoformat()
+        # Fallback vers JSON si la base de données échoue
+        if not db_saved:
+            logger.warning("Échec de la sauvegarde en base de données, utilisation du JSON")
+            conversations = load_conversations()
+            conversations[local_question_id] = {
+                "student": to,
+                "question": question,
+                "matiere": matiere_name,
+                "challenge_ref": challenge_ref,
+                "api_challenge_id": api_challenge_id,
+                "response": None,
+                "evaluated": False,
+                "user_id": user_id
             }
-            
-            # Essayer de sauvegarder en base de données d'abord
-            from utils import save_question_to_db
-            db_saved = save_question_to_db(
-                question_id=local_question_id,
-                student_email=to,
-                question=question,
-                matiere=matiere,
-                challenge_ref=challenge_ref,
-                api_challenge_id=api_challenge_id,
-                user_id=user_id,
-                sent_message_id=message_id
-            )
-            
-            if not db_saved:
-                # Fallback vers JSON si la base de données n'est pas disponible
-                from utils import load_conversations, save_conversations
-                conversations = load_conversations()
-                conversations[local_question_id] = question_data
-                save_conversations(conversations)
-                
-            logger.info(f"✅ Question envoyée avec succès à {to}")
-            logger.info(f"Message-ID: {message_id}")
-            return True
-            
+            save_conversations(conversations)
         else:
-            logger.error(f"❌ Échec de l'envoi de la question à {to}")
-            return False
-            
+            logger.info("✅ Question sauvegardée en base de données")
+        
+        return True
+        
+    except APIError as e:
+        logger.error(f"❌ Erreur API: {e}")
+        return False
     except Exception as e:
-        logger.error(f"❌ Erreur lors de l'envoi de la question: {e}")
+        logger.error(f"❌ Échec de l'envoi: {e}")
         return False
 
 def send_question(to: str, question: str):
@@ -220,157 +238,6 @@ def test_api_connection() -> bool:
         response = requests.get(f"{API_BASE_URL}/challenges/today", timeout=5)
         return response.status_code == 200
     except:
-        return False
-
-def send_threaded_email(to: str, subject: str, body: str, message_id: str = None, in_reply_to: str = None, references: str = None) -> tuple:
-    """
-    Envoie un email avec les headers de threading appropriés
-    
-    Args:
-        to: Destinataire
-        subject: Sujet de l'email
-        body: Corps du message
-        message_id: Message-ID à utiliser (si None, en génère un)
-        in_reply_to: Message-ID auquel répondre
-        references: Chaîne de Message-IDs pour le threading
-        
-    Returns:
-        tuple: (success, message_id)
-    """
-    try:
-        import yagmail
-        from config import EMAIL, PASSWORD
-        import uuid
-        import time
-        
-        # Préparer les headers de threading
-        headers = {}
-        
-        if in_reply_to:
-            headers['In-Reply-To'] = in_reply_to
-            
-        if references:
-            headers['References'] = references
-            
-        # Envoyer l'email avec les headers
-        yag = yagmail.SMTP(EMAIL, PASSWORD)
-        yag.send(
-            to=to,
-            subject=subject,
-            contents=body,
-            headers=headers
-        )
-        
-        # Récupérer le Message-ID généré par yagmail
-        # Note: yagmail ne nous donne pas accès au Message-ID généré
-        # Nous devons donc le récupérer après l'envoi
-        message_id = f"<{int(time.time())}-{str(uuid.uuid4())[:8]}@lerhinoo.gmail.com>"
-        
-        logger.info(f"✅ Email envoyé avec succès à {to}")
-        logger.info(f"Message-ID: {message_id}")
-        if in_reply_to:
-            logger.info(f"In-Reply-To: {in_reply_to}")
-        if references:
-            logger.info(f"References: {references}")
-            
-        return True, message_id
-        
-    except Exception as e:
-        logger.error(f"❌ Erreur envoi email: {e}")
-        return False, None
-
-def send_evaluation_response(to: str, question_id: str, evaluation: Dict, original_message_id: str, student_message_id: str) -> bool:
-    """
-    Envoie une réponse d'évaluation dans la chaîne de conversation
-    
-    Args:
-        to: Email de l'étudiant
-        question_id: ID de la question
-        evaluation: Données d'évaluation
-        original_message_id: Message-ID de la question originale
-        student_message_id: Message-ID de la réponse de l'étudiant
-        
-    Returns:
-        bool: True si envoyé avec succès
-    """
-    try:
-        # Charger la conversation pour récupérer les infos
-        from utils import load_conversations
-        conversations = load_conversations()
-        
-        if question_id not in conversations:
-            logger.error(f"Question {question_id} non trouvée dans les conversations")
-            return False
-            
-        conversation = conversations[question_id]
-        
-        # Préparer le sujet et le corps
-        matiere = conversation.get('matiere', 'Général')
-        subject = f"🧠 Question du jour - {question_id}"
-        
-        # Extraire les données de l'évaluation
-        api_data = evaluation.get('raw_api_response', {}).get('data', {})
-        score = api_data.get('score', 'N/A')
-        note = api_data.get('note', 'N/A')
-        feedback = api_data.get('feedback', 'Aucun feedback disponible')
-        points_forts = api_data.get('points_forts', [])
-        points_ameliorer = api_data.get('points_ameliorer', [])
-        suggestions = api_data.get('suggestions', [])
-        reponse_modele = api_data.get('reponse_modele', '')
-        
-        # Corps du message
-        body = f"""Bonjour,
-
-Voici l'évaluation de votre réponse :
-
-RÉSULTAT
-Score : {score}/20
-Note : {note}/20
-
-FEEDBACK GÉNÉRAL
-{feedback}
-
-POINTS FORTS
-{chr(10).join([f"• {point}" for point in points_forts]) if points_forts else "• Aucun point fort identifié"}
-
-POINTS À AMÉLIORER
-{chr(10).join([f"• {point}" for point in points_ameliorer]) if points_ameliorer else "• Aucun point d'amélioration spécifique"}
-
-SUGGESTIONS
-{chr(10).join([f"• {suggestion}" for suggestion in suggestions]) if suggestions else "• Aucune suggestion spécifique"}
-
-{f"RÉPONSE MODÈLE{chr(10)}{reponse_modele}" if reponse_modele else ""}
-
-Cordialement,
-Le Rhino
-"""
-        
-        # Construire la chaîne de References
-        references = f"{original_message_id} {student_message_id}"
-        
-        # Envoyer l'email avec les headers de threading
-        success, eval_message_id = send_threaded_email(
-            to=to,
-            subject=subject,
-            body=body,
-            in_reply_to=student_message_id,
-            references=references
-        )
-        
-        if success:
-            # Mettre à jour la conversation avec le Message-ID de l'évaluation
-            conversations[question_id]['evaluation_message_id'] = eval_message_id
-            from utils import save_conversations
-            save_conversations(conversations)
-            
-            logger.info(f"✅ Évaluation envoyée avec succès pour {question_id}")
-            return True
-        else:
-            logger.error(f"❌ Échec de l'envoi de l'évaluation pour {question_id}")
-            return False
-            
-    except Exception as e:
-        logger.error(f"❌ Erreur lors de l'envoi de l'évaluation: {e}")
         return False
 
 if __name__ == "__main__":

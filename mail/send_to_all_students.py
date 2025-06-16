@@ -222,12 +222,38 @@ def process_student_response(student, timeout_minutes, response_queue):
             display_reply(reply)
             save_reply_to_conversations(reply)
             
-            # Évaluer immédiatement la réponse et mettre en file d'attente le feedback
-            print(f"🧠 Évaluation de la réponse de {student['username']}...")
+            # Évaluer immédiatement la réponse
+            print(f"🧠 Évaluation immédiate de la réponse de {student['username']}...")
             evaluation = evaluate_reply(reply, student)
             if evaluation:
+                # Envoyer le feedback immédiatement sans passer par la file d'attente
+                if evaluation.get('raw_api_response', {}).get('data', {}).get('merdique', False):
+                    print(f"⚠️ Réponse inappropriée détectée pour {student['username']}")
+                    inappropriate_response = {
+                        'body': """Votre réponse ne respecte pas les règles de base de la communication académique.
+
+⚠️ ATTENTION
+• Les réponses inappropriées, hors sujet ou contenant des insultes ne seront pas tolérées
+• Chaque question mérite une réponse sérieuse et réfléchie
+• Le respect mutuel est essentiel dans un environnement d'apprentissage
+
+📝 RAPPEL
+• Lisez attentivement la question avant de répondre
+• Utilisez les concepts du cours pour structurer votre réponse
+• Prenez le temps de réfléchir et de formuler une réponse pertinente
+
+Nous vous invitons à reformuler votre réponse de manière appropriée et constructive.
+
+Cordialement,
+Le Rhino""",
+                        'from': reply['from'],
+                        'question_id': reply.get('question_id')
+                    }
+                    send_feedback_to_student(inappropriate_response, evaluation, student)
+                else:
+                    send_feedback_to_student(reply, evaluation, student)
+                print(f"✅ Feedback envoyé immédiatement à {student['username']}")
                 response_queue.put((student['id'], evaluation))
-                print(f"✅ Évaluation terminée pour {student['username']}")
             else:
                 print(f"❌ Échec de l'évaluation pour {student['username']}")
         else:
@@ -249,36 +275,28 @@ def wait_and_process_replies(timeout_minutes=30):
         # File d'attente pour stocker les évaluations
         response_queue = Queue()
         
-        # Démarrer le worker de feedback dans un thread séparé
-        feedback_thread = threading.Thread(target=feedback_worker, daemon=True)
-        feedback_thread.start()
-        
-        # Créer un pool de threads pour traiter les réponses
+        # Créer un thread pour chaque étudiant
         with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
             # Lancer le traitement de chaque étudiant dans un thread séparé
-            futures = [
-                executor.submit(process_student_response, student, timeout_minutes, response_queue)
+            futures = {
+                executor.submit(process_student_response, student, timeout_minutes, response_queue): student
                 for student in students
-            ]
+            }
             
             # Attendre que tous les threads soient terminés
-            concurrent.futures.wait(futures)
+            for future in concurrent.futures.as_completed(futures):
+                student = futures[future]
+                try:
+                    future.result()
+                except Exception as e:
+                    print(f"❌ Erreur dans le thread de {student['username']}: {e}")
         
-        # Signal de fin pour le worker de feedback
-        feedback_queue.put(None)
-        feedback_thread.join()
-        
-        # Récupérer toutes les évaluations de la file d'attente
-        evaluations = {}
-        while not response_queue.empty():
-            student_id, evaluation = response_queue.get()
-            evaluations[student_id] = evaluation
-        
-        return evaluations
+        print("\n✅ Traitement de toutes les réponses terminé")
+        return True
         
     except Exception as e:
         print(f"❌ Erreur lors du traitement des réponses: {e}")
-        return {}
+        return False
 
 def main():
     """Fonction principale"""
@@ -290,12 +308,14 @@ def main():
         return
     
     # Étape 2: Attendre et traiter les réponses de manière asynchrone
-    evaluations = wait_and_process_replies()
+    if not wait_and_process_replies():
+        print("❌ Arrêt du processus: échec du traitement des réponses")
+        return
     
     print("\n✨ PROCESSUS TERMINÉ")
     print(f"📊 Résumé:")
     print(f"   - Challenges envoyés: {len(get_all_students())}")
-    print(f"   - Réponses évaluées et feedbacks envoyés: {len(evaluations)}")
+    print(f"   - Réponses évaluées et feedbacks envoyés: {len(get_all_students())}")
 
 if __name__ == "__main__":
     main() 
