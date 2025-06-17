@@ -57,6 +57,9 @@ class Settings(BaseSettings):
     COURS_DIR: str = os.getenv("COURS_DIR", "cours")
     DB_PATH: str = os.environ["DB_PATH"]  # Strip any whitespace or special characters
     
+    # Port
+    PORT: str = os.getenv("PORT", "8000")
+
     class Config:
         """Pydantic config class."""
         case_sensitive = True

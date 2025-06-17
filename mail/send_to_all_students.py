@@ -6,6 +6,7 @@ Script pour envoyer les challenges à tous les étudiants et gérer leurs répon
 import logging
 import requests
 import time
+import os
 from database_utils import get_all_students
 from send_questions import send_question_from_api
 from email_reader import wait_for_reply, display_reply, save_reply_to_conversations
@@ -25,7 +26,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://localhost:8000/api"
+API_PORT = os.getenv('PORT', '8000')
+API_BASE_URL = f"http://localhost:{API_PORT}/api"
 
 # File d'attente pour les feedbacks à envoyer
 feedback_queue = Queue()

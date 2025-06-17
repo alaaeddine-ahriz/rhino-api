@@ -2,6 +2,7 @@
 import yagmail
 import requests
 import logging
+import os
 from typing import Optional, Dict, Any
 from config import EMAIL, PASSWORD
 from utils import generate_question_id, load_conversations, save_conversations
@@ -15,7 +16,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://localhost:8000/api"  # Modifiez selon votre configuration
+API_PORT = os.getenv('PORT', '8000')
+API_BASE_URL = f"http://localhost:{API_PORT}/api"  # Modifiez selon votre configuration
 
 class APIError(Exception):
     """Exception levée en cas d'erreur avec l'API"""

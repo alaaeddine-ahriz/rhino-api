@@ -6,6 +6,7 @@ Test étape par étape pour identifier où le système plante
 import logging
 import requests
 import time
+import os
 from database_utils import get_student_by_id, get_all_students
 
 # Configuration du logging
@@ -17,7 +18,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://localhost:8000/api"
+API_PORT = os.getenv('PORT', '8000')
+API_BASE_URL = f"http://localhost:{API_PORT}/api"
 
 def test_step_1_database(user_id=8):
     """Étape 1: Test de connexion à la base de données"""

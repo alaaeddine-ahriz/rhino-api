@@ -5,6 +5,7 @@ Simple response evaluation functionality
 
 import logging
 import requests
+import os
 from typing import Dict, Optional
 import re
 
@@ -15,6 +16,10 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S'
 )
 logger = logging.getLogger(__name__)
+
+# Configuration de l'API
+API_PORT = os.getenv('PORT', '8000')
+API_BASE_URL = f"http://localhost:{API_PORT}/api"
 
 def evaluate_response_simple(question: str, response: str, matiere: str, user_id: int = 1) -> Dict:
     """
@@ -41,7 +46,7 @@ def evaluate_response_simple(question: str, response: str, matiere: str, user_id
     # Appel à l'API d'évaluation avec user_id requis
     logger.info(f"Appel API d'évaluation pour la matière: {matiere} (user_id: {user_id})")
     api_response = requests.post(
-        f'http://localhost:8000/api/evaluation/response?user_id={user_id}',  # Utilise le user_id de l'étudiant
+        f'{API_BASE_URL}/evaluation/response?user_id={user_id}',  # Utilise le user_id de l'étudiant
         json=api_data,
         headers={'Content-Type': 'application/json'},
         timeout=30
