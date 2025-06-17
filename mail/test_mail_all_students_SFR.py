@@ -396,8 +396,8 @@ def send_to_all_students(timeout_minutes=5):
     
     try:
         # Récupérer tous les étudiants
-        students = get_all_students()
-        print(f"👥 {len(students)} étudiants trouvés")
+        # students = get_all_students()
+        # print(f"👥 {len(students)} étudiants trouvés")
         
         # Démarrer le thread de surveillance des emails
         email_monitor = threading.Thread(
@@ -409,11 +409,11 @@ def send_to_all_students(timeout_minutes=5):
         print("📧 Thread de surveillance des emails démarré")
         
         # Créer un thread pour chaque étudiant
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(get_all_students())) as executor:
             # Lancer le traitement de chaque étudiant dans un thread séparé
             futures = {
                 executor.submit(process_student, student, timeout_minutes): student
-                for student in students
+                for student in get_all_students()
             }
             
             # Suivre les résultats
@@ -433,7 +433,7 @@ def send_to_all_students(timeout_minutes=5):
         print("\n" + "📋" * 30)
         print("RÉSUMÉ FINAL")
         print("📋" * 30)
-        print(f"✅ Étudiants traités avec succès: {success_count}/{len(students)}")
+        print(f"✅ Étudiants traités avec succès: {success_count}/{len(get_all_students())}")
         print(f"📧 Emails traités: {len(student_replies)}")
         
         return success_count > 0
