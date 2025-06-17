@@ -4,6 +4,8 @@ import sys
 import uuid
 from datetime import datetime
 from config import CONV_FILE
+from typing import Dict
+import logging
 
 # Ajouter le chemin pour les imports de l'application
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
@@ -18,76 +20,56 @@ except ImportError:
     DB_AVAILABLE = False
     print("Service de base de données non disponible, utilisation du JSON")
 
+logger = logging.getLogger(__name__)
+
 def generate_question_id():
     timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
     uid = uuid.uuid4().hex[:6]
     return f"IDQ-{timestamp}-{uid}"
 
-def load_conversations():
-    """Charge les conversations depuis la base de données ou le JSON en fallback."""
-    if DB_AVAILABLE:
-        try:
-            # Utiliser la base de données en priorité
-            service = StudentResponseService()
-            # Pour la compatibilité, on ne retourne pas toutes les conversations
-            # Cette fonction est maintenant dépréciée au profit des méthodes du service
-            return {}
-        except Exception as e:
-            print(f"Erreur base de données, fallback vers JSON: {e}")
-    
-    # Fallback vers JSON
-    if os.path.exists(CONV_FILE):
-        with open(CONV_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    return {}
+def save_conversations(conversations: Dict[str, Dict]) -> None:
+    """Sauvegarde les conversations dans un fichier JSON avec horodatage."""
+    try:
+        # Créer le dossier archive s'il n'existe pas
+        archive_dir = os.path.join(os.path.dirname(__file__), 'archive')
+        os.makedirs(archive_dir, exist_ok=True)
+        
+        # Sauvegarder d'abord dans le fichier actuel
+        current_file = os.path.join(archive_dir, 'current_conversations.json')
+        with open(current_file, 'w', encoding='utf-8') as f:
+            json.dump(conversations, f, ensure_ascii=False, indent=2)
+        
+        # Créer une copie archivée avec timestamp
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        archive_file = os.path.join(archive_dir, f'conversations_{timestamp}.json')
+        with open(archive_file, 'w', encoding='utf-8') as f:
+            json.dump(conversations, f, ensure_ascii=False, indent=2)
+        
+        logger.info(f"✅ Conversations sauvegardées dans {current_file} et archivées dans {archive_file}")
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur lors de la sauvegarde des conversations: {e}")
+        raise
 
-def save_conversations(conversations):
-    """Sauvegarde les conversations en base de données et en JSON pour backup."""
-    # Toujours sauvegarder en JSON pour backup
-    with open(CONV_FILE, "w", encoding="utf-8") as f:
-        json.dump(conversations, f, indent=2, ensure_ascii=False)
-    
-    # Si la base de données est disponible, migrer automatiquement
-    if DB_AVAILABLE:
-        try:
-            service = StudentResponseService()
-            for question_id, data in conversations.items():
-                # Sauvegarder la question si elle n'existe pas
-                if not service.question_exists(question_id):
-                    service.save_question(
-                        question_id=question_id,
-                        student_email=data.get('student', ''),
-                        question=data.get('question', ''),
-                        matiere=data.get('matiere'),
-                        challenge_ref=data.get('challenge_ref'),
-                        api_challenge_id=data.get('api_challenge_id'),
-                        user_id=data.get('user_id')
-                    )
-                
-                # Sauvegarder la réponse si elle existe
-                if data.get('response'):
-                    service.save_response(
-                        question_id=question_id,
-                        response=data.get('response'),
-                        response_date=data.get('response_date'),
-                        response_from=data.get('response_from')
-                    )
-                
-                # Sauvegarder l'évaluation si elle existe
-                if data.get('evaluation'):
-                    service.save_evaluation(
-                        question_id=question_id,
-                        evaluation_data=data.get('evaluation')
-                    )
-                
-                # Marquer le feedback comme envoyé si nécessaire
-                if data.get('feedback_sent'):
-                    service.mark_feedback_sent(
-                        question_id=question_id,
-                        feedback_sent_to=data.get('feedback_sent_to', '')
-                    )
-        except Exception as e:
-            print(f"Erreur lors de la sauvegarde en base de données: {e}")
+def load_conversations() -> Dict[str, Dict]:
+    """Charge les conversations depuis le fichier JSON courant."""
+    try:
+        archive_dir = os.path.join(os.path.dirname(__file__), 'archive')
+        current_file = os.path.join(archive_dir, 'current_conversations.json')
+        
+        # Si le fichier courant n'existe pas, retourner un dictionnaire vide
+        if not os.path.exists(current_file):
+            return {}
+        
+        with open(current_file, 'r', encoding='utf-8') as f:
+            conversations = json.load(f)
+        
+        logger.info(f"✅ Conversations chargées depuis {current_file}")
+        return conversations
+        
+    except Exception as e:
+        logger.error(f"❌ Erreur lors du chargement des conversations: {e}")
+        return {}
 
 def save_question_to_db(question_id: str, student_email: str, question: str, 
                        matiere: str = None, challenge_ref: str = None, 

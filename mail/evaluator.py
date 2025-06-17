@@ -124,9 +124,6 @@ def clean_student_response(response: str) -> str:
     
     return cleaned
 
-# Les fonctions d'évaluation locales ont été supprimées car l'évaluation
-# se fait maintenant via l'API /api/evaluation/response
-
 def display_evaluation(evaluation: Dict, question: str, response: str):
     """Affiche l'évaluation de manière formatée"""
     import json
@@ -154,7 +151,7 @@ def evaluate_and_display(question: str, response: str, matiere: str, user_id: in
     display_evaluation(evaluation, question, response)
     return evaluation
 
-def send_feedback_email(to_email: str, evaluation: Dict, question: str, response: str, student_name: str = None, original_email: Dict = None) -> bool:
+def send_feedback_email(to_email: str, evaluation: Dict, question: str, response: str, student_name: str = None, original_email: Dict = None, is_merdique: bool = False) -> bool:
     """
     Envoie un email de feedback avec l'évaluation à l'étudiant en réponse à son email
     
@@ -165,6 +162,7 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         response: Réponse de l'étudiant
         student_name: Nom de l'étudiant (optionnel)
         original_email: Dict contenant les infos de l'email original pour créer une réponse
+        is_merdique: Indique si c'est une réponse inappropriée
     
     Returns:
         bool: True si envoyé avec succès
@@ -177,57 +175,33 @@ def send_feedback_email(to_email: str, evaluation: Dict, question: str, response
         # Préparer le contenu du feedback
         student_greeting = f"Bonjour {student_name}" if student_name else "Bonjour"
         
-        # Extraire d'abord les données pour le sujet
-        api_data = evaluation.get('raw_api_response', {}).get('data', {})
-        score = api_data.get('score', 'N/A')
-        note = api_data.get('note', 'N/A')
-        
-        # Créer un sujet simple et propre basé sur les données JSON
-        import re
-        
-        # Extraire l'ID de question et la matière depuis l'email original si disponible
-        question_id = None
-        matiere = "Général"  # Valeur par défaut
-        
-        if original_email:
-            # Utiliser la matière directement depuis original_email
-            matiere = original_email.get('matiere', 'Général')
-            
-            if original_email.get('question_id'):
-                question_id = original_email['question_id']
-            elif original_email.get('subject'):
-                # Essayer d'extraire l'ID depuis le sujet
-                match = re.search(r'(IDQ-\d{14}-[a-f0-9]{6})', str(original_email['subject']))
-                if match:
-                    question_id = match.group(1)
-        
-        # Créer un sujet qui correspond exactement au format de la question originale
-        if question_id:
-            # Utiliser exactement le même format que l'email original
-            subject = f"🧠 Question du jour - {question_id}"
-        else:
-            subject = "🧠 Question du jour"
-        
         # Extraire les données de l'API
         api_data = evaluation.get('raw_api_response', {}).get('data', {})
         score = api_data.get('score', 'N/A')
         note = api_data.get('note', 'N/A')
         feedback = api_data.get('feedback', 'Aucun feedback disponible')
-        points_forts = api_data.get('points_forts', [])
-        points_ameliorer = api_data.get('points_ameliorer', [])
-        suggestions = api_data.get('suggestions', [])
-        reponse_modele = api_data.get('reponse_modele', '')
+        
+        if is_merdique:
+            # Format simplifié pour les réponses inappropriées
+            body = f"""{student_greeting},
 
-        # Corps du message avec évaluation formatée
-        body = f"""{student_greeting},
+RÉSULTAT
+Note : {note}/20
+
+FEEDBACK GÉNÉRAL
+{feedback}"""
+        else:
+            # Format normal pour les autres réponses
+            points_forts = api_data.get('points_forts', [])
+            points_ameliorer = api_data.get('points_ameliorer', [])
+            suggestions = api_data.get('suggestions', [])
+            reponse_modele = api_data.get('reponse_modele', '')
+
+            body = f"""{student_greeting},
 
 Voici l'évaluation de votre réponse :
 
-QUESTION POSÉE
-{question}
-
 RÉSULTAT
-Score : {score}/20
 Note : {note}/20
 
 FEEDBACK GÉNÉRAL
@@ -245,16 +219,54 @@ SUGGESTIONS
 {f"RÉPONSE MODÈLE{chr(10)}{reponse_modele}" if reponse_modele else ""}
 
 Cordialement,
-Le Rhino
-"""
-        
+Le Rhino"""
+
         # Envoi de l'email
         logger.info(f"Envoi du feedback à {to_email}")
-        logger.info(f"Sujet: {subject}")
         yag = yagmail.SMTP(EMAIL, PASSWORD)
         
-        # Envoi simple sans headers de threading
-        yag.send(to=to_email, subject=subject, contents=body)
+        # Préparer les en-têtes pour créer une réponse dans le même thread
+        headers = {}
+        subject = None
+        
+        if original_email:
+            # Conserver le sujet original
+            original_subject = original_email.get('subject', '')
+            if original_subject:
+                # Si le sujet ne commence pas déjà par "Re: "
+                if not original_subject.lower().startswith('re:'):
+                    subject = f"Re: {original_subject}"
+                else:
+                    subject = original_subject
+                logger.info(f"Utilisation du sujet original: {subject}")
+            
+            # Récupérer le message_id de l'email original
+            original_message_id = original_email.get('message_id')
+            if original_message_id:
+                # Ajouter les headers de threading
+                headers['In-Reply-To'] = original_message_id
+                headers['References'] = original_message_id
+                logger.info(f"Envoi en réponse au message ID: {original_message_id}")
+            
+            # Récupérer les références existantes si présentes
+            existing_references = original_email.get('references', '')
+            if existing_references:
+                # Ajouter les références existantes
+                headers['References'] = f"{existing_references} {original_message_id}"
+                logger.info(f"Utilisation des références existantes: {existing_references}")
+        
+        # Si pas de sujet original, utiliser un sujet par défaut
+        if not subject:
+            subject = "Re: 🧠 Question du jour"
+            logger.info("Utilisation du sujet par défaut")
+        
+        # Envoyer l'email avec les headers de threading
+        if headers:
+            logger.info("Envoi avec headers de threading")
+            yag.send(to=to_email, subject=subject, contents=body, headers=headers)
+        else:
+            logger.info("Envoi sans headers de threading (fallback)")
+            yag.send(to=to_email, subject=subject, contents=body)
         
         logger.info(f"✅ Feedback envoyé avec succès à {to_email}")
         return True
