@@ -2,7 +2,7 @@
 
 **API FastAPI pour la gestion de cours et génération de questions via RAG (Retrieval-Augmented Generation)**
 
-Cette API permet de gérer des documents de cours, générer des questions de réflexion, évaluer des réponses d'étudiants et organiser des challenges pédagogiques.
+Cette API permet de gérer des documents de cours, générer des questions de réflexion, évaluer des réponses d'étudiants, organiser des challenges pédagogiques et distribuer automatiquement des questions par email.
 
 ## 📋 Table des matières
 
@@ -10,13 +10,14 @@ Cette API permet de gérer des documents de cours, générer des questions de r�
 - [⚡ Démarrage rapide](#-démarrage-rapide)
 - [🔐 Authentification](#-authentification)
 - [📖 Documentation API](#-documentation-api)
-- [🏗️ Architecture](#️-architecture)
-- [🔧 Implémentation des fonctionnalités](#-implémentation-des-fonctionnalités)
+- [📧 Système de Mail](#-système-de-mail)
 - [🧪 Tests](#-tests)
+- [🏗️ Architecture](#️-architecture)
+- [🔧 Fonctionnalités clés](#-fonctionnalités-clés)
 - [🚀 Déploiement](#-déploiement)
 - [🤝 Contribution](#-contribution)
 - [🔄 Présentation Fonctionnelle](#-présentation-fonctionnelle)
-- [🔄 Mécanisme de Tick (Distribution des Challenges)](#-mécanisme-de-tick-distribution-des-challenges)
+- [🕑 Système de Tick](#-système-de-tick)
 
 ## 🚀 Installation
 
@@ -72,10 +73,13 @@ PINECONE_INDEX_NAME=rag-sir
 # OpenAI (pour les embeddings et génération)
 OPENAI_API_KEY=your_openai_api_key
 
-# JWT (pour l'authentification)
-TOKEN_SECRET_KEY=your_secret_key_change_this_in_production
-TOKEN_ALGORITHM=HS256
-TOKEN_EXPIRE_MINUTES=60
+# Email (pour le système de distribution automatique)
+EMAIL=your-email@gmail.com
+PASSWORD=your-app-password
+IMAP_HOST=imap.gmail.com
+
+# Date de référence pour le système de tick
+TICK_REFERENCE_DATE=2024-01-01
 ```
 
 ## ⚡ Démarrage rapide
@@ -158,7 +162,6 @@ curl http://localhost:8000/api/matieres?user_id=1
 - `GET /api/matieres/{matiere}/documents/changes` – Obtenir les modifications depuis le dernier index
 
 #### ❓ Questions
-- `POST /api/question` – Poser une question au système RAG
 - `POST /api/question/reflection` – Générer une question de réflexion
 
 #### 📝 Évaluations
@@ -184,46 +187,103 @@ curl http://localhost:8000/api/matieres?user_id=1
 | Gestion challenges | ✅ | ✅ | ✅ |
 | Gestion utilisateurs | ❌ | ❌ | ✅ |
 
-## 🏗️ Architecture
+## 📧 Système de Mail
 
+Le système de mail permet d'envoyer automatiquement des challenges aux étudiants et de traiter leurs réponses avec évaluation automatique.
+
+### Configuration Email
+
+1. **Configurer Gmail** :
+   - Activer l'authentification à 2 facteurs
+   - Générer un mot de passe d'application
+   - Ajouter dans `.env` :
+   ```env
+   EMAIL=your-email@gmail.com
+   PASSWORD=your-app-password
+   IMAP_HOST=imap.gmail.com
+   ```
+
+### Scripts de Test Mail
+
+#### Test étape par étape
+```bash
+cd mail
+python test_step_by_step.py
 ```
-app/
-├── core/                  # Configuration & exceptions
-│   ├── config.py
-│   └── exceptions.py
-├── db/                    # SQLModel tables & session helpers
-│   ├── models.py
-│   └── session.py
-├── services/              # Logique métier (RAG, documents, challenges…)
-│   ├── rag/
-│   ├── matieres.py
-│   └── ...
-├── api/                   # Routes FastAPI
-│   ├── deps.py
-│   └── routes/
-│       ├── auth.py        # Gestion des utilisateurs
-│       ├── matieres.py
-│       ├── documents.py
-│       ├── questions.py
-│       ├── evaluations.py
-│       ├── challenges.py
-│       └── leaderboard.py
-├── models/                # Schémas Pydantic
-└── main.py                # Point d'entrée de l'application
+Ce script permet de tester chaque étape individuellement :
+- Envoi d'un challenge à un étudiant
+- Attente de la réponse
+- Évaluation automatique
+- Envoi du feedback
+
+#### Test avec tous les étudiants
+```bash
+cd mail
+python test_mail_all_students.py
+```
+Ce script envoie des challenges à tous les étudiants simultanément avec :
+- **Threading avancé** : Chaque étudiant traité dans un thread séparé
+- **Queue partagée** : Système de queue pour éviter les conflits de lecture d'emails
+- **Surveillance centralisée** : Un seul thread lit les emails, les autres attendent dans la queue
+- **Évaluation automatique** : Chaque réponse est évaluée et un feedback est envoyé
+
+### Fonctionnalités du Système Mail
+
+#### 🔄 **Threading et Queue**
+- **Thread de surveillance** : Lit les emails sans les marquer comme lus
+- **Queue partagée** : Distribue les réponses aux threads d'étudiants
+- **Marquage sélectif** : Chaque email est marqué comme lu seulement après traitement
+- **Thread-safe** : Utilisation de locks pour éviter les conflits
+
+#### 📧 **Flux Email Complet**
+1. **Envoi du challenge** : Email avec question et ID unique
+2. **Attente de réponse** : Surveillance automatique de la boîte mail
+3. **Évaluation automatique** : Analyse de la réponse avec IA
+4. **Feedback personnalisé** : Envoi d'un email de réponse avec évaluation détaillée
+
+#### 🧠 **Évaluation Intelligente**
+- **Score automatique** : Évaluation de 0 à 100
+- **Feedback détaillé** : Points forts, points à améliorer, suggestions
+- **Détection d'inapproprié** : Identification des réponses non constructives
+- **Threading email** : Le feedback est envoyé en réponse au même fil de discussion
+
+### Utilisation du Script Test All
+
+```bash
+# Lancer le test avec tous les étudiants
+cd mail
+python test_mail_all_students.py
+
+# Le script demandera le délai d'attente (défaut: 5 minutes)
+# Puis traitera automatiquement tous les étudiants
 ```
 
-## 🔧 Fonctionnalités clés
+**Résultat attendu :**
+```
+🚀 ENVOI DES CHALLENGES À TOUS LES ÉTUDIANTS
+👥 5 étudiants trouvés
+📧 Thread de surveillance des emails démarré
 
-Toutes les fonctionnalités suivantes sont **entièrement implémentées** :
+🎯 TRAITEMENT DE alice (ID: 1)
+✅ Challenge envoyé à alice
+⏳ Attente de la réponse de alice depuis la queue...
+📧 Email de alice@example.com ajouté à la queue
+✅ Réponse reçue de alice
+🧠 Évaluation de la réponse de alice...
+✅ Feedback envoyé avec succès à alice
 
-- Gestion des utilisateurs et de leurs abonnements
-- Création/gestion des matières et de leurs documents
-- Indexation vectorielle (Pinecone) et génération d'embeddings (OpenAI)
-- Système RAG pour répondre aux questions et générer des questions de réflexion
-- Évaluation automatisée des réponses avec feedback détaillé
-- Gestion des challenges, logique de tick et classement
-- Leaderboard calculé sur demande
-- Suite de tests couvrant l'ensemble de l'API
+📋 RÉSUMÉ FINAL
+✅ Étudiants traités avec succès: 5/5
+📧 Emails traités: 5
+```
+
+### Avantages du Système
+
+1. **Pas de perte de réponses** : Queue partagée évite les conflits
+2. **Traitement parallèle** : Tous les étudiants traités simultanément
+3. **Évaluation automatique** : Feedback immédiat et personnalisé
+4. **Threading email** : Conversations organisées et lisibles
+5. **Robustesse** : Gestion d'erreurs et timeouts configurables
 
 ## 🧪 Tests
 
@@ -417,6 +477,56 @@ pytest --cov=app --cov-report=html
 # Résultat dans htmlcov/index.html
 ```
 
+## 🏗️ Architecture
+
+```
+app/
+├── core/                  # Configuration & exceptions
+│   ├── config.py
+│   └── exceptions.py
+├── db/                    # SQLModel tables & session helpers
+│   ├── models.py
+│   └── session.py
+├── services/              # Logique métier (RAG, documents, challenges…)
+│   ├── rag/
+│   ├── matieres.py
+│   └── ...
+├── api/                   # Routes FastAPI
+│   ├── deps.py
+│   └── routes/
+│       ├── auth.py        # Gestion des utilisateurs
+│       ├── matieres.py
+│       ├── documents.py
+│       ├── questions.py
+│       ├── evaluations.py
+│       ├── challenges.py
+│       └── leaderboard.py
+├── models/                # Schémas Pydantic
+└── main.py                # Point d'entrée de l'application
+
+mail/                      # Système de distribution email
+├── send_questions.py      # Envoi de challenges
+├── email_reader.py        # Lecture des réponses
+├── evaluator.py           # Évaluation automatique
+├── test_step_by_step.py   # Test individuel
+└── test_mail_all_students.py  # Test avec tous les étudiants
+```
+
+## 🔧 Fonctionnalités clés
+
+Toutes les fonctionnalités suivantes sont **entièrement implémentées** :
+
+- ✅ **Gestion des utilisateurs** et de leurs abonnements
+- ✅ **Création/gestion des matières** et de leurs documents
+- ✅ **Indexation vectorielle** (Pinecone) et génération d'embeddings (OpenAI)
+- ✅ **Système RAG** pour répondre aux questions et générer des questions de réflexion
+- ✅ **Évaluation automatisée** des réponses avec feedback détaillé
+- ✅ **Gestion des challenges**, logique de tick et classement
+- ✅ **Leaderboard** calculé sur demande
+- ✅ **Système de mail complet** avec distribution automatique et évaluation
+- ✅ **Threading avancé** pour le traitement simultané de multiples étudiants
+- ✅ **Suite de tests** couvrant l'ensemble de l'API
+
 ## 🚀 Déploiement
 
 ### Docker (recommandé)
@@ -497,59 +607,10 @@ Le Rhino API est une plateforme d'entraînement et d'évaluation pour étudiants
 - **File de challenges** :
   - Les challenges sont servis en file pour chaque matière et granularité. Un challenge n'est resservi qu'une fois que tous les challenges de la matière ont été proposés.
 
-
-## Mécanisme de Tick (Distribution des Challenges)
-
-- **Principe** :
-  - La granularité (jour, semaine, mois, etc.) définit la fréquence à laquelle un nouveau challenge est proposé pour une matière.
-  - Le tick courant est calculé dynamiquement à partir d'une date de référence (date du premier challenge de la matière).
-  - À chaque tick, le système sert le prochain challenge non encore servi pour la matière et la granularité.
-  - Quand tous les challenges ont été servis, la file est remise à zéro et le cycle recommence.
-
-- **Exemple de fonctionnement** :
-  1. La granularité de la matière SYD est "semaine".
-  2. Chaque semaine, tous les utilisateurs abonnés à SYD reçoivent le même challenge, qui change chaque semaine.
-  3. Si tous les challenges ont été servis, le cycle recommence depuis le début de la file.
-
-- **Avantages** :
-  - Pas de période de validité stockée dans chaque challenge.
-  - Facile à modifier (changer la granularité d'une matière suffit).
-  - Même expérience pour tous les utilisateurs d'une matière.
-
-## Endpoints principaux
-
-- `POST /users/register` : Inscription d'un utilisateur
-- `PUT /users/subscriptions` : Gestion des abonnements
-- `POST /challenges` : Ajout d'un challenge (enseignant/admin)
-- `GET /challenges/today?user_id={id}` : Récupérer le challenge du jour pour un utilisateur
-
-## Exemple d'appel pour récupérer le challenge du jour
-
-```http
-GET /challenges/today?user_id=123
-```
-
-**Réponse :**
-```json
-{
-  "success": true,
-  "message": "Challenge du jour récupéré avec succès",
-  "data": {
-    "challenge": {
-      "challenge_id": "1",
-      "ref": "SYD-001",
-      "question": "Expliquez le modèle OSI.",
-      "matiere": "SYD",
-      "date": "2024-05-01"
-    },
-    "user_subscriptions": ["SYD", "TCP"]
-  }
-}
-```
-
----
-
-Pour toute question sur l'usage ou l'extension de l'API, consulte la documentation technique ou contacte l'équipe projet.
+- **Distribution automatique par email** :
+  - Envoi automatique de challenges aux étudiants
+  - Traitement des réponses avec évaluation automatique
+  - Envoi de feedback personnalisé
 
 ## 🕑 Système de Tick
 
@@ -562,14 +623,6 @@ Le moteur de distribution des défis repose sur un **tick global** calculé à p
 
 Une description détaillée se trouve dans [`docs/systeme_tick.md`](docs/systeme_tick.md).
 
-## 🔧 Configuration supplémentaire
-
-Ajoutez dans `.env` :
-```env
-# Date de référence pour le système de tick (ISO YYYY-MM-DD)
-TICK_REFERENCE_DATE=2024-01-01
-```
-
 ## ✅ Statut de l'implémentation
 
 Tous les endpoints listés ci-dessus sont opérationnels ; les sections de « code à compléter » ont été implémentées dans la base de code. Vous pouvez démarrer l'API, envoyer des requêtes et exécuter la suite de tests :
@@ -577,3 +630,7 @@ Tous les endpoints listés ci-dessus sont opérationnels ; les sections de « co
 ```bash
 pytest -q
 ```
+
+---
+
+Pour toute question sur l'usage ou l'extension de l'API, consulte la documentation technique ou contacte l'équipe projet.
