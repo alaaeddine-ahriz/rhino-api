@@ -7,7 +7,7 @@ import logging
 import requests
 import time
 import os
-from database_utils import get_student_by_id, get_all_students
+# from database_utils import get_student_by_id, get_all_students
 
 # Configuration du logging
 logging.basicConfig(
@@ -28,21 +28,25 @@ def test_step_1_database(user_id=8):
     print("="*60)
     
     try:
-        # Test connexion générale
-        students = get_all_students()
-        print(f"✅ Connexion DB réussie - {len(students)} étudiants trouvés")
+        # Test connexion générale (désactivé - base de données temporairement indisponible)
+        # students = get_all_students()
+        # print(f"✅ Connexion DB réussie - {len(students)} étudiants trouvés")
+        print("⚠️ Test de base de données désactivé - utilisation de l'API uniquement")
         
-        # Test récupération étudiant spécifique
-        student = get_student_by_id(user_id)
-        if student:
-            print(f"✅ Étudiant ID {user_id} trouvé:")
-            print(f"   - Nom: {student['username']}")
-            print(f"   - Email: {student['email']}")
-            print(f"   - Abonnements: {', '.join(student['subscriptions'])}")
-            return True, student
-        else:
-            print(f"❌ Étudiant ID {user_id} non trouvé")
-            return False, None
+        # Test récupération étudiant spécifique (désactivé)
+        # student = get_student_by_id(user_id)
+        # if student:
+        #     print(f"✅ Étudiant ID {user_id} trouvé:")
+        #     print(f"   - Nom: {student['username']}")
+        #     print(f"   - Email: {student['email']}")
+        #     print(f"   - Abonnements: {', '.join(student['subscriptions'])}")
+        #     return True, student
+        # else:
+        #     print(f"❌ Étudiant ID {user_id} non trouvé")
+        #     return False, None
+        
+        print(f"⚠️ Récupération étudiant ID {user_id} désactivée - utilisation de l'API")
+        return True, None
             
     except Exception as e:
         print(f"❌ Erreur base de données: {e}")
@@ -463,7 +467,7 @@ def real_send_to_user(user_id):
         from send_questions import send_question_from_api
         
         # Récupérer l'étudiant
-        student = get_student_by_id(user_id)
+        # student = get_student_by_id(user_id)
         if not student:
             print(f"❌ Étudiant ID {user_id} non trouvé")
             return False
@@ -495,7 +499,7 @@ def get_user_choice():
     
     try:
         # Afficher la liste des étudiants disponibles
-        students = get_all_students()
+        # students = get_all_students()
         if students:
             print("📋 Étudiants disponibles:")
             for student in students:
@@ -510,7 +514,7 @@ def get_user_choice():
                 user_id = int(user_input)
                 
                 # Vérifier que l'utilisateur existe
-                student = get_student_by_id(user_id)
+                # student = get_student_by_id(user_id)
                 if student:
                     print(f"✅ Étudiant sélectionné: {student['username']} (ID: {user_id})")
                     return user_id

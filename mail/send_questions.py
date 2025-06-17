@@ -121,11 +121,11 @@ def send_question_from_api(to: str, user_id: Optional[int] = None, matiere: Opti
         
         # Récupérer le nom de l'utilisateur si user_id est fourni
         student_name = None
-        if user_id:
-            from database_utils import get_student_by_id
-            student = get_student_by_id(user_id)
-            if student:
-                student_name = student.get('username')
+        # if user_id:
+        #     from database_utils import get_student_by_id
+        #     student = get_student_by_id(user_id)
+        #     if student:
+        #         student_name = student.get('username')
         
         # Génération de l'ID local pour le suivi email
         local_question_id = generate_question_id()
@@ -160,35 +160,32 @@ Le Rhino
         logger.info(f"   - Matière: {matiere_name}")
         logger.info(f"   - Référence: {challenge_ref}")
         
-        # Sauvegarde dans la base de données
-        from utils import save_question_to_db
-        db_saved = save_question_to_db(
-            question_id=local_question_id,
-            student_email=to,
-            question=question,
-            matiere=matiere_name,
-            challenge_ref=challenge_ref,
-            api_challenge_id=api_challenge_id,
-            user_id=user_id
-        )
+        # Sauvegarde dans la base de données (désactivée)
+        # from utils import save_question_to_db
+        # db_saved = save_question_to_db(
+        #     question_id=local_question_id,
+        #     student_email=to,
+        #     question=question,
+        #     matiere=matiere_name,
+        #     challenge_ref=challenge_ref,
+        #     api_challenge_id=api_challenge_id,
+        #     user_id=user_id
+        # )
         
-        # Fallback vers JSON si la base de données échoue
-        if not db_saved:
-            logger.warning("Échec de la sauvegarde en base de données, utilisation du JSON")
-            conversations = load_conversations()
-            conversations[local_question_id] = {
-                "student": to,
-                "question": question,
-                "matiere": matiere_name,
-                "challenge_ref": challenge_ref,
-                "api_challenge_id": api_challenge_id,
-                "response": None,
-                "evaluated": False,
-                "user_id": user_id
-            }
-            save_conversations(conversations)
-        else:
-            logger.info("✅ Question sauvegardée en base de données")
+        # Utilisation du JSON (base de données temporairement désactivée)
+        logger.warning("Utilisation du JSON (base de données temporairement désactivée)")
+        conversations = load_conversations()
+        conversations[local_question_id] = {
+            "student": to,
+            "question": question,
+            "matiere": matiere_name,
+            "challenge_ref": challenge_ref,
+            "api_challenge_id": api_challenge_id,
+            "response": None,
+            "evaluated": False,
+            "user_id": user_id
+        }
+        save_conversations(conversations)
         
         return True
         

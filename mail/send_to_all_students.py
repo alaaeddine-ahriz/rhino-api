@@ -7,7 +7,7 @@ import logging
 import requests
 import time
 import os
-from database_utils import get_all_students
+# from database_utils import get_all_students
 from send_questions import send_question_from_api
 from email_reader import wait_for_reply, display_reply, save_reply_to_conversations
 from evaluator import evaluate_and_display, send_feedback_email
@@ -39,28 +39,31 @@ def send_challenge_to_all_students():
     print("="*60)
     
     try:
-        # Récupérer tous les étudiants
-        students = get_all_students()
-        print(f"👥 {len(students)} étudiants trouvés")
+        # Récupérer tous les étudiants (désactivé - utilisation de l'API uniquement)
+        # students = get_all_students()
+        # print(f"👥 {len(students)} étudiants trouvés")
+        print("⚠️ Récupération des étudiants désactivée - utilisation de l'API uniquement")
+        print("👥 Cette fonction nécessite une liste d'étudiants fournie en paramètre")
+        return False
         
         # Envoyer le challenge à chaque étudiant
-        for student in students:
-            print(f"\n📤 Envoi du challenge à {student['username']} ({student['email']})...")
-            
-            success = send_question_from_api(
-                to=student['email'],
-                user_id=student['id']
-            )
-            
-            if success:
-                print(f"✅ Challenge envoyé avec succès à {student['username']}")
-            else:
-                print(f"❌ Échec de l'envoi du challenge à {student['username']}")
-            
-            # Petit délai entre chaque envoi pour éviter de surcharger le serveur mail
-            time.sleep(2)
+        # for student in students:
+        #     print(f"\n📤 Envoi du challenge à {student['username']} ({student['email']})...")
+        #     
+        #     success = send_question_from_api(
+        #         to=student['email'],
+        #         user_id=student['id']
+        #     )
+        #     
+        #     if success:
+        #         print(f"✅ Challenge envoyé avec succès à {student['username']}")
+        #     else:
+        #         print(f"❌ Échec de l'envoi du challenge à {student['username']}")
+        #     
+        #     # Petit délai entre chaque envoi pour éviter de surcharger le serveur mail
+        #     time.sleep(2)
         
-        return True
+        # return True
         
     except Exception as e:
         print(f"❌ Erreur lors de l'envoi des challenges: {e}")
@@ -230,29 +233,31 @@ def wait_and_process_replies(timeout_minutes=30):
     print("="*60)
     
     try:
-        students = get_all_students()
-        print(f"👥 Attente des réponses de {len(students)} étudiants...")
+        # students = get_all_students()
+        # print(f"👥 Attente des réponses de {len(students)} étudiants...")
+        print("⚠️ Fonction désactivée - nécessite une liste d'étudiants")
+        return False
         
         # Créer un thread pour chaque étudiant avec son propre timeout
-        with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
-            # Lancer le traitement de chaque étudiant dans un thread séparé
-            futures = {
-                executor.submit(process_student_response, student, timeout_minutes): student
-                for student in students
-            }
-            
-            # Ne pas attendre que tous les threads soient terminés
-            # Chaque étudiant sera traité indépendamment
-            for future in concurrent.futures.as_completed(futures):
-                student = futures[future]
-                try:
-                    future.result()
-                except Exception as e:
-                    print(f"❌ Erreur dans le thread de {student['username']}: {e}")
-                    continue  # Continuer avec les autres étudiants même en cas d'erreur
+        # with concurrent.futures.ThreadPoolExecutor(max_workers=len(students)) as executor:
+        #     # Lancer le traitement de chaque étudiant dans un thread séparé
+        #     futures = {
+        #         executor.submit(process_student_response, student, timeout_minutes): student
+        #         for student in students
+        #     }
+        #     
+        #     # Ne pas attendre que tous les threads soient terminés
+        #     # Chaque étudiant sera traité indépendamment
+        #     for future in concurrent.futures.as_completed(futures):
+        #         student = futures[future]
+        #         try:
+        #             future.result()
+        #         except Exception as e:
+        #             print(f"❌ Erreur dans le thread de {student['username']}: {e}")
+        #             continue  # Continuer avec les autres étudiants même en cas d'erreur
         
-        print("\n✅ Tous les étudiants ont été traités")
-        return True
+        # print("\n✅ Tous les étudiants ont été traités")
+        # return True
         
     except Exception as e:
         print(f"❌ Erreur lors du traitement des réponses: {e}")
@@ -274,8 +279,9 @@ def main():
     
     print("\n✨ PROCESSUS TERMINÉ")
     print(f"📊 Résumé:")
-    print(f"   - Challenges envoyés: {len(get_all_students())}")
-    print(f"   - Réponses évaluées et feedbacks envoyés: {len(get_all_students())}")
+    # print(f"   - Challenges envoyés: {len(get_all_students())}")
+    # print(f"   - Réponses évaluées et feedbacks envoyés: {len(get_all_students())}")
+    print("   - Statistiques désactivées (base de données temporairement indisponible)")
 
 if __name__ == "__main__":
     main() 
