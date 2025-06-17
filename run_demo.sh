@@ -151,6 +151,9 @@ fi
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 print_status "Updated Python path: $PYTHONPATH"
 
+# Set the API port environment variable
+export PORT=8888
+
 # Run the script from the project root directory to ensure proper imports
 python mail/test_mail_all_students.py
 

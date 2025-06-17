@@ -10,6 +10,7 @@ from database_utils import get_all_students
 import concurrent.futures
 from queue import Queue
 import threading
+import os
 
 # Configuration du logging
 logging.basicConfig(
@@ -20,7 +21,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_BASE_URL = "http://localhost:8000/api"
+API_PORT = os.getenv('PORT', '8000')
+API_BASE_URL = f"http://localhost:{API_PORT}/api"
 
 # Queue partagée pour les réponses email
 email_queue = Queue()
