@@ -20,7 +20,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configuration de l'API
-API_PORT = os.getenv('PORT', '8000')
+API_PORT = os.getenv('PORT', '8888')
 API_BASE_URL = f"http://0.0.0.0:{API_PORT}/api"
 
 # Queue partagée pour les réponses email
