@@ -6,7 +6,6 @@ Test étape par étape pour envoyer des mails à tous les étudiants avec thread
 import logging
 import requests
 import time
-from database_utils import get_all_students
 import concurrent.futures
 from queue import Queue
 import threading
@@ -30,6 +29,28 @@ email_queue = Queue()
 student_replies = {}
 # Lock pour synchroniser l'accès au dictionnaire
 replies_lock = threading.Lock()
+
+def get_all_students():
+    """Récupère tous les étudiants via l'API"""
+    try:
+        response = requests.get(f"{API_BASE_URL}/users/", timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            if data.get('success'):
+                # Filter only students
+                users = data.get('data', {}).get('users', [])
+                students = [user for user in users if user.get('role') == 'student']
+                logger.info(f"✅ {len(students)} étudiants récupérés via l'API")
+                return students
+            else:
+                logger.error(f"❌ Erreur API: {data.get('message', 'Unknown error')}")
+                return []
+        else:
+            logger.error(f"❌ Erreur HTTP: {response.status_code}")
+            return []
+    except Exception as e:
+        logger.error(f"❌ Erreur lors de la récupération des étudiants: {e}")
+        return []
 
 def read_emails_without_marking():
     """Lit les emails sans les marquer comme lus - version modifiée de read_new_replies"""
