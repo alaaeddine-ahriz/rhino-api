@@ -33,6 +33,10 @@ email_queue = Queue()
 student_replies = {}
 # Lock pour synchroniser l'accès au dictionnaire
 replies_lock = threading.Lock()
+# Flag pour arrêter la surveillance des emails
+stop_email_monitoring = threading.Event()
+# Set des emails attendus pour l'envoi groupé
+expected_emails = set()
 
 def get_all_matieres():
     """Récupère toutes les matières disponibles via l'API"""
@@ -59,7 +63,7 @@ def create_user():
     """Crée un nouvel utilisateur étudiant via l'API"""
     print("\n" + "👤" * 30)
     print("CRÉATION D'UN NOUVEL UTILISATEUR")
-    print("👤" * 30)
+    print("👤" * 30 + "\n")
     
     try:
         # Demander le username (prénom)
@@ -285,15 +289,23 @@ def mark_email_as_read(email_id):
         logger.error(f"Erreur lors du marquage de l'email {email_id}: {e}")
         return False
 
-def email_monitor_thread(timeout_minutes):
+def email_monitor_thread(timeout_minutes, target_email=None, expected_emails_list=None):
     """Thread qui surveille les emails et les met dans la queue"""
-    print(f"📧 Thread de surveillance des emails démarré (timeout: {timeout_minutes} min)")
+    if target_email:
+        print(f"📧 Thread de surveillance des emails démarré pour {target_email} (timeout: {timeout_minutes} min)")
+    elif expected_emails_list:
+        print(f"📧 Thread de surveillance des emails démarré pour {len(expected_emails_list)} étudiants (timeout: {timeout_minutes} min)")
+    else:
+        print(f"📧 Thread de surveillance des emails démarré (timeout: {timeout_minutes} min)")
     
     start_time = time.time()
     timeout_seconds = timeout_minutes * 60
     check_interval = 10  # Vérifier toutes les 10 secondes
     
-    while time.time() - start_time < timeout_seconds:
+    # Pour l'envoi groupé, suivre les emails reçus
+    received_emails = set()
+    
+    while time.time() - start_time < timeout_seconds and not stop_email_monitoring.is_set():
         try:
             # Lire les nouveaux emails sans les marquer comme lus
             replies = read_emails_without_marking()
@@ -308,18 +320,47 @@ def email_monitor_thread(timeout_minutes):
                             student_replies[email_id] = reply
                             email_queue.put(reply)
                             print(f"📧 Email de {reply['from']} ajouté à la queue")
+                            
+                            # Si on surveille un email spécifique et qu'on l'a reçu, arrêter
+                            if target_email and reply['from'].lower() == target_email.lower():
+                                print(f"✅ Réponse reçue de {target_email}, arrêt de la surveillance")
+                                stop_email_monitoring.set()
+                                return
+                            
+                            # Pour l'envoi groupé, vérifier si on a toutes les réponses
+                            if expected_emails_list:
+                                received_emails.add(reply['from'].lower())
+                                print(f"📊 Réponses reçues: {len(received_emails)}/{len(expected_emails_list)}")
+                                
+                                # Si on a reçu toutes les réponses attendues, arrêter
+                                expected_set = {email.lower() for email in expected_emails_list}
+                                if received_emails >= expected_set:
+                                    print(f"🎉 Toutes les réponses reçues ({len(received_emails)}/{len(expected_emails_list)}), arrêt de la surveillance")
+                                    stop_email_monitoring.set()
+                                    return
+                                    
                         else:
                             print(f"⚠️ Impossible de marquer l'email {email_id} comme lu")
             
             remaining_time = timeout_seconds - (time.time() - start_time)
-            if remaining_time > 0:
+            if remaining_time > 0 and not stop_email_monitoring.is_set():
                 time.sleep(check_interval)
                 
         except Exception as e:
             print(f"❌ Erreur dans le thread de surveillance: {e}")
-            time.sleep(check_interval)
+            if not stop_email_monitoring.is_set():
+                time.sleep(check_interval)
     
-    print("📧 Thread de surveillance des emails terminé")
+    if stop_email_monitoring.is_set():
+        if expected_emails_list:
+            print(f"📧 Thread de surveillance des emails arrêté ({len(received_emails)}/{len(expected_emails_list)} réponses reçues)")
+        else:
+            print("📧 Thread de surveillance des emails arrêté (réponse reçue)")
+    else:
+        if expected_emails_list:
+            print(f"📧 Thread de surveillance des emails terminé par timeout ({len(received_emails)}/{len(expected_emails_list)} réponses reçues)")
+        else:
+            print("📧 Thread de surveillance des emails terminé (timeout)")
 
 def wait_for_reply_from_queue(student_email, timeout_minutes):
     """Attend une réponse d'un étudiant spécifique depuis la queue"""
@@ -366,7 +407,7 @@ def process_student(student, timeout_minutes=5):
         url = f"{API_BASE_URL}/challenges/today"
         params = {"user_id": student['id']}
         
-        print(f"🔍 Récupération du challenge...")
+        print(f"\n"+ "🔍 Récupération du challenge...")
         response = requests.get(url, params=params, timeout=10)
         
         if response.status_code != 200:
@@ -374,9 +415,7 @@ def process_student(student, timeout_minutes=5):
             return False
             
         challenge_data = response.json()
-        print("✅ Challenge récupéré:")
-        print(f"   - Question: {challenge_data.get('question', 'N/A')[:100]}...")
-        print(f"   - Matière: {challenge_data.get('matiere', 'N/A')}")
+        print("\n"+ "✅ Challenge récupéré")
         
         # Étape 3: Envoyer l'email
         from send_questions import send_question_from_api
@@ -514,10 +553,29 @@ def send_to_all_students(timeout_minutes=5):
         students = get_all_students()
         print(f"👥 {len(students)} étudiants trouvés")
         
-        # Démarrer le thread de surveillance des emails
+        if not students:
+            print("❌ Aucun étudiant trouvé")
+            return False
+        
+        # Créer la liste des emails attendus
+        expected_emails_list = [student['email'] for student in students]
+        print(f"📧 Emails attendus: {', '.join(expected_emails_list)}")
+        
+        # Réinitialiser le flag d'arrêt et vider les dictionnaires
+        stop_email_monitoring.clear()
+        with replies_lock:
+            student_replies.clear()
+            # Vider la queue
+            while not email_queue.empty():
+                try:
+                    email_queue.get_nowait()
+                except:
+                    break
+        
+        # Démarrer le thread de surveillance des emails avec la liste des emails attendus
         email_monitor = threading.Thread(
             target=email_monitor_thread, 
-            args=(timeout_minutes,),
+            args=(timeout_minutes, None, expected_emails_list),
             daemon=True
         )
         email_monitor.start()
@@ -541,7 +599,8 @@ def send_to_all_students(timeout_minutes=5):
                 except Exception as e:
                     print(f"❌ Erreur dans le thread de {student['username']}: {e}")
         
-        # Attendre que le thread de surveillance se termine
+        # Arrêter la surveillance et attendre que le thread se termine
+        stop_email_monitoring.set()
         email_monitor.join(timeout=10)
         
         # Résumé
@@ -550,6 +609,20 @@ def send_to_all_students(timeout_minutes=5):
         print("📋" * 30)
         print(f"✅ Étudiants traités avec succès: {success_count}/{len(students)}")
         print(f"📧 Emails traités: {len(student_replies)}")
+        
+        # Afficher les réponses reçues vs attendues
+        with replies_lock:
+            received_emails = set()
+            for reply_data in student_replies.values():
+                received_emails.add(reply_data['from'].lower())
+            
+            expected_set = {email.lower() for email in expected_emails_list}
+            missing_emails = expected_set - received_emails
+            
+            if missing_emails:
+                print(f"⚠️ Réponses manquantes de: {', '.join(missing_emails)}")
+            else:
+                print(f"🎉 Toutes les réponses reçues!")
         
         return success_count > 0
         
@@ -606,20 +679,31 @@ def select_and_process_student(timeout_minutes=5):
             print("🚫 Envoi annulé")
             return False
         
-        # Démarrer le thread de surveillance des emails pour cet étudiant
+        # Réinitialiser le flag d'arrêt et vider les dictionnaires
+        stop_email_monitoring.clear()
+        with replies_lock:
+            student_replies.clear()
+            # Vider la queue
+            while not email_queue.empty():
+                try:
+                    email_queue.get_nowait()
+                except:
+                    break
+        
+        # Démarrer le thread de surveillance des emails pour cet étudiant spécifique
         email_monitor = threading.Thread(
             target=email_monitor_thread, 
-            args=(timeout_minutes,),
+            args=(timeout_minutes, selected_student['email']),
             daemon=True
         )
         email_monitor.start()
-        print("📧 Thread de surveillance des emails démarré")
         
         # Traiter l'étudiant sélectionné
         success = process_student(selected_student, timeout_minutes)
         
-        # Attendre que le thread de surveillance se termine
-        email_monitor.join(timeout=10)
+        # Arrêter la surveillance et attendre que le thread se termine
+        stop_email_monitoring.set()
+        email_monitor.join(timeout=5)
         
         if success:
             print(f"\n✅ Traitement de {selected_student['username']} terminé avec succès!")
@@ -658,17 +742,31 @@ def show_post_creation_menu(timeout_minutes=5):
                     latest_student = max(students, key=lambda x: x.get('id', 0))
                     print(f"\n🎯 Envoi du challenge à {latest_student['username']} ({latest_student['email']})")
                     
-                    # Démarrer le thread de surveillance des emails
+                    # Réinitialiser le flag d'arrêt et vider les dictionnaires
+                    stop_email_monitoring.clear()
+                    with replies_lock:
+                        student_replies.clear()
+                        # Vider la queue
+                        while not email_queue.empty():
+                            try:
+                                email_queue.get_nowait()
+                            except:
+                                break
+                    
+                    # Démarrer le thread de surveillance des emails pour cet étudiant spécifique
                     email_monitor = threading.Thread(
                         target=email_monitor_thread, 
-                        args=(timeout_minutes,),
+                        args=(timeout_minutes, latest_student['email']),
                         daemon=True
                     )
                     email_monitor.start()
                     
                     # Traiter l'étudiant
                     success = process_student(latest_student, timeout_minutes)
-                    email_monitor.join(timeout=10)
+                    
+                    # Arrêter la surveillance et attendre que le thread se termine
+                    stop_email_monitoring.set()
+                    email_monitor.join(timeout=5)
                     
                     if success:
                         print(f"✅ Challenge envoyé avec succès à {latest_student['username']}!")
@@ -679,6 +777,16 @@ def show_post_creation_menu(timeout_minutes=5):
                 break
                 
             elif choice == "2":
+                # Réinitialiser le flag d'arrêt pour l'envoi groupé
+                stop_email_monitoring.clear()
+                with replies_lock:
+                    student_replies.clear()
+                    # Vider la queue
+                    while not email_queue.empty():
+                        try:
+                            email_queue.get_nowait()
+                        except:
+                            break
                 send_to_all_students(timeout_minutes)
                 break
                 
